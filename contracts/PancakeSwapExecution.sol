@@ -11,6 +11,14 @@ import "./interfaces/pancakeswap/IPancakeRouter02.sol";
 
 contract PancakeSwapExecution is BasicContract {
     
+    // Info of each pool.
+    struct PoolInfo {
+        address lpToken;           // Address of LP token contract.
+        uint allocPoint;       // How many allocation points assigned to this pool. CAKEs to distribute per block.
+        uint lastRewardBlock;  // Last block number that CAKEs distribution occurs.
+        uint accCakePerShare; // Accumulated CAKEs per share, times 1e12. See below.
+    }
+    
     address private constant FACTORY = 0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73;
     address private constant ROUTER = 0x10ED43C718714eb63d5aA57B78B54704E256024E;
     address private constant MASTERCHEF = 0x73feaa1eE314F8c655E354234017bE2193C9E24E;
@@ -21,6 +29,21 @@ contract PancakeSwapExecution is BasicContract {
     address private constant TUSD = 0x14016E85a25aeb13065688cAFB43044C2ef86784;
     address private constant BUSD = 0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56;
     address private constant USDC = 0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d;
+    
+    uint public PoolId;
+    // PoolInfo[] poolsInfo;
+    
+    constructor(uint _PoolId) {
+        PoolId = _PoolId;
+        
+        emit IntLog("PoolId", PoolId);
+    }
+    
+    function setPoolId(uint _PoolId) public onlyOwner returns (bool) {
+        PoolId = _PoolId;
+        emit IntLog("PoolId", PoolId);
+        return true;
+    }
     
     function getBalanceBNB(address wallet_address) public view returns (uint) {
         return IBEP20(BNB).balanceOf(wallet_address);
@@ -39,12 +62,46 @@ contract PancakeSwapExecution is BasicContract {
         return MasterChef(MASTERCHEF).poolInfo(pool_id);
     }
     
+    function getPoolId() public view returns (uint) {
+        return PoolId;
+    }
+    
     function getReserves(address lp_token_address) public view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast) {
         return IPancakePair(lp_token_address).getReserves();
     }
     
+    function getAllPoolInfo() public view returns (PoolInfo[] memory poolsInfo) {
+        uint pool_length = MasterChef(MASTERCHEF).poolLength();
+        
+        for(uint i = 0; i <= pool_length ; i++) {
+            (address _lpToken, uint _allocPoint, uint _lastRewardBlock, uint _accCakePerShare) = MasterChef(MASTERCHEF).poolInfo(i);
+            poolsInfo[i] = PoolInfo({
+                lpToken: _lpToken,
+                allocPoint: _allocPoint,
+                lastRewardBlock: _lastRewardBlock,
+                accCakePerShare: _accCakePerShare
+            });
+        }
+        
+        return poolsInfo;
+    }
+    
     function getPair(address token_a_addr, address token_b_addr) public view returns (address) {
         return IPancakeFactory(FACTORY).getPair(token_a_addr, token_b_addr);
+    }
+    
+    function lineUpPairs(address[] memory user_token_assumptions, address[] memory data, address lp_token_address) public view returns (address[] memory) {
+        address contract_token_0_address = IPancakePair(lp_token_address).token0();
+        address contract_token_1_address = IPancakePair(lp_token_address).token1();
+        
+        if (contract_token_0_address == user_token_assumptions[0]) {
+            return data;
+        } else {
+            address[] memory pair;
+            pair[0] = contract_token_0_address;
+            pair[1] = contract_token_1_address;
+            return pair;
+        }
     }
     
     function getLPConstituients(uint lp_token_amnt, address lp_token_addr) public view returns (uint, uint, uint) {
@@ -63,7 +120,10 @@ contract PancakeSwapExecution is BasicContract {
     function addLiquidityETH(address token_addr, uint token_amnt, uint eth_amnt) public returns (uint) {
         IBEP20(token_addr).approve(ROUTER, token_amnt);
         
-        (uint amountToken, uint amountETH, uint amountLP) = IPancakeRouter02(ROUTER).addLiquidityETH(token_addr, token_amnt, 1, 1, address(this), block.timestamp);
+        // min amount will be 97% amount
+        uint min_token_amnt = SafeMath.div(SafeMath.mul(token_amnt, 97), 100);
+        uint min_eth_amnt = SafeMath.div(SafeMath.mul(eth_amnt, 97), 100);
+        (uint amountToken, uint amountETH, uint amountLP) = IPancakeRouter02(ROUTER).addLiquidityETH(token_addr, token_amnt, min_token_amnt, min_eth_amnt, address(this), block.timestamp);
         
         emit IntLog("addLiquidityETH amountToken", amountToken);
         emit IntLog("addLiquidityETH amountETH", amountETH);
@@ -77,7 +137,10 @@ contract PancakeSwapExecution is BasicContract {
         IBEP20(token_a_addr).approve(ROUTER, a_amnt);
         IBEP20(token_b_addr).approve(ROUTER, b_amnt);
         
-        (uint amountA, uint amountB, uint amountLP) = IPancakeRouter02(ROUTER).addLiquidity(token_a_addr, token_b_addr, a_amnt, b_amnt, 1, 1, address(this), block.timestamp);
+        // min amount will be 97% amount
+        uint min_a_amnt = SafeMath.div(SafeMath.mul(a_amnt, 97), 100);
+        uint min_b_amnt = SafeMath.div(SafeMath.mul(b_amnt, 97), 100);
+        (uint amountA, uint amountB, uint amountLP) = IPancakeRouter02(ROUTER).addLiquidity(token_a_addr, token_b_addr, a_amnt, b_amnt, min_a_amnt, min_b_amnt, address(this), block.timestamp);
         
         emit IntLog("addLiquidity amountA", amountA);
         emit IntLog("addLiquidity amountB", amountB);
@@ -104,28 +167,7 @@ contract PancakeSwapExecution is BasicContract {
         emit IntLog("removeLiquidity amountB", amountB);
     }
     
-    function isStableCoin(address token_addr) public pure returns (bool) {
-        if (token_addr == USDT) {
-            return true;
-        }
-        else if (token_addr == TUSD) {
-            return true;
-        }
-        else if (token_addr == BUSD) {
-            return true;
-        }
-        else if (token_addr == USDC) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-    
-    function getPrice(address token_a_address, address token_b_address) public view returns (uint, uint) {
-        if ((isStableCoin(token_a_address) == true) && isStableCoin(token_b_address) == true) {
-            return (1, block.timestamp);
-        }
+    function getAmountsOut(address token_a_address, address token_b_address) public view returns (uint, uint) {
         uint token_a_decimals = IBEP20(token_a_address).decimals();
         uint min_amountIn = SafeMath.mul(1, 10**token_a_decimals);
         address pair = IPancakeFactory(FACTORY).getPair(token_a_address, token_b_address);
@@ -133,18 +175,6 @@ contract PancakeSwapExecution is BasicContract {
         uint price = IPancakeRouter02(ROUTER).getAmountOut(min_amountIn, reserve0, reserve1);
         
         return (price, blockTimestampLast);
-    }
-    
-    function getPoolUSDLiquidity(address lp_token_address, address token_a_addr, address token_b_addr) public view returns (uint) {
-        (uint reserve0, uint reserve1, uint blockTimestampLast) = IPancakePair(lp_token_address).getReserves();
-        
-        (uint token_a_price, uint token_a_blockTimestampLast) = getPrice(token_a_addr, BUSD);
-        (uint token_b_price, uint token_b_blockTimestampLast) = getPrice(token_b_addr, BUSD);
-        
-        uint token_a_usd_value = SafeMath.mul(token_a_price, reserve0);
-        uint token_b_usd_value = SafeMath.mul(token_b_price, reserve1);
-        
-        return token_a_usd_value + token_b_usd_value;
     }
     
     function getPairPrice(address lp_token_address) public view returns (uint) {
@@ -184,6 +214,10 @@ contract PancakeSwapExecution is BasicContract {
     function getStakedPoolTokens(uint pool_id) public view returns (uint) {
         (uint amount, uint rewardDebt) = MasterChef(MASTERCHEF).userInfo(pool_id, address(this));
         return amount;
+    }
+    
+    function getPendingPoolRewards(uint pool_id) public view returns (uint) {
+        return MasterChef(MASTERCHEF).pendingCake(pool_id, address(this));
     }
     
     function stakePool(uint pool_id, uint stake_amount, address stake_pool_addr) public returns (bool) {
