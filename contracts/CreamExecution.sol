@@ -16,6 +16,29 @@ contract CreamExecution is BasicContract {
     address private constant crBNB = 0x1Ffe17B99b439bE0aFC831239dDECda2A790fF3A;
     address private constant crUSDC = 0xD83C88DB3A6cA4a32FFf1603b0f7DDce01F5f727;
     
+    address public CrTokenAddress;
+    address public UnderlyingAddress;
+    
+    constructor(address _CrTokenAddress, address _UnderlyingAddress) {
+        CrTokenAddress = _CrTokenAddress;
+        UnderlyingAddress = _UnderlyingAddress;
+        
+        emit AddrLog("CrTokenAddress", CrTokenAddress);
+        emit AddrLog("UnderlyingAddress", UnderlyingAddress);
+    }
+    
+    function setCrTokenAddress(address _CrTokenAddress) public onlyOwner returns (bool) {
+        CrTokenAddress = _CrTokenAddress;
+        emit AddrLog("CrTokenAddress", CrTokenAddress);
+        return true;
+    }
+    
+    function setUnderlyingAddress(address _UnderlyingAddress) public onlyOwner returns (bool) {
+        UnderlyingAddress = _UnderlyingAddress;
+        emit AddrLog("UnderlyingAddress", UnderlyingAddress);
+        return true;
+    }
+    
     function getAvailableBorrow(address crtoken_address) public view returns (uint) {
         return CErc20Delegator(crtoken_address).getCash();
     }
@@ -69,12 +92,6 @@ contract CreamExecution is BasicContract {
     function getTokenPrice(address crtoken_address) public view returns (uint) {
         return PriceOracleProxyBSC(ORACLE).getUnderlyingPrice(crtoken_address);
     }
-
-    function getUSDPrice(address crtoken_address) public view returns (uint) {
-        uint token_bnb_price = PriceOracleProxyBSC(ORACLE).getUnderlyingPrice(crtoken_address);
-        uint usd_bnb_price = PriceOracleProxyBSC(ORACLE).getUnderlyingPrice(crUSDC);
-        return SafeMath.div(token_bnb_price, usd_bnb_price);
-    }
     
     function getExchangeRate(address crtoken_address) public view returns (uint) {
         return CErc20Delegator(crtoken_address).exchangeRateStored();
@@ -83,8 +100,10 @@ contract CreamExecution is BasicContract {
     function getBorrowLimit(address borrow_ctoken_address, uint supply_amount, uint borrow_amount) public view returns (uint) {
         uint borrow_token_price = getTokenPrice(borrow_ctoken_address);
         uint usdc_bnb_price = getTokenPrice(crUSDC);
+        uint usdc_bnb_decimals = CErc20Delegator(crUSDC).decimals();
+        uint one_unit_of_usdc_bnb = SafeMath.mul(1, 10**usdc_bnb_decimals);
         
-        uint token_price = SafeMath.mul(borrow_token_price, SafeMath.div(1, usdc_bnb_price));
+        uint token_price = SafeMath.div(SafeMath.mul(borrow_token_price, one_unit_of_usdc_bnb), usdc_bnb_price);
         uint borrow_usdc_value = SafeMath.mul(token_price, borrow_amount);
         
         supply_amount = SafeMath.mul(supply_amount, 100);
@@ -101,7 +120,26 @@ contract CreamExecution is BasicContract {
         return CErc20Delegator(crtoken_address).borrow(borrow_amount);
     }
     
+    function getCrTokenAddress() public view returns (address) {
+        return CrTokenAddress;
+    }
+    
+    function getUnderlyingAddress() public view returns (address) {
+        return UnderlyingAddress;
+    }
+    
+    function getUSDPrice(address crtoken_address) public view returns (uint) {
+        uint token_bnb_price = getTokenPrice(crtoken_address);
+        uint usd_bnb_price = getUSDCBNBPrice();
+        
+        uint usdc_bnb_decimals = CErc20Delegator(crUSDC).decimals();
+        uint one_unit_of_usdc_bnb = SafeMath.mul(1, 10**usdc_bnb_decimals);
+        return SafeMath.div(SafeMath.mul(token_bnb_price, one_unit_of_usdc_bnb), usd_bnb_price);
+    }
+    
     function repay(address crtoken_address, uint repay_amount) public returns (uint) {
+        address token_address = getUnderlyingAddress();
+        CErc20Delegator(token_address).approve(crtoken_address, repay_amount);
         return CErc20Delegator(crtoken_address).repayBorrow(repay_amount);
     }
     
