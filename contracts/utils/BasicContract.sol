@@ -7,7 +7,8 @@ import "../access/Ownable.sol";
 contract BasicContract is Ownable {
     
     event IntLog(string message, uint val);
-    event StrLog(string message, address val);
+    event StrLog(string message, string val);
+    event AddrLog(string message, address val);
     
     function balanceOf(address _token, address _address) external view returns (uint) {
         return IBEP20(_token).balanceOf(_address);
