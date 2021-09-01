@@ -213,4 +213,6 @@ interface CErc20Delegator {
     function decimals() external view returns (uint8);
     
     function reserveFactorMantissa() external view returns (uint256);
+
+    function underlying() external view returns (address);
 }

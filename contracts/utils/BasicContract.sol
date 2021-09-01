@@ -26,5 +26,5 @@ contract BasicContract is Ownable {
         IBEP20(_token).approve(address(this), _amount);
         IBEP20(_token).transferFrom(address(this), msg.sender, _amount);
     }
-    
+
 }

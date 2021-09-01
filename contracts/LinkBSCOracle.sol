@@ -4,7 +4,7 @@ pragma solidity ^0.8;
 import "./access/Ownable.sol";
 import "./interfaces/chainlink/AggregatorInterface.sol";
 
-contract LinkBSCOracleTest is Ownable {
+contract LinkBSCOracle is Ownable {
     
     uint OraclePairId;
     string[] allOracle;
@@ -52,6 +52,11 @@ contract LinkBSCOracleTest is Ownable {
     function getPrice(string memory pair_name) public view returns(int256) {
         address OracleAddr = Oracles[pair_name];
         return AggregatorInterface(OracleAddr).latestAnswer();
+    }
+    
+    function getDecimals(string memory pair_name) public view returns(uint8) {
+        address OracleAddr = Oracles[pair_name];
+        return AggregatorInterface(OracleAddr).decimals();
     }
     
 }
