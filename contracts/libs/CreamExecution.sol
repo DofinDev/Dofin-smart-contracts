@@ -13,6 +13,12 @@ import "../interfaces/cream/Unitroller.sol";
 /// @dev All functions haven't finished unit test
 library CreamExecution {
     
+    // Addresss of Cream.
+    struct CreamConfig {
+        address oracle; // Address of Cream oracle contract.
+        address troller; // Address of Cream troller contract.
+    }
+    
     /// @param crtoken_address Cream crToken address.
     function getAvailableBorrow(address crtoken_address) public view returns (uint) {
         
@@ -70,22 +76,22 @@ library CreamExecution {
     }
     
     /// @dev Gets the USDCBNB price.
-    function getUSDCBNBPrice(address cream_oracle_address, address crUSDC_address) public view returns (uint) {
+    function getUSDCBNBPrice(CreamConfig memory self, address crUSDC_address) public view returns (uint) {
         
-        return PriceOracleProxyBSC(cream_oracle_address).getUnderlyingPrice(crUSDC_address);
+        return PriceOracleProxyBSC(self.oracle).getUnderlyingPrice(crUSDC_address);
     }
     
     /// @dev Gets the bnb amount.
-    function getCrTokenBalance(address cream_oracle_address, address crtoken_address) public view returns (uint) {
+    function getCrTokenBalance(CreamConfig memory self, address crtoken_address) public view returns (uint) {
         
-        return PriceOracleProxyBSC(cream_oracle_address).getUnderlyingPrice(crtoken_address);
+        return PriceOracleProxyBSC(self.oracle).getUnderlyingPrice(crtoken_address);
     }
     
     /// @param crtoken_address Cream crToken address.
     /// @dev Gets the crtoken/BNB price.
-    function getTokenPrice(address cream_oracle_address, address crtoken_address) public view returns (uint) {
+    function getTokenPrice(CreamConfig memory self, address crtoken_address) public view returns (uint) {
         
-        return PriceOracleProxyBSC(cream_oracle_address).getUnderlyingPrice(crtoken_address);
+        return PriceOracleProxyBSC(self.oracle).getUnderlyingPrice(crtoken_address);
     }
     
     /// @param crtoken_address Cream crToken address.
@@ -96,9 +102,9 @@ library CreamExecution {
     }
     
     /// @return the current borrow limit on the platform.
-    function getBorrowLimit(address cream_oracle_address, address borrow_crtoken_address, address crUSDC_address, address USDC_address, uint supply_amount, uint borrow_amount) public view returns (uint) {
-        uint borrow_token_price = getTokenPrice(cream_oracle_address, borrow_crtoken_address);
-        uint usdc_bnb_price = getTokenPrice(cream_oracle_address, crUSDC_address);
+    function getBorrowLimit(CreamConfig memory self, address borrow_crtoken_address, address crUSDC_address, address USDC_address, uint supply_amount, uint borrow_amount) public view returns (uint) {
+        uint borrow_token_price = getTokenPrice(self, borrow_crtoken_address);
+        uint usdc_bnb_price = getTokenPrice(self, crUSDC_address);
         uint usdc_decimals = IBEP20(USDC_address).decimals();
         uint one_unit_of_usdc = SafeMath.mul(1, 10**usdc_decimals);
         
@@ -124,8 +130,8 @@ library CreamExecution {
 
     /// @param token_address Address of the underlying BEP-20 token .
     /// @dev Gets the address of the cToken that represents the underlying token.
-    function getCrTokenAddress(address cream_troller, address token_address) public view returns (address) {
-        address[] memory markets = Unitroller(cream_troller).getAllMarkets();
+    function getCrTokenAddress(CreamConfig memory self, address token_address) public view returns (address) {
+        address[] memory markets = Unitroller(self.troller).getAllMarkets();
 
         for (uint i = 0; i <= markets.length; i++) {
             if (markets[i] == token_address) {
@@ -143,9 +149,9 @@ library CreamExecution {
     
     /// @param crtoken_address Cream crToken address.
     /// @dev Get the token/BNB price.
-    function getUSDPrice(address cream_oracle_address, address crtoken_address, address crUSDC_address, address USDC_address) public view returns (uint) {
-        uint token_bnb_price = getTokenPrice(cream_oracle_address, crtoken_address);
-        uint usd_bnb_price = getUSDCBNBPrice(cream_oracle_address, crUSDC_address);
+    function getUSDPrice(CreamConfig memory self, address crtoken_address, address crUSDC_address, address USDC_address) public view returns (uint) {
+        uint token_bnb_price = getTokenPrice(self, crtoken_address);
+        uint usd_bnb_price = getUSDCBNBPrice(self, crUSDC_address);
         
         uint usdc_decimals = IBEP20(USDC_address).decimals();
         uint one_unit_of_usdc = SafeMath.mul(1, 10**usdc_decimals);

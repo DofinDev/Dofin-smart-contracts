@@ -13,6 +13,13 @@ import "../interfaces/pancakeswap/IPancakeRouter02.sol";
 /// @dev All functions haven't finished unit test
 library PancakeSwapExecution {
     
+    // Addresss of PancakeSwap.
+    struct PancakeSwapConfig {
+        address router; // Address of PancakeSwap router contract.
+        address factory; // Address of PancakeSwap factory contract.
+        address masterchef; // Address of PancakeSwap masterchef contract.
+    }
+    
     // Info of each pool.
     struct PoolInfo {
         address lpToken;           // Address of LP token contract.
@@ -24,6 +31,11 @@ library PancakeSwapExecution {
     function getBalanceBNB(address wallet_address, address BNB_address) public view returns (uint) {
         
         return IBEP20(BNB_address).balanceOf(wallet_address);
+    }
+    
+    function getLPBalance(address lp_token) public view returns (uint) {
+        
+        return IPancakePair(lp_token).balanceOf(address(this));
     }
     
     /// @param lp_token_address PancakeSwap LPtoken address.
@@ -42,21 +54,22 @@ library PancakeSwapExecution {
         return (IBEP20(token0).symbol(), IBEP20(token1).symbol());
     }
     
-    /// @param masterchef_address address of PancakeSwap masterchef.
+    /// @param self config of PancakeSwap.
     /// @param pool_id Id of the PancakeSwap pool.
     /// @dev Gets pool info from the masterchef contract and stores results in an array.
     /// @return pooInfo.
-    function getPoolInfo(address masterchef_address, uint pool_id) public view returns (address, uint256, uint256, uint256) {
+    function getPoolInfo(PancakeSwapConfig memory self, uint pool_id) public view returns (address, uint256, uint256, uint256) {
         
-        return MasterChef(masterchef_address).poolInfo(pool_id);
+        return MasterChef(self.masterchef).poolInfo(pool_id);
     }
 
+    /// @param self config of PancakeSwap.
     /// @return poolsInfo
-    function getAllPoolInfo(address masterchef_address) public view returns (PoolInfo[] memory poolsInfo) {
-        uint pool_length = MasterChef(masterchef_address).poolLength();
+    function getAllPoolInfo(PancakeSwapConfig memory self) public view returns (PoolInfo[] memory poolsInfo) {
+        uint pool_length = MasterChef(self.masterchef).poolLength();
         
         for(uint i = 0; i <= pool_length ; i++) {
-            (address _lpToken, uint _allocPoint, uint _lastRewardBlock, uint _accCakePerShare) = MasterChef(masterchef_address).poolInfo(i);
+            (address _lpToken, uint _allocPoint, uint _lastRewardBlock, uint _accCakePerShare) = MasterChef(self.masterchef).poolInfo(i);
             poolsInfo[i] = PoolInfo({
                 lpToken: _lpToken,
                 allocPoint: _allocPoint,
@@ -73,13 +86,14 @@ library PancakeSwapExecution {
         return IPancakePair(lp_token_address).getReserves();
     }
 
+    /// @param self config of PancakeSwap.
     /// @param token_a_addr BEP20 token address.
     /// @param token_b_addr BEP20 token address.
     /// @dev Returns the LP token address for the token pairs.
     /// @return pair address.
-    function getPair(address factory_address, address token_a_addr, address token_b_addr) public view returns (address) {
+    function getPair(PancakeSwapConfig memory self, address token_a_addr, address token_b_addr) public view returns (address) {
         
-        return IPancakeFactory(factory_address).getPair(token_a_addr, token_b_addr);
+        return IPancakeFactory(self.factory).getPair(token_a_addr, token_b_addr);
     }
     
     /// @dev Will line up our assumption with the contracts.
@@ -108,47 +122,50 @@ library PancakeSwapExecution {
         return (token_a_amnt, token_b_amnt);
     }
     
-    function getPendingStakedCake(address masterchef_address, uint pool_id) public view returns (uint) {
+    /// @param self config of PancakeSwap.
+    function getPendingStakedCake(PancakeSwapConfig memory self, uint pool_id) public view returns (uint) {
         
-        return MasterChef(masterchef_address).pendingCake(pool_id, address(this));
+        return MasterChef(self.masterchef).pendingCake(pool_id, address(this));
     }
     
-    /// @param router_address PancakeSwap router address.
+    /// @param self config of PancakeSwap.
     /// @param token_addr address of the BEP20 token.
     /// @param token_amnt amount of token to add.
     /// @param eth_amnt amount of BNB to add.
     /// @dev Adds a pair of tokens into a liquidity pool.
-    function addLiquidityETH(address router_address, address token_addr, uint token_amnt, uint eth_amnt) public returns (uint) {
-        IBEP20(token_addr).approve(router_address, token_amnt);
+    function addLiquidityETH(PancakeSwapConfig memory self, address token_addr, address eth_addr, uint token_amnt, uint eth_amnt) public returns (uint) {
+        IBEP20(token_addr).approve(self.router, token_amnt);
+        address pair = IPancakeFactory(self.factory).getPair(token_addr, eth_addr);
+        (uint reserves0, uint reserves1, uint blockTimestampLast) = IPancakePair(pair).getReserves();
         
-        // min amount will be 97% amount
-        uint min_token_amnt = SafeMath.div(SafeMath.mul(token_amnt, 97), 100);
-        uint min_eth_amnt = SafeMath.div(SafeMath.mul(eth_amnt, 97), 100);
-        (uint amountToken, uint amountETH, uint amountLP) = IPancakeRouter02(router_address).addLiquidityETH(token_addr, token_amnt, min_token_amnt, min_eth_amnt, address(this), block.timestamp);
+        uint min_token_amnt = IPancakeRouter02(self.router).quote(token_amnt, reserves0, reserves1);
+        uint min_eth_amnt = IPancakeRouter02(self.router).quote(eth_amnt, reserves1, reserves0);
+        (uint amountToken, uint amountETH, uint amountLP) = IPancakeRouter02(self.router).addLiquidityETH(token_addr, token_amnt, min_token_amnt, min_eth_amnt, address(this), block.timestamp);
         
         return amountLP;
     }
     
-    /// @param router_address PancakeSwap router address.
+    /// @param self config of PancakeSwap.
     /// @param token_a_addr address of the BEP20 token.
     /// @param token_b_addr address of the BEP20 token.
     /// @param a_amnt amount of token a to add.
     /// @param b_amnt amount of token b to add.
     /// @dev Adds a pair of tokens into a liquidity pool.
-    function addLiquidity(address router_address, address token_a_addr, address token_b_addr, uint a_amnt, uint b_amnt) public returns (uint){
+    function addLiquidity(PancakeSwapConfig memory self, address token_a_addr, address token_b_addr, uint a_amnt, uint b_amnt) public returns (uint){
         
-        IBEP20(token_a_addr).approve(router_address, a_amnt);
-        IBEP20(token_b_addr).approve(router_address, b_amnt);
-        
-        // min amount will be 97% amount
-        uint min_a_amnt = SafeMath.div(SafeMath.mul(a_amnt, 97), 100);
-        uint min_b_amnt = SafeMath.div(SafeMath.mul(b_amnt, 97), 100);
-        (uint amountA, uint amountB, uint amountLP) = IPancakeRouter02(router_address).addLiquidity(token_a_addr, token_b_addr, a_amnt, b_amnt, min_a_amnt, min_b_amnt, address(this), block.timestamp);
+        IBEP20(token_a_addr).approve(self.router, a_amnt);
+        IBEP20(token_b_addr).approve(self.router, b_amnt);
+        address pair = IPancakeFactory(self.factory).getPair(token_a_addr, token_b_addr);
+        (uint reserves0, uint reserves1, uint blockTimestampLast) = IPancakePair(pair).getReserves();
+    
+        uint min_a_amnt = IPancakeRouter02(self.router).quote(a_amnt, reserves0, reserves1);
+        uint min_b_amnt = IPancakeRouter02(self.router).quote(b_amnt, reserves1, reserves0);
+        (uint amountA, uint amountB, uint amountLP) = IPancakeRouter02(self.router).addLiquidity(token_a_addr, token_b_addr, a_amnt, b_amnt, min_a_amnt, min_b_amnt, address(this), block.timestamp);
         
         return amountLP;
     }
     
-    /// @param router_address PancakeSwap router address.
+    /// @param self config of PancakeSwap.
     /// @param lp_contract_addr address of the BEP20 token.
     /// @param token_a_addr address of the BEP20 token.
     /// @param token_b_addr address of the BEP20 token.
@@ -156,31 +173,32 @@ library PancakeSwapExecution {
     /// @param a_amnt amount of token a to remove.
     /// @param b_amnt amount of token b to remove.
     /// @dev Removes a pair of tokens from a liquidity pool.
-    function removeLiquidity(address router_address, address lp_contract_addr, address token_a_addr, address token_b_addr, uint liquidity, uint a_amnt, uint b_amnt) public {
+    function removeLiquidity(PancakeSwapConfig memory self, address lp_contract_addr, address token_a_addr, address token_b_addr, uint liquidity, uint a_amnt, uint b_amnt) public {
         
-        IBEP20(lp_contract_addr).approve(router_address, liquidity);
-        IPancakeRouter02(router_address).removeLiquidity(token_a_addr, token_b_addr, liquidity, a_amnt, b_amnt, address(this), block.timestamp);
+        IBEP20(lp_contract_addr).approve(self.router, liquidity);
+        IPancakeRouter02(self.router).removeLiquidity(token_a_addr, token_b_addr, liquidity, a_amnt, b_amnt, address(this), block.timestamp);
     }
     
-    /// @param router_address PancakeSwap router address.
+    /// @param self config of PancakeSwap.
     /// @param lp_contract_addr address of the BEP20 token.
     /// @param token_addr address of the BEP20 token.
     /// @param liquidity amount of LP tokens to be removed.
     /// @param a_amnt amount of token a to remove.
     /// @param b_amnt amount of BNB to remove.
     /// @dev Removes a pair of tokens from a liquidity pool.
-    function removeLiquidityETH(address router_address, address lp_contract_addr, address token_addr, uint liquidity, uint a_amnt, uint b_amnt) public {
+    function removeLiquidityETH(PancakeSwapConfig memory self, address lp_contract_addr, address token_addr, uint liquidity, uint a_amnt, uint b_amnt) public {
         
-        IBEP20(lp_contract_addr).approve(router_address, liquidity);
-        IPancakeRouter02(router_address).removeLiquidityETH(token_addr, liquidity, a_amnt, b_amnt, address(this), block.timestamp);
+        IBEP20(lp_contract_addr).approve(self.router, liquidity);
+        IPancakeRouter02(self.router).removeLiquidityETH(token_addr, liquidity, a_amnt, b_amnt, address(this), block.timestamp);
     }
     
-    function getAmountsOut(address router_address, address factory_address, address token_a_address, address token_b_address) public view returns (uint) {
+    /// @param self config of PancakeSwap.
+    function getAmountsOut(PancakeSwapConfig memory self, address token_a_address, address token_b_address) public view returns (uint) {
         uint token_a_decimals = IBEP20(token_a_address).decimals();
         uint min_amountIn = SafeMath.mul(1, 10**token_a_decimals);
-        address pair = IPancakeFactory(factory_address).getPair(token_a_address, token_b_address);
+        address pair = IPancakeFactory(self.factory).getPair(token_a_address, token_b_address);
         (uint reserve0, uint reserve1, uint blockTimestampLast) = IPancakePair(pair).getReserves();
-        uint price = IPancakeRouter02(router_address).getAmountOut(min_amountIn, reserve0, reserve1);
+        uint price = IPancakeRouter02(self.router).getAmountOut(min_amountIn, reserve0, reserve1);
         
         return price;
     }
@@ -192,51 +210,50 @@ library PancakeSwapExecution {
         return reserve0 + reserve1;
     }
     
-    /// @param masterchef_address address of PancakeSwap masterchef.
+    /// @param self config of PancakeSwap.
     /// @param pool_id Id of the PancakeSwap pool.
     /// @dev Gets the current number of LP tokens staked in the pool.
-    function getStakedLP(address masterchef_address, uint pool_id) public view returns (uint) {
-        (uint amount, uint rewardDebt) = MasterChef(masterchef_address).userInfo(pool_id, address(this));
+    function getStakedLP(PancakeSwapConfig memory self, uint pool_id) public view returns (uint) {
+        (uint amount, uint rewardDebt) = MasterChef(self.masterchef).userInfo(pool_id, address(this));
         return SafeMath.div(amount, rewardDebt);
     }
 
-    /// @param masterchef_address address of PancakeSwap masterchef.
+    /// @param self config of PancakeSwap.
     /// @param pool_id Id of the PancakeSwap pool.
     /// @dev Gets the pending CAKE amount for a partictular pool_id.
-    function getPendingFarmRewards(address masterchef_address, uint pool_id) public view returns (uint) {
+    function getPendingFarmRewards(PancakeSwapConfig memory self, uint pool_id) public view returns (uint) {
         
-        return MasterChef(masterchef_address).pendingCake(pool_id, address(this));
+        return MasterChef(self.masterchef).pendingCake(pool_id, address(this));
     }
     
-    /// @param masterchef_address address of PancakeSwap masterchef.
+    /// @param self config of PancakeSwap.
     /// @param pool_id Id of the PancakeSwap pool.
     /// @param unstake_amount amount of LP tokens to unstake.
     /// @dev Removes 'unstake_amount' of LP tokens from 'pool_id'.
-    function unstakeLP(address masterchef_address, uint pool_id, uint unstake_amount) public returns (bool) {
-        MasterChef(masterchef_address).withdraw(pool_id, unstake_amount);
+    function unstakeLP(PancakeSwapConfig memory self, uint pool_id, uint unstake_amount) public returns (bool) {
+        MasterChef(self.masterchef).withdraw(pool_id, unstake_amount);
         return true;
     }
     
-    /// @param router_address address of PancakeSwap router.
-    /// @param factory_address address of PancakeSwap factory.
+    /// @param self config of PancakeSwap.
     /// @param token_address address of BEP20 token.
     /// @param USDT_address address of USDT token.
     /// @dev Returns the USD price for a particular BEP20 token.
-    function getTokenPriceUSD(address router_address, address factory_address, address token_address, address USDT_address) public view returns (uint) {
+    function getTokenPriceUSD(PancakeSwapConfig memory self, address token_address, address USDT_address) public view returns (uint) {
         uint token_decimals = IBEP20(token_address).decimals();
         uint min_amountIn = SafeMath.mul(1, 10**token_decimals);
-        address pair = IPancakeFactory(factory_address).getPair(token_address, USDT_address);
+        address pair = IPancakeFactory(self.factory).getPair(token_address, USDT_address);
         (uint reserve0, uint reserve1, uint blockTimestampLast) = IPancakePair(pair).getReserves();
-        uint price = IPancakeRouter02(router_address).getAmountOut(min_amountIn, reserve0, reserve1);
+        uint price = IPancakeRouter02(self.router).getAmountOut(min_amountIn, reserve0, reserve1);
         return price;
     }
     
-    /// @param masterchef_address address of PancakeSwap masterchef.
+    /// @param self config of PancakeSwap.
     /// @param pool_id Id of the PancakeSwap pool.
     /// @param stake_amount amount of LP tokens to stake.
     /// @dev Gets pending reward for the user from the specific pool_id.
-    function stakeLP(address masterchef_address, uint pool_id, uint stake_amount) public returns (bool) {
-        MasterChef(masterchef_address).deposit(pool_id, stake_amount);
+    function stakeLP(PancakeSwapConfig memory self, uint pool_id, uint stake_amount) public returns (bool) {
+        MasterChef(self.masterchef).deposit(pool_id, stake_amount);
         return true;
     }
     
@@ -256,37 +273,37 @@ library PancakeSwapExecution {
         return true;
     }
     
-    /// @param masterchef_address address of PancakeSwap masterchef.
+    /// @param self config of PancakeSwap.
     /// @param pool_id Id of the PancakeSwap pool.
     /// @dev Get the number of tokens staked into the pool.
-    function getStakedPoolTokens(address masterchef_address, uint pool_id) public view returns (uint) {
-        (uint amount, uint rewardDebt) = MasterChef(masterchef_address).userInfo(pool_id, address(this));
+    function getStakedPoolTokens(PancakeSwapConfig memory self, uint pool_id) public view returns (uint) {
+        (uint amount, uint rewardDebt) = MasterChef(self.masterchef).userInfo(pool_id, address(this));
         return amount;
     }
     
-    /// @param masterchef_address address of PancakeSwap masterchef.
+    /// @param self config of PancakeSwap.
     /// @param pool_id Id of the PancakeSwap pool.
     /// @dev Gets pending reward for the syrup pool.
-    function getPendingPoolRewards(address masterchef_address, uint pool_id) public view returns (uint) {
+    function getPendingPoolRewards(PancakeSwapConfig memory self, uint pool_id) public view returns (uint) {
         
-        return MasterChef(masterchef_address).pendingCake(pool_id, address(this));
+        return MasterChef(self.masterchef).pendingCake(pool_id, address(this));
     }
     
-    /// @param masterchef_address address of PancakeSwap masterchef.
+    /// @param self config of PancakeSwap.
     /// @param pool_id Id of the PancakeSwap pool.
     /// @param stake_amount amount of CAKE tokens to stake.
     /// @dev Adds 'stake_amount' of coins into the syrup pools.
-    function stakePool(address masterchef_address, uint pool_id, uint stake_amount) public returns (bool) {
-        MasterChef(masterchef_address).deposit(pool_id, stake_amount);
+    function stakePool(PancakeSwapConfig memory self, uint pool_id, uint stake_amount) public returns (bool) {
+        MasterChef(self.masterchef).deposit(pool_id, stake_amount);
         return true;
     }
     
-    /// @param masterchef_address address of PancakeSwap masterchef.
+    /// @param self config of PancakeSwap.
     /// @param pool_id Id of the PancakeSwap pool.
     /// @param unstake_amount amount of CAKE tokens to unstake.
     /// @dev Removes 'unstake_amount' of coins into the syrup pools.
-    function unstakePool(address masterchef_address, uint pool_id, uint unstake_amount) public returns (bool) {
-        MasterChef(masterchef_address).withdraw(pool_id, unstake_amount);
+    function unstakePool(PancakeSwapConfig memory self, uint pool_id, uint unstake_amount) public returns (bool) {
+        MasterChef(self.masterchef).withdraw(pool_id, unstake_amount);
         return true;
     }
 

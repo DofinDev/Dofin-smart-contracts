@@ -15,14 +15,19 @@ interface AggregatorInterface {
 
 library LinkBSCOracle {
     
-    function getPrice(address OracleAddr) public view returns(int256) {
-        
-        return AggregatorInterface(OracleAddr).latestAnswer();
+    // Addresss of Link.
+    struct LinkConfig {
+        address oracle; // Address of Link oracle contract.
     }
     
-    function getDecimals(address OracleAddr) public view returns(uint8) {
+    function getPrice(LinkConfig memory self) public view returns(int256) {
         
-        return AggregatorInterface(OracleAddr).decimals();
+        return AggregatorInterface(self.oracle).latestAnswer();
+    }
+    
+    function getDecimals(LinkConfig memory self) public view returns(uint8) {
+        
+        return AggregatorInterface(self.oracle).decimals();
     }
     
 }
