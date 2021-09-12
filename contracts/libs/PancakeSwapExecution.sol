@@ -140,7 +140,7 @@ library PancakeSwapExecution {
         
         uint min_token_amnt = IPancakeRouter02(self.router).quote(token_amnt, reserves0, reserves1);
         uint min_eth_amnt = IPancakeRouter02(self.router).quote(eth_amnt, reserves1, reserves0);
-        (uint amountToken, uint amountETH, uint amountLP) = IPancakeRouter02(self.router).addLiquidityETH(token_addr, token_amnt, min_token_amnt, min_eth_amnt, address(this), block.timestamp);
+        (uint amountToken, uint amountETH, uint amountLP) = IPancakeRouter02(self.router).addLiquidityETH{value: eth_amnt}(token_addr, token_amnt, min_token_amnt, min_eth_amnt, address(this), block.timestamp);
         
         return amountLP;
     }
