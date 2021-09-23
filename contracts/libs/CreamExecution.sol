@@ -5,7 +5,7 @@ import "../token/BEP20/IBEP20.sol";
 import "../math/SafeMath.sol";
 import "../interfaces/cream/CErc20Delegator.sol";
 import "../interfaces/cream/InterestRateModel.sol";
-import "../interfaces/cream/PriceOracleProxyBSC.sol";
+import "../interfaces/cream/PriceOracleProxy.sol";
 import "../interfaces/cream/Unitroller.sol";
 
 /// @title Cream execution
@@ -78,20 +78,20 @@ library CreamExecution {
     /// @dev Gets the USDCBNB price.
     function getUSDCBNBPrice(CreamConfig memory self, address crUSDC_address) public view returns (uint) {
         
-        return PriceOracleProxyBSC(self.oracle).getUnderlyingPrice(crUSDC_address);
+        return PriceOracleProxy(self.oracle).getUnderlyingPrice(crUSDC_address);
     }
     
     /// @dev Gets the bnb amount.
     function getCrTokenBalance(CreamConfig memory self, address crtoken_address) public view returns (uint) {
         
-        return PriceOracleProxyBSC(self.oracle).getUnderlyingPrice(crtoken_address);
+        return PriceOracleProxy(self.oracle).getUnderlyingPrice(crtoken_address);
     }
     
     /// @param crtoken_address Cream crToken address.
     /// @dev Gets the crtoken/BNB price.
     function getTokenPrice(CreamConfig memory self, address crtoken_address) public view returns (uint) {
         
-        return PriceOracleProxyBSC(self.oracle).getUnderlyingPrice(crtoken_address);
+        return PriceOracleProxy(self.oracle).getUnderlyingPrice(crtoken_address);
     }
     
     /// @param crtoken_address Cream crToken address.
