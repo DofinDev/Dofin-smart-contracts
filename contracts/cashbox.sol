@@ -47,15 +47,22 @@ contract CashBox is BasicContract {
     HighLevelSystem.StableCoin private StableCoin;
     HighLevelSystem.Position private position;
     
-    // Info of each user.
-    struct UserInfo {
-        uint amount;
-        uint last_record_blocktimestamp;
-    }
+    using SafeMath for uint256;
+    string public constant name = "Proof token";
+    string public constant symbol = "pToken";
+    uint8 public constant decimals = 18;
+    uint256 private totalSupply_;
     
-    mapping (address => UserInfo) public userInfo;
+    address private constant Token = 0x71d82Eb6A5051CfF99582F4CDf2aE9cD402A4882;
+    address public dofin;
+    
+    event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
+    event Transfer(address indexed from, address indexed to, uint tokens);
+    
+    mapping(address => uint256) private balances;
+    mapping(address => mapping (address => uint256)) private allowed;
      
-    constructor(address[] memory _config, address[] memory _creamtokens, address[] memory _stablecoins, uint _pool_id, uint[] memory _amounts, address[] memory _addrs, uint _max_amount_per_position) {
+    constructor(address[] memory _config, address[] memory _creamtokens, address[] memory _stablecoins, uint _pool_id, uint[] memory _amounts, address[] memory _addrs, uint _max_amount_per_position, address _dofin) {
         setConfig(_config);
         setCreamTokens(_creamtokens);
         setStableCoins(_stablecoins);
@@ -70,6 +77,7 @@ contract CashBox is BasicContract {
             crtoken_b: _addrs[4],
             max_amount_per_position: _max_amount_per_position
         });
+        dofin = _dofin;
     }
     
     function setConfig(address[] memory _config) public onlyOwner {
@@ -116,29 +124,137 @@ contract CashBox is BasicContract {
         return HighLevelSystem.checkCurrentBorrowLimit(HLSConfig, CreamToken, StableCoin, position);
     }
     
-    function getUserInfo() public view returns (UserInfo memory) {
-        
-        return userInfo[msg.sender];
+    function totalSupply() public view returns (uint256) {
+	    
+        return totalSupply_;
     }
     
-    // TODO only record
-    function deposit(uint _amount) public {
-        require(_amount > 0, "amount can not be 0.");
+    function balanceOf(address account) public view returns (uint) {
         
-        UserInfo storage user = userInfo[msg.sender];
-        user.amount = user.amount.add(_amount);
-        user.last_record_blocktimestamp = block.timestamp;
+        return balances[account];
+    }
+
+    function transfer(address recipient, uint amount) public returns (bool) {
+        require(amount <= balances[msg.sender]);
+        balances[msg.sender] = balances[msg.sender].sub(amount);
+        balances[recipient] = balances[recipient].add(amount);
+        emit Transfer(msg.sender, recipient, amount);
+        return true;
+    }
+
+    function approve(address spender, uint amount) public returns (bool) {
+        allowed[msg.sender][spender] = amount;
+        emit Approval(msg.sender, spender, amount);
+        return true;
+    }
+
+    function allowance(address owner, address spender) public view returns (uint) {
+        
+        return allowed[owner][spender];
+    }
+
+    function transferFrom(address owner, address buyer, uint numTokens) public returns (bool) {
+        require(numTokens <= balances[owner]);    
+        require(numTokens <= allowed[owner][msg.sender]);
+    
+        balances[owner] = balances[owner].sub(numTokens);
+        allowed[owner][msg.sender] = allowed[owner][msg.sender].sub(numTokens);
+        balances[buyer] = balances[buyer].add(numTokens);
+        emit Transfer(owner, buyer, numTokens);
+        return true;
     }
     
-    // TODO only record
-    function withdraw(uint _amount) public {
-        require(_amount > 0, "amount can not be 0.");
+    function mint(address account, uint256 amount) internal returns (bool) {
+        require(account != address(0), "ERC20: mint to the zero address");
+
+        totalSupply_ += amount;
+        balances[account] += amount;
+        emit Transfer(address(0), account, amount);
+
+        return true;
+    }
+    
+    function burn(address account, uint256 amount) internal returns (bool) {
+        require(account != address(0), "ERC20: burn from the zero address");
+
+        uint256 accountBalance = balances[account];
+        require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
+        unchecked {
+            balances[account] = accountBalance - amount;
+        }
+        totalSupply_ -= amount;
+        emit Transfer(account, address(0), amount);
+
+        return true;
+    }
+    
+    function getTotalAssets() public view returns (uint) {
+        // Cream borrowed amount
+        (uint crtoken_a_debt, uint crtoken_b_debt) = HighLevelSystem.getTotalBorrowAmount(CreamToken, position.crtoken_a, position.crtoken_b);
+        // PancakeSwap pending cake amount
+        uint pending_cake_amount = HighLevelSystem.getTotalCakePendingRewards(HLSConfig, position.pool_id);
+        // PancakeSwap staked amount
+        (uint token_a_amount, uint token_b_amount) = HighLevelSystem.getStakedTokens(HLSConfig, position);
         
-        UserInfo storage user = userInfo[msg.sender];
-        require(user.amount > 0, "No funds can withdraw.");
+        uint total_assets = SafeMath.sub(SafeMath.add(token_a_amount, token_b_amount), SafeMath.add(crtoken_a_debt, crtoken_b_debt));
+        total_assets = SafeMath.add(total_assets, pending_cake_amount);
+        total_assets = SafeMath.add(total_assets, IBEP20(Token).balanceOf(address(this)));
+        return total_assets;
+    }
+    
+    function deposit(address _token, uint _deposit_amount) public returns (bool) {
+        require(_token == Token, "Wrong token to deposit.");
+        require(_deposit_amount > 0, "Deposit amount must bigger than 0.");
         
-        user.amount = user.amount.sub(_amount);
-        user.last_record_blocktimestamp = block.timestamp;    
+        // Calculation of pToken amount need to mint
+        uint totalAssets = getTotalAssets();
+        uint shares;
+        if (totalSupply_ > 0) {
+            shares = SafeMath.div(SafeMath.mul(_deposit_amount, totalSupply_), totalAssets);
+        } else {
+            shares = _deposit_amount;
+        }
+        
+        // Mint pToken and transfer Token to cashbox
+        mint(msg.sender, shares);
+        IBEP20(Token).transferFrom(msg.sender, address(this), _deposit_amount);
+        
+        return true;
+    }
+    
+    function getWithdrawAmount(uint _ptoken_amount) public view returns (uint) {
+        uint totalAssets = getTotalAssets();
+        uint value = SafeMath.div(SafeMath.mul(_ptoken_amount, totalAssets), totalSupply_);
+        uint user_value = SafeMath.div(SafeMath.mul(80, value), 100);
+        
+        return user_value;
+    }
+    
+    function withdraw(uint _withdraw_amount) public returns (bool) {
+        require(_withdraw_amount <= balanceOf(msg.sender), "Wrong amount to withdraw.");
+        
+        uint freeFunds = IBEP20(Token).balanceOf(address(this));
+        uint totalAssets = getTotalAssets();
+        uint value = SafeMath.div(SafeMath.mul(_withdraw_amount, totalAssets), totalSupply_);
+        bool entry = false;
+        // If no enough amount of free funds can transfer will trigger exit position
+        if (value > freeFunds) {
+            HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position);
+            entry = true;
+        }
+        
+        // Will charge 20% fees
+        burn(msg.sender, _withdraw_amount);
+        uint dofin_value = SafeMath.div(SafeMath.mul(20, value), 100);
+        uint user_value = SafeMath.div(SafeMath.mul(80, value), 100);
+        IBEP20(Token).transferFrom(address(this), dofin, dofin_value);
+        IBEP20(Token).transferFrom(address(this), msg.sender, user_value);
+        
+        if (entry == true) {
+            HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position);
+        }
+        
+        return true;
     }
     
 }
