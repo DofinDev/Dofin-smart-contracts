@@ -10,7 +10,7 @@ contract BasicContract is Ownable {
     event StrLog(string message, string val);
     event AddrLog(string message, address val);
     
-    function balanceOf(address _token, address _address) external view returns (uint) {
+    function checkBalance(address _token, address _address) external view returns (uint) {
         return IBEP20(_token).balanceOf(_address);
     }
     
@@ -18,7 +18,7 @@ contract BasicContract is Ownable {
         IBEP20(_token).approve(_spender, _amount);
     }
     
-    function allowance(address _token, address _owner, address _spender) external view returns (uint) {
+    function checkAllowance(address _token, address _owner, address _spender) external view returns (uint) {
         return IBEP20(_token).allowance(_owner, _spender);
     }
     
