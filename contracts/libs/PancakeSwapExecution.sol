@@ -135,8 +135,7 @@ library PancakeSwapExecution {
     /// @dev Adds a pair of tokens into a liquidity pool.
     function addLiquidityETH(PancakeSwapConfig memory self, address token_addr, address eth_addr, uint token_amnt, uint eth_amnt) public returns (uint) {
         IBEP20(token_addr).approve(self.router, token_amnt);
-        address pair = IPancakeFactory(self.factory).getPair(token_addr, eth_addr);
-        (uint reserves0, uint reserves1, uint blockTimestampLast) = IPancakePair(pair).getReserves();
+        (uint reserves0, uint reserves1, uint blockTimestampLast) = IPancakePair(IPancakeFactory(self.factory).getPair(token_addr, eth_addr)).getReserves();
         
         uint min_token_amnt = IPancakeRouter02(self.router).quote(token_amnt, reserves0, reserves1);
         uint min_eth_amnt = IPancakeRouter02(self.router).quote(eth_amnt, reserves1, reserves0);
@@ -215,7 +214,7 @@ library PancakeSwapExecution {
     /// @dev Gets the current number of LP tokens staked in the pool.
     function getStakedLP(PancakeSwapConfig memory self, uint pool_id) public view returns (uint) {
         (uint amount, uint rewardDebt) = MasterChef(self.masterchef).userInfo(pool_id, address(this));
-        return SafeMath.div(amount, rewardDebt);
+        return amount;
     }
 
     /// @param self config of PancakeSwap.
