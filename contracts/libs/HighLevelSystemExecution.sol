@@ -497,6 +497,15 @@ library HighLevelSystem {
         uint lp_balance = PancakeSwapExecution.getStakedLP(self.PancakeSwapConfig, _position.pool_id);
         return PancakeSwapExecution.unstakeLP(self.PancakeSwapConfig, _position.pool_id, lp_balance);
     }
+    
+    /// @param self refer HLSConfig struct on the top.
+    /// @param _position refer Position struct on the top.
+    /// @dev Return staked tokens.
+    function getStakedTokens(HLSConfig memory self, Position memory _position) public view returns (uint, uint) {
+        uint lp_balance = PancakeSwapExecution.getStakedLP(self.PancakeSwapConfig, _position.pool_id);
+        (uint token_a_amnt, uint token_b_amnt) = PancakeSwapExecution.getLPConstituients(lp_balance, _position.lp_token);
+        return (token_a_amnt, token_b_amnt);
+    }
 
 }
 
