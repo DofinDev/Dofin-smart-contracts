@@ -17,9 +17,9 @@ module.exports = {
         },
         evmVersion: "istanbul" // Default: "istanbul"
       },
-      modelCheckerSettings: {
-        // contains options for SMTChecker
-      }
+      // modelCheckerSettings: {
+      //   // contains options for SMTChecker
+      // }
     }
   },
   contracts_build_directory: path.join(__dirname, "client/src/contracts"),
