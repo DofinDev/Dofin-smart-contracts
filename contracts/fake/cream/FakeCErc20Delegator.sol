@@ -6,6 +6,11 @@ contract FakeCErc20Delegator {
   address public interestRateModel;
   address public underlying;
 
+  constructor(address _interestRateModel, address _underlying) public {
+      interestRateModel = _interestRateModel;
+      underlying = _underlying;
+  }
+
   function borrow() public returns(uint256) {
 
     return 10;

@@ -6,7 +6,6 @@ import "../math/SafeMath.sol";
 import "../interfaces/cream/CErc20Delegator.sol";
 import "../interfaces/cream/InterestRateModel.sol";
 import "../interfaces/cream/PriceOracleProxy.sol";
-import "../interfaces/cream/Unitroller.sol";
 
 /// @title Cream execution
 /// @author Andrew FU
@@ -128,20 +127,6 @@ library CreamExecution {
         return CErc20Delegator(crtoken_address).borrow(borrow_amount);
     }
 
-    /// @param token_address Address of the underlying BEP-20 token .
-    /// @dev Gets the address of the cToken that represents the underlying token.
-    function getCrTokenAddress(CreamConfig memory self, address token_address) public view returns (address) {
-        address[] memory markets = Unitroller(self.troller).getAllMarkets();
-
-        for (uint i = 0; i <= markets.length; i++) {
-            if (markets[i] == token_address) {
-                return markets[i];
-            }
-        }
-
-        return address(0);
-    }
-
     function getUnderlyingAddress(address crtoken_address) public view returns (address) {
         
         return CErc20Delegator(crtoken_address).underlying();
@@ -169,6 +154,7 @@ library CreamExecution {
         return CErc20Delegator(crBNB_address).repayBorrow(repay_amount);
     }
     
+    // TODO Johnny need to confirm this function again.
     function repayAll(address token_addr, address crtoken_address, address crWBNB_address) public returns (bool) {
         uint current_wallet_amount = getWalletAmount(token_addr);
         uint borrow_amount = getBorrowAmount(crtoken_address, crWBNB_address);

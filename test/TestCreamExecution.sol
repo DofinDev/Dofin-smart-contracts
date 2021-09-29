@@ -4,14 +4,6 @@ import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/libs/CreamExecution.sol";
 
-interface IFakeCErc20Delegator {
-
-  function setInterestRateModel(address _InterestRateModel) external returns(bool);
-
-  function setUnderlying(address _InterestRateModel) external returns(bool);
-
-}
-
 contract TestCreamExecution {
 
   function testGetAvailableBorrow() public {
@@ -32,7 +24,6 @@ contract TestCreamExecution {
 
     // Parms
     address crtoken_address = FakeCErc20DelegatorAddress;
-    IFakeCErc20Delegator(crtoken_address).setInterestRateModel(FakeInterestRateModelAddress);
     // Testing
     uint result = CreamExecution.getBorrowRate(crtoken_address);
     uint expected = 10;
@@ -46,7 +37,6 @@ contract TestCreamExecution {
     
     // Parms
     address crtoken_address = FakeCErc20DelegatorAddress;
-    IFakeCErc20Delegator(crtoken_address).setInterestRateModel(FakeInterestRateModelAddress);
     // Testing
     uint result = CreamExecution.getSupplyRate(crtoken_address);
     uint expected = 10;
@@ -87,7 +77,7 @@ contract TestCreamExecution {
     address crtoken_address = FakeCErc20DelegatorAddress;
     CreamExecution.CreamConfig memory creamConfig = CreamExecution.CreamConfig({
       oracle: FakePriceOracleProxyAddress,
-      troller: address(0),
+      troller: address(0)
     });
     // Testing
     uint result = CreamExecution.getUSDCBNBPrice(creamConfig, crtoken_address);
@@ -104,7 +94,7 @@ contract TestCreamExecution {
     address crtoken_address = FakeCErc20DelegatorAddress;
     CreamExecution.CreamConfig memory creamConfig = CreamExecution.CreamConfig({
       oracle: FakePriceOracleProxyAddress,
-      troller: address(0),
+      troller: address(0)
     });
     // Testing
     uint result = CreamExecution.getCrTokenBalance(creamConfig, crtoken_address);
@@ -121,7 +111,7 @@ contract TestCreamExecution {
     address crtoken_address = FakeCErc20DelegatorAddress;
     CreamExecution.CreamConfig memory creamConfig = CreamExecution.CreamConfig({
       oracle: FakePriceOracleProxyAddress,
-      troller: address(0),
+      troller: address(0)
     });
     // Testing
     uint result = CreamExecution.getTokenPrice(creamConfig, crtoken_address);
@@ -142,8 +132,9 @@ contract TestCreamExecution {
     Assert.equal(result, expected, "It should get the value 10 of Exchange Rate.");
   }
 
-  function testGetBorrowLimit(() public {
+  function testGetBorrowLimit() public {
     address FakeCErc20DelegatorAddress = DeployedAddresses.FakeCErc20Delegator();
+    address FakePriceOracleProxyAddress = DeployedAddresses.FakePriceOracleProxy();
     address FakeIBEP20Address = DeployedAddresses.FakeIBEP20();
 
     // Parms
@@ -154,7 +145,7 @@ contract TestCreamExecution {
     uint borrow_amount = 10;
     CreamExecution.CreamConfig memory creamConfig = CreamExecution.CreamConfig({
       oracle: FakePriceOracleProxyAddress,
-      troller: address(0),
+      troller: address(0)
     });
     // Testing
     uint result = CreamExecution.getBorrowLimit(creamConfig, borrow_crtoken_address, crUSDC_address, USDC_address, supply_amount, borrow_amount);
@@ -188,37 +179,22 @@ contract TestCreamExecution {
     Assert.equal(result, expected, "It should get the value 10 of borrow amount.");
   }
 
-  function testGetCrTokenAddress() public {
-    address FakeCErc20DelegatorAddress = DeployedAddresses.FakeCErc20Delegator();
-    address FakeUnitrollerAddress = DeployedAddresses.FakeUnitroller();
-
-    // Parms
-    address token_address = msg.sender;
-    CreamExecution.CreamConfig memory creamConfig = CreamExecution.CreamConfig({
-      oracle: FakePriceOracleProxyAddress,
-      troller: FakeUnitrollerAddress,
-    });
-    // Testing
-    address result = CreamExecution.getCrTokenAddress(creamConfig, token_address);
-    address expected = token_address;
-
-    Assert.equal(result, expected, "It should get the address msg sender of CrToken.");
-  }
-
   function testGetUnderlyingAddress() public {
     address FakeCErc20DelegatorAddress = DeployedAddresses.FakeCErc20Delegator();
+    address FakeIBEP20Address = DeployedAddresses.FakeIBEP20();
 
     // Parms
     address crtoken_address = FakeCErc20DelegatorAddress;
     // Testing
     address result = CreamExecution.getUnderlyingAddress(crtoken_address);
-    address expected = msg.sender;
+    address expected = FakeIBEP20Address;
 
     Assert.equal(result, expected, "It should get the address msg sender of Underlying token.");
   }
 
   function testGetUSDPrice() public {
     address FakeCErc20DelegatorAddress = DeployedAddresses.FakeCErc20Delegator();
+    address FakePriceOracleProxyAddress = DeployedAddresses.FakePriceOracleProxy();
     address FakeIBEP20Address = DeployedAddresses.FakeIBEP20();
 
     // Parms
@@ -227,7 +203,7 @@ contract TestCreamExecution {
     address USDC_address = FakeIBEP20Address;
     CreamExecution.CreamConfig memory creamConfig = CreamExecution.CreamConfig({
       oracle: FakePriceOracleProxyAddress,
-      troller: address(0),
+      troller: address(0)
     });
     // Testing
     uint result = CreamExecution.getUSDPrice(creamConfig, crtoken_address, crUSDC_address, USDC_address);
@@ -243,7 +219,6 @@ contract TestCreamExecution {
     // Parms
     address crtoken_address = FakeCErc20DelegatorAddress;
     uint repay_amount = 10;
-    IFakeCErc20Delegator(crtoken_address).setUnderlying(FakeIBEP20Address);
     // Testing
     uint result = CreamExecution.repay(crtoken_address, repay_amount);
     uint expected = 10;
@@ -271,7 +246,7 @@ contract TestCreamExecution {
     // Parms
     address token_addr = FakeIBEP20Address;
     address crtoken_address = FakeCErc20DelegatorAddress;
-    address crWBNB_address = FakeCErc20DelegatorAddress;
+    address crWBNB_address = address(0);
     // Testing
     bool result = CreamExecution.repayAll(token_addr, crtoken_address, crWBNB_address);
     bool expected = true;
