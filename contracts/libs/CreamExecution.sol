@@ -173,7 +173,7 @@ library CreamExecution {
         uint current_wallet_amount = getWalletAmount(token_addr);
         uint borrow_amount = getBorrowAmount(crtoken_address, crWBNB_address);
         
-        require(current_wallet_amount > borrow_amount, "Not enough funds in the wallet for the transaction");
+        require(current_wallet_amount >= borrow_amount, "Not enough funds in the wallet for the transaction");
         repay(crtoken_address, borrow_amount);
         
         return true;

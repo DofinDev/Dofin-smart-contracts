@@ -3,7 +3,6 @@ pragma solidity >=0.4.15 <0.9.0;
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/libs/LinkBSCOracle.sol";
-// import "../contracts/fake/FakeLinkBSCOracle.sol";
 
 contract TestLinkBSCOracle {
 
