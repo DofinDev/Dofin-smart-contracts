@@ -62,24 +62,6 @@ library PancakeSwapExecution {
         
         return MasterChef(self.masterchef).poolInfo(pool_id);
     }
-
-    /// @param self config of PancakeSwap.
-    /// @return poolsInfo
-    function getAllPoolInfo(PancakeSwapConfig memory self) public view returns (PoolInfo[] memory poolsInfo) {
-        uint pool_length = MasterChef(self.masterchef).poolLength();
-        
-        for(uint i = 0; i <= pool_length ; i++) {
-            (address _lpToken, uint _allocPoint, uint _lastRewardBlock, uint _accCakePerShare) = MasterChef(self.masterchef).poolInfo(i);
-            poolsInfo[i] = PoolInfo({
-                lpToken: _lpToken,
-                allocPoint: _allocPoint,
-                lastRewardBlock: _lastRewardBlock,
-                accCakePerShare: _accCakePerShare
-            });
-        }
-        
-        return poolsInfo;
-    }
     
     function getReserves(address lp_token_address) public view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast) {
         

@@ -17,5 +17,10 @@ contract FakeIBEP20 {
 
     return 10;
   }
+
+  function symbol() public returns(string memory) {
+
+    return "symbol";
+  }
   
 }
