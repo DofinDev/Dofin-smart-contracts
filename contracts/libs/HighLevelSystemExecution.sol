@@ -56,6 +56,7 @@ library HighLevelSystem {
         address crtoken_a;
         address crtoken_b;
         uint max_amount_per_position;
+        uint freefunds_percentage;
     }
     
     /// @param self refer HLSConfig struct on the top.
@@ -182,7 +183,7 @@ library HighLevelSystem {
     function checkEntry(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public {
         bool signal = checkBorrowLiquidity(_position);
         if (signal == true) {
-            enterPosition(self, _crtokens, _stablecoins, _position);
+            enterPosition(self, _crtokens, _stablecoins, _position, 1);
         }
     }
     
@@ -222,6 +223,14 @@ library HighLevelSystem {
         uint exchange_rate = CreamExecution.getExchangeRate(_crtoken);
         uint crtoken_amount = SafeMath.div(_amount, exchange_rate);
         return CreamExecution.supply(_crtoken, crtoken_amount);
+    }
+    
+    /// @param _crtoken Cream crToken address.
+    /// @param _amount amount of tokens to redeem.
+    /// @dev Redeem amount worth of crtokens back.
+    function redeemCream(address _crtoken, uint _amount) public returns (uint) {
+        
+        return CreamExecution.redeemUnderlying(_crtoken, _amount);
     }
 
     /// @param _crtokens refer CreamToken struct on the top.
@@ -290,7 +299,7 @@ library HighLevelSystem {
     /// @dev use a greedy apporach to allocate the cash.
     function generatePosition(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public returns (Position memory) {
         (uint a_amount, uint b_amount) = calculateEntryAmounts(self, _crtokens, _stablecoins, _position);
-        Position memory update_position = Position(_position.pool_id, a_amount, b_amount, _position.token_a, _position.token_b, _position.lp_token, _position.crtoken_a, _position.crtoken_b, _position.max_amount_per_position);
+        Position memory update_position = Position(_position.pool_id, a_amount, b_amount, _position.token_a, _position.token_b, _position.lp_token, _position.crtoken_a, _position.crtoken_b, _position.max_amount_per_position, _position.freefunds_percentage);
         return update_position;
     }
 
@@ -299,12 +308,31 @@ library HighLevelSystem {
     /// @param _stablecoins refer StableCoin struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Main entry function to borrow and enter a given position.
-    function enterPosition(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public {
-        // Borrowing position
-        borrowPosition(_position);
-
-        // Entering position
-        enter(self, _crtokens, _stablecoins, _position);
+    function enterPosition(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position, uint _type) public returns (Position memory) {
+        
+        if (_type == 1) {
+            // Supply position
+            uint token_a_balance = IBEP20(_position.token_a).balanceOf(address(this));
+            uint token_b_balance = IBEP20(_position.token_b).balanceOf(address(this));
+            uint enter_amount_a = SafeMath.div(SafeMath.mul(token_a_balance, _position.freefunds_percentage), 100);
+            uint enter_amount_b = SafeMath.div(SafeMath.mul(token_b_balance, _position.freefunds_percentage), 100);
+            supplyCream(_position.crtoken_a, enter_amount_a);
+            supplyCream(_position.crtoken_b, enter_amount_b);
+            _position.a_amount = enter_amount_a;
+            _position.b_amount = enter_amount_b;
+        }
+        
+        if (_type == 1 || _type == 2) {
+            // Borrowing position
+            borrowPosition(_position);
+        }
+        
+        if (_type == 1 || _type == 2 || _type == 3) {
+            // Entering position
+            enter(self, _crtokens, _stablecoins, _position);    
+        }
+        
+        return _position;
     }
 
     /// @param self refer HLSConfig struct on the top.
@@ -312,12 +340,25 @@ library HighLevelSystem {
     /// @param _stablecoins refer StableCoin struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Main exit function to exit and repay a given position.
-    function exitPosition(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public {
-        // Exiting position
-        exit(self, _stablecoins, _position);
-
-        // Returning borrow
-        returnBorrow(_crtokens, _stablecoins, _position);
+    function exitPosition(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position, uint _type) public {
+        
+        if (_type == 1) {
+            // Redeem position
+            uint exit_amount_a = IBEP20(_position.crtoken_a).balanceOf(address(this));
+            uint exit_amount_b = IBEP20(_position.crtoken_b).balanceOf(address(this));
+            redeemCream(_position.crtoken_a, exit_amount_a);
+            redeemCream(_position.crtoken_b, exit_amount_b);
+        }
+        
+        if (_type == 1 || _type == 2) {
+            // Exiting position
+            exit(self, _stablecoins, _position);
+        }
+        
+        if (_type == 1 || _type == 2 || _type == 3) {
+            // Returning borrow
+            returnBorrow(_crtokens, _stablecoins, _position);
+        }
     }
 
     /// @param _crtokens refer CreamToken struct on the top.
@@ -386,7 +427,7 @@ library HighLevelSystem {
     /// @param _crtoken_a Cream crToken address..
     /// @param _crtoken_b Cream crToken address..
     /// @dev Gets an array of all the cream tokens that have been borrowed.
-    function getBorrowedCreamTokens(address _crtoken_a, address _crtoken_b) public view returns (address, address) {
+    function getBorrowedCreamTokens(address _crtoken_a, address _crtoken_b) public pure returns (address, address) {
         
         return (_crtoken_a, _crtoken_b);
     }

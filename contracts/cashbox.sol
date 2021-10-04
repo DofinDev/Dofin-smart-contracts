@@ -55,6 +55,8 @@ contract CashBox is BasicContract {
     
     address private constant Token = 0x71d82Eb6A5051CfF99582F4CDf2aE9cD402A4882;
     address public dofin;
+    uint public deposit_limit;
+    uint public add_funds_condition;
     
     event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
     event Transfer(address indexed from, address indexed to, uint tokens);
@@ -62,22 +64,26 @@ contract CashBox is BasicContract {
     mapping(address => uint256) private balances;
     mapping(address => mapping (address => uint256)) private allowed;
      
-    constructor(address[] memory _config, address[] memory _creamtokens, address[] memory _stablecoins, uint _pool_id, uint[] memory _amounts, address[] memory _addrs, uint _max_amount_per_position, address _dofin) {
+    constructor(address[] memory _config, address[] memory _creamtokens, address[] memory _stablecoins, uint[] memory _uints, address[] memory _addrs, address _dofin, uint _deposit_limit, uint add_funds_condition) {
         setConfig(_config);
         setCreamTokens(_creamtokens);
         setStableCoins(_stablecoins);
         position = HighLevelSystem.Position({
-            pool_id: _pool_id,
-            a_amount: _amounts[0],
-            b_amount: _amounts[1],
+            pool_id: _uints[0],
+            a_amount: 0,
+            b_amount: 0,
             token_a: _addrs[0],
             token_b: _addrs[1],
             lp_token: _addrs[2],
             crtoken_a: _addrs[3],
             crtoken_b: _addrs[4],
-            max_amount_per_position: _max_amount_per_position
+            max_amount_per_position: _uints[1],
+            freefunds_percentage: _uints[2]
         });
+        
         dofin = _dofin;
+        deposit_limit = _deposit_limit;
+        add_funds_condition = add_funds_condition;
     }
     
     function setConfig(address[] memory _config) public onlyOwner {
@@ -109,9 +115,27 @@ contract CashBox is BasicContract {
         return position;
     }
     
+    function reblanceWithRepay() public onlyOwner {
+        HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 3);
+        position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 3);
+    }
+    
+    function reblanceWithoutRepay() public onlyOwner {
+        HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 2);
+        position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 2);
+    }
+    
     function reblance() public onlyOwner {
-        HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position);
-        HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position);
+        HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 1);
+        position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 1);
+    }
+    
+    function checkAddNewFunds() public {
+        uint free_funds = IBEP20(Token).balanceOf(address(this));
+        uint condition = SafeMath.mul(add_funds_condition, 10**IBEP20(Token).decimals());
+        if (free_funds >= condition) {
+            reblance();
+        }
     }
     
     function checkEntry() public onlyOwner {
@@ -125,7 +149,7 @@ contract CashBox is BasicContract {
     }
     
     function totalSupply() public view returns (uint256) {
-	    
+        
         return totalSupply_;
     }
     
@@ -203,6 +227,7 @@ contract CashBox is BasicContract {
     }
     
     function deposit(address _token, uint _deposit_amount) public returns (bool) {
+        require(_deposit_amount <= SafeMath.mul(deposit_limit, 10**IBEP20(Token).decimals()), "Deposit too much!");
         require(_token == Token, "Wrong token to deposit.");
         require(_deposit_amount > 0, "Deposit amount must bigger than 0.");
         
@@ -218,6 +243,9 @@ contract CashBox is BasicContract {
         // Mint pToken and transfer Token to cashbox
         mint(msg.sender, shares);
         IBEP20(Token).transferFrom(msg.sender, address(this), _deposit_amount);
+        
+        // Check need to supply or not.
+        checkAddNewFunds();
         
         return true;
     }
@@ -239,7 +267,7 @@ contract CashBox is BasicContract {
         bool entry = false;
         // If no enough amount of free funds can transfer will trigger exit position
         if (value > freeFunds) {
-            HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position);
+            HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 1);
             entry = true;
         }
         
@@ -251,7 +279,7 @@ contract CashBox is BasicContract {
         IBEP20(Token).transferFrom(address(this), msg.sender, user_value);
         
         if (entry == true) {
-            HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position);
+            HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 1);
         }
         
         return true;

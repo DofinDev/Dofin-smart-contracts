@@ -174,6 +174,14 @@ library CreamExecution {
         return CErc20Delegator(crtoken_address).mint(amount);
     }
     
+    /// @param crtoken_address Cream crToken address
+    /// @param amount amount of crtokens to redeem.
+    /// @dev Redeem amount worth of crtokens back.
+    function redeemUnderlying(address crtoken_address, uint amount) public returns (uint) {
+        IBEP20(crtoken_address).approve(crtoken_address, amount);
+        return CErc20Delegator(crtoken_address).redeemUnderlying(amount);
+    }
+    
     function getTokenBalance(address token_address) public view returns (uint) {
         
         return IBEP20(token_address).balanceOf(address(this));
