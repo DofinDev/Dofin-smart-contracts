@@ -16,6 +16,11 @@ contract FakeCErc20Delegator {
     return 10;
   }
 
+  function approve(address spender, uint256 amount) public returns(bool) {
+
+    return true;
+  }
+
   function getCash() public returns(uint256) {
 
     return 10;
@@ -48,7 +53,7 @@ contract FakeCErc20Delegator {
 
   function balanceOfUnderlying(address account) public returns(uint256) {
 
-    return 10;
+    return 100;
   }
 
   function exchangeRateStored() public returns(uint256) {
@@ -84,6 +89,11 @@ contract FakeCErc20Delegator {
   function setInterestRateModel(address _InterestRateModel) public {
 
     interestRateModel = _InterestRateModel;
+  }
+
+  function redeemUnderlying(uint256 redeemAmount) public returns (uint256) {
+
+    return 10;
   }
 
 }

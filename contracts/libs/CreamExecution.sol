@@ -15,7 +15,6 @@ library CreamExecution {
     // Addresss of Cream.
     struct CreamConfig {
         address oracle; // Address of Cream oracle contract.
-        address troller; // Address of Cream troller contract.
     }
     
     /// @param crtoken_address Cream crToken address.

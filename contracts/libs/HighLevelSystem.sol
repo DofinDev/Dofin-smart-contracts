@@ -180,11 +180,14 @@ library HighLevelSystem {
     /// @param _stablecoins refer StableCoin struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Enters positions based on the opportunity.
-    function checkEntry(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public {
+    function checkEntry(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public returns (Position memory) {
         bool signal = checkBorrowLiquidity(_position);
         if (signal == true) {
-            enterPosition(self, _crtokens, _stablecoins, _position, 1);
+            Position memory update_position = enterPosition(self, _crtokens, _stablecoins, _position, 1);
+            return update_position;
         }
+
+        return _position;
     }
     
     /// @param self refer HLSConfig struct on the top.
@@ -241,7 +244,9 @@ library HighLevelSystem {
         uint position_a_amnt = CreamExecution.getBorrowAmount(_crtoken_a, crWBNB);
         uint position_b_amnt = CreamExecution.getBorrowAmount(_crtoken_b, crWBNB);
         uint current_borrow_amount = SafeMath.add(position_a_amnt, position_b_amnt);
-        uint free_cash = SafeMath.sub(SafeMath.div(SafeMath.mul(current_supply_amount, 75), 100), current_borrow_amount);
+        // 75% of current_supply_amount
+        current_supply_amount = SafeMath.div(SafeMath.mul(current_supply_amount, 75), 100);
+        uint free_cash = SafeMath.sub(current_supply_amount, current_borrow_amount);
 
         return free_cash;
     }

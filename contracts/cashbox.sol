@@ -4,7 +4,7 @@ pragma solidity >=0.8;
 import "./token/BEP20/IBEP20.sol";
 import "./math/SafeMath.sol";
 import "./utils/BasicContract.sol";
-import { HighLevelSystem } from "./libs/HighLevelSystemExecution.sol";
+import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
 
 /// @title CashBox
 /// @author Andrew FU
@@ -89,7 +89,6 @@ contract CashBox is BasicContract {
     function setConfig(address[] memory _config) public onlyOwner {
         HLSConfig.LinkConfig.oracle = _config[0];
         HLSConfig.CreamConfig.oracle = _config[1];
-        HLSConfig.CreamConfig.troller = _config[2];
         HLSConfig.PancakeSwapConfig.router = _config[3];
         HLSConfig.PancakeSwapConfig.factory = _config[4];
         HLSConfig.PancakeSwapConfig.masterchef = _config[5];
@@ -140,7 +139,7 @@ contract CashBox is BasicContract {
     
     function checkEntry() public onlyOwner {
         
-        HighLevelSystem.checkEntry(HLSConfig, CreamToken, StableCoin, position);
+        position = HighLevelSystem.checkEntry(HLSConfig, CreamToken, StableCoin, position);
     }
     
     function checkCurrentBorrowLimit() onlyOwner public returns (uint) {

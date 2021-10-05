@@ -13,6 +13,7 @@ var FakePancakeRouter = artifacts.require("./fake/pancakeswap/FakePancakeRouter.
 var LinkBSCOracle = artifacts.require("./libs/LinkBSCOracle.sol");
 var CreamExecution = artifacts.require("./libs/CreamExecution.sol");
 var PancakeSwapExecution = artifacts.require("./libs/PancakeSwapExecution.sol");
+var HighLevelSystem = artifacts.require("./libs/HighLevelSystem.sol");
 
 module.exports = async function(deployer, network, accounts) {
   await deployer.deploy(SimpleStorage);
@@ -30,7 +31,14 @@ module.exports = async function(deployer, network, accounts) {
   await deployer.deploy(FakeMasterChef);
   await deployer.deploy(FakePancakeRouter);
 
+  // testing librarys
   await deployer.deploy(LinkBSCOracle);
   await deployer.deploy(CreamExecution);
   await deployer.deploy(PancakeSwapExecution);
+
+  // testing high level system library
+  await deployer.link(LinkBSCOracle, HighLevelSystem);
+  await deployer.link(CreamExecution, HighLevelSystem);
+  await deployer.link(PancakeSwapExecution, HighLevelSystem);
+  await deployer.deploy(HighLevelSystem);
 };
