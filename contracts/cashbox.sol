@@ -133,7 +133,11 @@ contract CashBox is BasicContract {
         uint free_funds = IBEP20(Token).balanceOf(address(this));
         uint condition = SafeMath.mul(add_funds_condition, 10**IBEP20(Token).decimals());
         if (free_funds >= condition) {
-            reblance();
+            if (position.a_amount == 0 && position.b_amount == 0) {
+                checkEntry();
+            } else {
+                reblance();
+            }
         }
     }
     
