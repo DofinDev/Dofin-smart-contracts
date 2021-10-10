@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.4.15 <0.9.0;
 
 import "truffle/Assert.sol";

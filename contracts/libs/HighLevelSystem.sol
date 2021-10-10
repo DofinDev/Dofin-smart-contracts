@@ -48,15 +48,21 @@ library HighLevelSystem {
     // Position
     struct Position {
         uint pool_id;
-        uint a_amount;
-        uint b_amount;
+        uint token_amount;
+        uint token_a_amount;
+        uint token_b_amount;
+        uint lp_token_amount;
+        uint crtoken_amount;
+        uint supply_crtoken_amount;
+        address token;
         address token_a;
         address token_b;
         address lp_token;
-        address crtoken_a;
-        address crtoken_b;
+        address supply_crtoken;
+        address borrowed_crtoken_a;
+        address borrowed_crtoken_b;
         uint max_amount_per_position;
-        uint freefunds_percentage;
+        uint supply_funds_percentage;
     }
     
     /// @param self refer HLSConfig struct on the top.
@@ -70,7 +76,7 @@ library HighLevelSystem {
         
         // stake
         stakeLP(self, _position);
-        
+
         return true;
     }
     
@@ -142,10 +148,10 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Checks if there is sufficient borrow liquidity on cream. Only borrow if there is 2x more liquidty than our borrow amount.
     function checkBorrowLiquidity(Position memory _position) public view returns (bool) {
-        uint available_a = CreamExecution.getAvailableBorrow(_position.crtoken_a);
-        uint available_b = CreamExecution.getAvailableBorrow(_position.crtoken_b);
+        uint available_a = CreamExecution.getAvailableBorrow(_position.borrowed_crtoken_a);
+        uint available_b = CreamExecution.getAvailableBorrow(_position.borrowed_crtoken_b);
 
-        if (available_a > _position.a_amount && available_b > _position.b_amount) {
+        if (available_a > _position.token_a_amount && available_b > _position.token_b_amount) {
             return true;
         } else {
             return false;
@@ -261,8 +267,8 @@ library HighLevelSystem {
         address USDT = _stablecoins.USDT;
         address crUSDC = _crtokens.crUSDC;
         
-        uint price_a = getPrice(self, _crtokens, _stablecoins, _position.token_a, USDT, _position.crtoken_a, crUSDC);
-        uint price_b = getPrice(self, _crtokens, _stablecoins, _position.token_b, USDT, _position.crtoken_b, crUSDC);
+        uint price_a = getPrice(self, _crtokens, _stablecoins, _position.token_a, USDT, _position.borrowed_crtoken_a, crUSDC);
+        uint price_b = getPrice(self, _crtokens, _stablecoins, _position.token_b, USDT, _position.borrowed_crtoken_b, crUSDC);
         
         uint units_a = SafeMath.div(half_amount, price_a);
         uint units_b = SafeMath.div(half_amount, price_b);
@@ -284,7 +290,7 @@ library HighLevelSystem {
             return (max_position_size_a, max_position_size_b);
         }
 
-        uint free_cash = getFreeCash(_crtokens, _position.crtoken_a, _position.crtoken_b);
+        uint free_cash = getFreeCash(_crtokens, _position.borrowed_crtoken_a, _position.borrowed_crtoken_b);
         (uint min_position_size_a, uint min_position_size_b) = splitUnits(self, _crtokens, _stablecoins, _position, free_cash);
         uint min_borrow_limit = checkPotentialBorrowLimit(self, _crtokens, _stablecoins, _position, max_position_size_a, max_position_size_b);
         min_borrow_limit = SafeMath.mul(min_borrow_limit, 100);
@@ -304,8 +310,9 @@ library HighLevelSystem {
     /// @dev use a greedy apporach to allocate the cash.
     function generatePosition(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public returns (Position memory) {
         (uint a_amount, uint b_amount) = calculateEntryAmounts(self, _crtokens, _stablecoins, _position);
-        Position memory update_position = Position(_position.pool_id, a_amount, b_amount, _position.token_a, _position.token_b, _position.lp_token, _position.crtoken_a, _position.crtoken_b, _position.max_amount_per_position, _position.freefunds_percentage);
-        return update_position;
+        _position.token_a_amount = a_amount;
+        _position.token_b_amount = b_amount;
+        return _position;
     }
 
     /// @param self refer HLSConfig struct on the top.
@@ -317,24 +324,26 @@ library HighLevelSystem {
         
         if (_type == 1) {
             // Supply position
-            uint token_a_balance = IBEP20(_position.token_a).balanceOf(address(this));
-            uint token_b_balance = IBEP20(_position.token_b).balanceOf(address(this));
-            uint enter_amount_a = SafeMath.div(SafeMath.mul(token_a_balance, _position.freefunds_percentage), 100);
-            uint enter_amount_b = SafeMath.div(SafeMath.mul(token_b_balance, _position.freefunds_percentage), 100);
-            supplyCream(_position.crtoken_a, enter_amount_a);
-            supplyCream(_position.crtoken_b, enter_amount_b);
-            _position.a_amount = enter_amount_a;
-            _position.b_amount = enter_amount_b;
+            uint token_balance = IBEP20(_position.token).balanceOf(address(this));
+            uint enter_amount = SafeMath.div(SafeMath.mul(token_balance, _position.supply_funds_percentage), 100);
+            supplyCream(_position.supply_crtoken, enter_amount);
+            _position.token_amount = IBEP20(_position.token).balanceOf(address(this));
+            _position.crtoken_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
         }
         
         if (_type == 1 || _type == 2) {
             // Borrowing position
             borrowPosition(_position);
+            _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
+            _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
         }
         
         if (_type == 1 || _type == 2 || _type == 3) {
             // Entering position
-            enter(self, _crtokens, _stablecoins, _position);    
+            enter(self, _crtokens, _stablecoins, _position); 
+            _position.lp_token_amount = IBEP20(_position.lp_token).balanceOf(address(this));
+            _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
+            _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
         }
         
         return _position;
@@ -345,25 +354,37 @@ library HighLevelSystem {
     /// @param _stablecoins refer StableCoin struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Main exit function to exit and repay a given position.
-    function exitPosition(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position, uint _type) public {
+    function exitPosition(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position, uint _type) public returns (Position memory) {
         
-        if (_type == 1) {
-            // Redeem position
-            uint exit_amount_a = IBEP20(_position.crtoken_a).balanceOf(address(this));
-            uint exit_amount_b = IBEP20(_position.crtoken_b).balanceOf(address(this));
-            redeemCream(_position.crtoken_a, exit_amount_a);
-            redeemCream(_position.crtoken_b, exit_amount_b);
+        if (_type == 1 || _type == 2 || _type == 3) {
+            // Exiting position
+            exit(self, _stablecoins, _position);
+            _position.lp_token_amount = IBEP20(_position.lp_token).balanceOf(address(this));
+            _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
+            _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
         }
         
         if (_type == 1 || _type == 2) {
-            // Exiting position
-            exit(self, _stablecoins, _position);
-        }
-        
-        if (_type == 1 || _type == 2 || _type == 3) {
             // Returning borrow
             returnBorrow(_crtokens, _stablecoins, _position);
+            _position.supply_crtoken_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
+            _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
+            _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
         }
+        
+        if (_type == 1) {
+            // Redeem position
+            uint exit_amount_a = IBEP20(_position.token_a).balanceOf(address(this));
+            uint exit_amount_b = IBEP20(_position.token_b).balanceOf(address(this));
+            redeemCream(_position.borrowed_crtoken_a, exit_amount_a);
+            redeemCream(_position.borrowed_crtoken_b, exit_amount_b);
+            _position.token_amount = IBEP20(_position.token).balanceOf(address(this));
+            _position.crtoken_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
+            _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
+            _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
+        }
+
+        return _position;
     }
 
     /// @param _crtokens refer CreamToken struct on the top.
@@ -371,11 +392,11 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Repay the tokens borrowed from cream.
     function returnBorrow(CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public {
-        uint borrowed_a = CreamExecution.getBorrowAmount(_position.crtoken_a, _crtokens.crWBNB);
-        uint borrowed_b = CreamExecution.getBorrowAmount(_position.crtoken_b, _crtokens.crWBNB);
+        uint borrowed_a = CreamExecution.getBorrowAmount(_position.borrowed_crtoken_a, _crtokens.crWBNB);
+        uint borrowed_b = CreamExecution.getBorrowAmount(_position.borrowed_crtoken_b, _crtokens.crWBNB);
 
-        uint current_a_balance = CreamExecution.getTokenBalance(_position.crtoken_a);
-        uint current_b_balance = CreamExecution.getTokenBalance(_position.crtoken_b);
+        uint current_a_balance = CreamExecution.getTokenBalance(_position.borrowed_crtoken_a);
+        uint current_b_balance = CreamExecution.getTokenBalance(_position.borrowed_crtoken_b);
 
         uint a_repay_amount;
         uint b_repay_amount;
@@ -394,14 +415,14 @@ library HighLevelSystem {
         // CrTokenAddress issue
         uint _isWBNB = isWBNB(_stablecoins, _position.token_a, _position.token_b);
         if (_isWBNB == 2) {
-            CreamExecution.repay(_position.crtoken_a, a_repay_amount);
-            CreamExecution.repay(_position.crtoken_b, b_repay_amount);
+            CreamExecution.repay(_position.borrowed_crtoken_a, a_repay_amount);
+            CreamExecution.repay(_position.borrowed_crtoken_b, b_repay_amount);
         } else if (_isWBNB == 1) {
-            CreamExecution.repayETH(_position.crtoken_a, a_repay_amount);
-            CreamExecution.repay(_position.crtoken_b, b_repay_amount);
+            CreamExecution.repayETH(_position.borrowed_crtoken_a, a_repay_amount);
+            CreamExecution.repay(_position.borrowed_crtoken_b, b_repay_amount);
         } else if (_isWBNB == 0)  {
-            CreamExecution.repay(_position.crtoken_a, a_repay_amount);
-            CreamExecution.repayETH(_position.crtoken_b, b_repay_amount);
+            CreamExecution.repay(_position.borrowed_crtoken_a, a_repay_amount);
+            CreamExecution.repayETH(_position.borrowed_crtoken_b, b_repay_amount);
         }
 
     }
@@ -409,8 +430,8 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Borrow the required tokens for a given position on CREAM.
     function borrowPosition(Position memory _position) public {
-        CreamExecution.borrow(_position.crtoken_a, _position.a_amount);
-        CreamExecution.borrow(_position.crtoken_b, _position.b_amount);
+        CreamExecution.borrow(_position.borrowed_crtoken_a, _position.token_a_amount);
+        CreamExecution.borrow(_position.borrowed_crtoken_b, _position.token_b_amount);
     }
 
     /// @param _stablecoins refer StableCoin struct on the top.
@@ -444,13 +465,13 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @dev Gets the total borrow limit for all positions on cream.
     function checkCurrentBorrowLimit(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public returns (uint) {
-        uint crtoken_a_supply_amount = CreamExecution.getUserTotalSupply(_position.crtoken_a);
-        uint crtoken_a_borrow_amount = CreamExecution.getBorrowAmount(_position.crtoken_a, _crtokens.crWBNB);
-        uint crtoken_a_limit = CreamExecution.getBorrowLimit(self.CreamConfig, _position.crtoken_a, _crtokens.crUSDC, _stablecoins.USDC, crtoken_a_supply_amount, crtoken_a_borrow_amount);
+        uint crtoken_a_supply_amount = CreamExecution.getUserTotalSupply(_position.borrowed_crtoken_a);
+        uint crtoken_a_borrow_amount = CreamExecution.getBorrowAmount(_position.borrowed_crtoken_a, _crtokens.crWBNB);
+        uint crtoken_a_limit = CreamExecution.getBorrowLimit(self.CreamConfig, _position.borrowed_crtoken_a, _crtokens.crUSDC, _stablecoins.USDC, crtoken_a_supply_amount, crtoken_a_borrow_amount);
 
-        uint crtoken_b_supply_amount = CreamExecution.getUserTotalSupply(_position.crtoken_a);
-        uint crtoken_b_borrow_amount = CreamExecution.getBorrowAmount(_position.crtoken_b, _crtokens.crWBNB);
-        uint crtoken_b_limit = CreamExecution.getBorrowLimit(self.CreamConfig, _position.crtoken_b, _crtokens.crUSDC, _stablecoins.USDC, crtoken_b_supply_amount, crtoken_b_borrow_amount);
+        uint crtoken_b_supply_amount = CreamExecution.getUserTotalSupply(_position.borrowed_crtoken_b);
+        uint crtoken_b_borrow_amount = CreamExecution.getBorrowAmount(_position.borrowed_crtoken_b, _crtokens.crWBNB);
+        uint crtoken_b_limit = CreamExecution.getBorrowLimit(self.CreamConfig, _position.borrowed_crtoken_b, _crtokens.crUSDC, _stablecoins.USDC, crtoken_b_supply_amount, crtoken_b_borrow_amount);
         return crtoken_a_limit + crtoken_b_limit;
     }
 
@@ -464,11 +485,11 @@ library HighLevelSystem {
     function checkPotentialBorrowLimit(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position, uint new_amount_a, uint new_amount_b) public returns (uint) {
         uint current_borrow_limit = checkCurrentBorrowLimit(self, _crtokens, _stablecoins, _position);
 
-        uint crtoken_a_supply_amount = CreamExecution.getUserTotalSupply(_position.crtoken_a);
-        uint borrow_limit_a = CreamExecution.getBorrowLimit(self.CreamConfig, _position.crtoken_a, _crtokens.crUSDC, _stablecoins.USDC, crtoken_a_supply_amount, new_amount_a);
+        uint crtoken_a_supply_amount = CreamExecution.getUserTotalSupply(_position.borrowed_crtoken_a);
+        uint borrow_limit_a = CreamExecution.getBorrowLimit(self.CreamConfig, _position.borrowed_crtoken_a, _crtokens.crUSDC, _stablecoins.USDC, crtoken_a_supply_amount, new_amount_a);
         
-        uint crtoken_b_supply_amount = CreamExecution.getUserTotalSupply(_position.crtoken_b);
-        uint borrow_limit_b = CreamExecution.getBorrowLimit(self.CreamConfig, _position.crtoken_b, _crtokens.crUSDC, _stablecoins.USDC, crtoken_b_supply_amount, new_amount_b);
+        uint crtoken_b_supply_amount = CreamExecution.getUserTotalSupply(_position.borrowed_crtoken_b);
+        uint borrow_limit_b = CreamExecution.getBorrowLimit(self.CreamConfig, _position.borrowed_crtoken_b, _crtokens.crUSDC, _stablecoins.USDC, crtoken_b_supply_amount, new_amount_b);
 
         return current_borrow_limit + borrow_limit_a + borrow_limit_b;
     }
@@ -479,12 +500,12 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Adds liquidity to a given pool.
     function addLiquidity(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public returns (uint) {
-        uint pair_price = getPrice(self, _crtokens, _stablecoins, _position.token_a, _position.token_b, _position.crtoken_a, _position.crtoken_b);
+        uint pair_price = getPrice(self, _crtokens, _stablecoins, _position.token_a, _position.token_b, _position.borrowed_crtoken_a, _position.borrowed_crtoken_b);
         uint price_decimals = PancakeSwapExecution.getPairDecimals(PancakeSwapExecution.getPair(self.PancakeSwapConfig, _position.token_a, _position.token_b));
 
         // make sure if one of the tokens is WBNB => have a minimum of 0.3 BNB in the wallet at all times
         // get a 50:50 split of the tokens in USD and make sure the two tokens are in correct order
-        (uint max_available_staking_a, uint max_available_staking_b) = PancakeSwapExecution.splitTokensEvenly(_position.a_amount, _position.b_amount, pair_price, price_decimals);
+        (uint max_available_staking_a, uint max_available_staking_b) = PancakeSwapExecution.splitTokensEvenly(_position.token_a_amount, _position.token_b_amount, pair_price, price_decimals);
 
         // todo check the lineups => amount for tokens a and tokens b is off
         (max_available_staking_a, max_available_staking_b) = PancakeSwapExecution.lineUpPairs(_position.token_a, _position.token_b, max_available_staking_a, max_available_staking_b, _position.lp_token);

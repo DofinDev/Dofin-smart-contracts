@@ -12,10 +12,10 @@ import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
 contract CashBox is BasicContract {
      
     using SafeMath for uint;
-    using HighLevelSystem for HighLevelSystem.HLSConfig;
-    using HighLevelSystem for HighLevelSystem.CreamToken;
-    using HighLevelSystem for HighLevelSystem.StableCoin;
-    using HighLevelSystem for HighLevelSystem.Position;
+    // using HighLevelSystem for HighLevelSystem.HLSConfig;
+    // using HighLevelSystem for HighLevelSystem.CreamToken;
+    // using HighLevelSystem for HighLevelSystem.StableCoin;
+    // using HighLevelSystem for HighLevelSystem.Position;
     
     // Link
     // address private link_oracle;
@@ -53,10 +53,10 @@ contract CashBox is BasicContract {
     uint8 public constant decimals = 18;
     uint256 private totalSupply_;
     
-    address private constant Token = 0x71d82Eb6A5051CfF99582F4CDf2aE9cD402A4882;
-    address public dofin;
-    uint public deposit_limit;
-    uint public add_funds_condition;
+    bool public activable;
+    address private dofin;
+    uint private deposit_limit;
+    uint private add_funds_condition;
     
     event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
     event Transfer(address indexed from, address indexed to, uint tokens);
@@ -64,34 +64,72 @@ contract CashBox is BasicContract {
     mapping(address => uint256) private balances;
     mapping(address => mapping (address => uint256)) private allowed;
      
-    constructor(address[] memory _config, address[] memory _creamtokens, address[] memory _stablecoins, uint[] memory _uints, address[] memory _addrs, address _dofin, uint _deposit_limit, uint add_funds_condition) {
-        setConfig(_config);
-        setCreamTokens(_creamtokens);
-        setStableCoins(_stablecoins);
+    // constructor(address[] memory _config, address[] memory _creamtokens, address[] memory _stablecoins, uint[] memory _uints, address[] memory _addrs, address _dofin, uint _deposit_limit, uint _add_funds_condition) {
+    //     setConfig(_config);
+    //     setCreamTokens(_creamtokens);
+    //     setStableCoins(_stablecoins);
+    //     position = HighLevelSystem.Position({
+    //         pool_id: _uints[0],
+    //         token_amount: 0,
+    //         token_a_amount: 0,
+    //         token_b_amount: 0,
+    //         lp_token_amount: 0,
+    //         crtoken_amount: 0,
+    //         supply_crtoken_amount: 0,
+    //         token: _addrs[0],
+    //         token_a: _addrs[1],
+    //         token_b: _addrs[2],
+    //         lp_token: _addrs[3],
+    //         supply_crtoken: _addrs[4],
+    //         borrowed_crtoken_a: _addrs[5],
+    //         borrowed_crtoken_b: _addrs[6],
+    //         max_amount_per_position: _uints[1],
+    //         supply_funds_percentage: _uints[2]
+    //     });
+        
+    //     activable = true;
+    //     dofin = _dofin;
+    //     deposit_limit = _deposit_limit;
+    //     add_funds_condition = add_funds_condition;
+    // }
+
+    constructor(uint[] memory _uints, address[] memory _addrs, address _dofin, uint _deposit_limit, uint _add_funds_condition) {
         position = HighLevelSystem.Position({
             pool_id: _uints[0],
-            a_amount: 0,
-            b_amount: 0,
-            token_a: _addrs[0],
-            token_b: _addrs[1],
-            lp_token: _addrs[2],
-            crtoken_a: _addrs[3],
-            crtoken_b: _addrs[4],
+            token_amount: 0,
+            token_a_amount: 0,
+            token_b_amount: 0,
+            lp_token_amount: 0,
+            crtoken_amount: 0,
+            supply_crtoken_amount: 0,
+            token: _addrs[0],
+            token_a: _addrs[1],
+            token_b: _addrs[2],
+            lp_token: _addrs[3],
+            supply_crtoken: _addrs[4],
+            borrowed_crtoken_a: _addrs[5],
+            borrowed_crtoken_b: _addrs[6],
             max_amount_per_position: _uints[1],
-            freefunds_percentage: _uints[2]
+            supply_funds_percentage: _uints[2]
         });
         
+        activable = true;
         dofin = _dofin;
         deposit_limit = _deposit_limit;
         add_funds_condition = add_funds_condition;
+    }
+
+    modifier checkActivable() {
+        require(activable == true, 'CashBox is not activable.');
+        _;
     }
     
     function setConfig(address[] memory _config) public onlyOwner {
         HLSConfig.LinkConfig.oracle = _config[0];
         HLSConfig.CreamConfig.oracle = _config[1];
-        HLSConfig.PancakeSwapConfig.router = _config[3];
-        HLSConfig.PancakeSwapConfig.factory = _config[4];
-        HLSConfig.PancakeSwapConfig.masterchef = _config[5];
+        HLSConfig.PancakeSwapConfig.router = _config[2];
+        HLSConfig.PancakeSwapConfig.factory = _config[3];
+        HLSConfig.PancakeSwapConfig.masterchef = _config[4];
     }
     
     function setCreamTokens(address[] memory _creamtokens) public onlyOwner {
@@ -108,32 +146,37 @@ contract CashBox is BasicContract {
         StableCoin.BUSD = _stablecoins[4];
         StableCoin.USDC = _stablecoins[5];
     }
+
+    function setActivable(bool _activable) public onlyOwner {
+        
+        activable = _activable;
+    }
     
     function getPosition() public onlyOwner view returns(HighLevelSystem.Position memory) {
         
         return position;
     }
     
-    function reblanceWithRepay() public onlyOwner {
+    function reblanceWithRepay() public onlyOwner checkActivable {
         HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 3);
         position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 3);
     }
     
-    function reblanceWithoutRepay() public onlyOwner {
+    function reblanceWithoutRepay() public onlyOwner checkActivable {
         HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 2);
         position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 2);
     }
     
-    function reblance() public onlyOwner {
+    function reblance() public onlyOwner checkActivable  {
         HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 1);
         position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 1);
     }
     
     function checkAddNewFunds() public {
-        uint free_funds = IBEP20(Token).balanceOf(address(this));
-        uint condition = SafeMath.mul(add_funds_condition, 10**IBEP20(Token).decimals());
+        uint free_funds = IBEP20(position.token).balanceOf(address(this));
+        uint condition = SafeMath.mul(add_funds_condition, 10**IBEP20(position.token).decimals());
         if (free_funds >= condition) {
-            if (position.a_amount == 0 && position.b_amount == 0) {
+            if (position.token_a_amount == 0 && position.token_b_amount == 0) {
                 checkEntry();
             } else {
                 reblance();
@@ -141,7 +184,7 @@ contract CashBox is BasicContract {
         }
     }
     
-    function checkEntry() public onlyOwner {
+    function checkEntry() public onlyOwner checkActivable {
         
         position = HighLevelSystem.checkEntry(HLSConfig, CreamToken, StableCoin, position);
     }
@@ -217,7 +260,7 @@ contract CashBox is BasicContract {
     
     function getTotalAssets() public view returns (uint) {
         // Cream borrowed amount
-        (uint crtoken_a_debt, uint crtoken_b_debt) = HighLevelSystem.getTotalBorrowAmount(CreamToken, position.crtoken_a, position.crtoken_b);
+        (uint crtoken_a_debt, uint crtoken_b_debt) = HighLevelSystem.getTotalBorrowAmount(CreamToken, position.borrowed_crtoken_a, position.borrowed_crtoken_b);
         // PancakeSwap pending cake amount
         uint pending_cake_amount = HighLevelSystem.getTotalCakePendingRewards(HLSConfig, position.pool_id);
         // PancakeSwap staked amount
@@ -225,13 +268,13 @@ contract CashBox is BasicContract {
         
         uint total_assets = SafeMath.sub(SafeMath.add(token_a_amount, token_b_amount), SafeMath.add(crtoken_a_debt, crtoken_b_debt));
         total_assets = SafeMath.add(total_assets, pending_cake_amount);
-        total_assets = SafeMath.add(total_assets, IBEP20(Token).balanceOf(address(this)));
+        total_assets = SafeMath.add(total_assets, IBEP20(position.token).balanceOf(address(this)));
         return total_assets;
     }
     
-    function deposit(address _token, uint _deposit_amount) public returns (bool) {
-        require(_deposit_amount <= SafeMath.mul(deposit_limit, 10**IBEP20(Token).decimals()), "Deposit too much!");
-        require(_token == Token, "Wrong token to deposit.");
+    function deposit(address _token, uint _deposit_amount) public checkActivable returns (bool) {
+        require(_deposit_amount <= SafeMath.mul(deposit_limit, 10**IBEP20(position.token).decimals()), "Deposit too much!");
+        require(_token == position.token, "Wrong token to deposit.");
         require(_deposit_amount > 0, "Deposit amount must bigger than 0.");
         
         // Calculation of pToken amount need to mint
@@ -245,7 +288,7 @@ contract CashBox is BasicContract {
         
         // Mint pToken and transfer Token to cashbox
         mint(msg.sender, shares);
-        IBEP20(Token).transferFrom(msg.sender, address(this), _deposit_amount);
+        IBEP20(position.token).transferFrom(msg.sender, address(this), _deposit_amount);
         
         // Check need to supply or not.
         checkAddNewFunds();
@@ -261,27 +304,27 @@ contract CashBox is BasicContract {
         return user_value;
     }
     
-    function withdraw(uint _withdraw_amount) public returns (bool) {
+    function withdraw(uint _withdraw_amount) public checkActivable returns (bool) {
         require(_withdraw_amount <= balanceOf(msg.sender), "Wrong amount to withdraw.");
         
-        uint freeFunds = IBEP20(Token).balanceOf(address(this));
+        uint freeFunds = IBEP20(position.token).balanceOf(address(this));
         uint totalAssets = getTotalAssets();
         uint value = SafeMath.div(SafeMath.mul(_withdraw_amount, totalAssets), totalSupply_);
-        bool entry = false;
+        bool need_rebalance = false;
         // If no enough amount of free funds can transfer will trigger exit position
         if (value > freeFunds) {
             HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 1);
-            entry = true;
+            need_rebalance = true;
         }
         
         // Will charge 20% fees
         burn(msg.sender, _withdraw_amount);
         uint dofin_value = SafeMath.div(SafeMath.mul(20, value), 100);
         uint user_value = SafeMath.div(SafeMath.mul(80, value), 100);
-        IBEP20(Token).transferFrom(address(this), dofin, dofin_value);
-        IBEP20(Token).transferFrom(address(this), msg.sender, user_value);
+        IBEP20(position.token).transferFrom(address(this), dofin, dofin_value);
+        IBEP20(position.token).transferFrom(address(this), msg.sender, user_value);
         
-        if (entry == true) {
+        if (need_rebalance == true) {
             HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 1);
         }
         

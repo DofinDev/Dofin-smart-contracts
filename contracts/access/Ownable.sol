@@ -41,7 +41,9 @@ contract Ownable is Context {
      * @dev Throws if called by any account other than the owner.
      */
     modifier onlyOwner() {
+        // Unit test need to comment this line.
         require(_owner == _msgSender(), 'Ownable: caller is not the owner');
+        // require(_owner != address(0), 'Ownable: caller is not the owner');
         _;
     }
 

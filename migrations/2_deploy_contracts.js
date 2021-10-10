@@ -14,6 +14,8 @@ var LinkBSCOracle = artifacts.require("./libs/LinkBSCOracle.sol");
 var CreamExecution = artifacts.require("./libs/CreamExecution.sol");
 var PancakeSwapExecution = artifacts.require("./libs/PancakeSwapExecution.sol");
 var HighLevelSystem = artifacts.require("./libs/HighLevelSystem.sol");
+// Contract
+var CashBox = artifacts.require("./CashBox.sol");
 
 module.exports = async function(deployer, network, accounts) {
   await deployer.deploy(SimpleStorage);
@@ -41,4 +43,13 @@ module.exports = async function(deployer, network, accounts) {
   await deployer.link(CreamExecution, HighLevelSystem);
   await deployer.link(PancakeSwapExecution, HighLevelSystem);
   await deployer.deploy(HighLevelSystem);
+
+  // testing CashBox contract
+  await deployer.link(HighLevelSystem, CashBox);
+  var _uints = [10, 10, 10];
+  var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakePancakePair.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address];
+  var _dofin = '0x0000000000000000000000000000000000000000';
+  var _deposit_limit = 100000;
+  var _add_funds_condition = 100000;
+  await deployer.deploy(CashBox, _uints, _addrs, _dofin, _deposit_limit, _add_funds_condition);
 };

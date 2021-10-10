@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.4.15 <0.9.0;
 
 import "truffle/Assert.sol";
@@ -16,10 +17,10 @@ contract TestHighLevelSystem {
   address public FakeMasterChefAddress = DeployedAddresses.FakeMasterChef();
   address public FakePancakeRouterAddress = DeployedAddresses.FakePancakeRouter();
 
-  HighLevelSystem.HLSConfig public HLSConfig;
-  HighLevelSystem.CreamToken public CreamToken;
-  HighLevelSystem.StableCoin public StableCoin;
-  HighLevelSystem.Position public Position;
+  HighLevelSystem.HLSConfig private HLSConfig;
+  HighLevelSystem.CreamToken private CreamToken;
+  HighLevelSystem.StableCoin private StableCoin;
+  HighLevelSystem.Position private Position;
 
   function beforeEach() public {
     HLSConfig.LinkConfig.oracle = FakeLinkBSCOracleAddress;
@@ -45,15 +46,21 @@ contract TestHighLevelSystem {
 
     Position = HighLevelSystem.Position({
       pool_id: 10,
-      a_amount: 10,
-      b_amount: 10,
+      token_amount: 10,
+      token_a_amount: 10,
+      token_b_amount: 10,
+      lp_token_amount: 10,
+      crtoken_amount: 10,
+      supply_crtoken_amount: 10,
+      token: FakeFakeIBEP20Address,
       token_a: FakeFakeIBEP20Address,
       token_b: FakeFakeIBEP20Address,
       lp_token: FakePancakePairAddress,
-      crtoken_a: FakeCErc20DelegatorAddress,
-      crtoken_b: FakeCErc20DelegatorAddress,
+      supply_crtoken: FakeCErc20DelegatorAddress,
+      borrowed_crtoken_a: FakeCErc20DelegatorAddress,
+      borrowed_crtoken_b: FakeCErc20DelegatorAddress,
       max_amount_per_position: 10,
-      freefunds_percentage: 5
+      supply_funds_percentage: 95
     });
   }
 
@@ -115,27 +122,39 @@ contract TestHighLevelSystem {
     HighLevelSystem.Position memory result = HighLevelSystem.checkEntry(HLSConfig, CreamToken, StableCoin, Position);
     HighLevelSystem.Position memory expected = HighLevelSystem.Position({
       pool_id: 10,
-      a_amount: 10,
-      b_amount: 10,
+      token_amount: 10,
+      token_a_amount: 10,
+      token_b_amount: 10,
+      lp_token_amount: 10,
+      crtoken_amount: 10,
+      supply_crtoken_amount: 10,
+      token: FakeFakeIBEP20Address,
       token_a: FakeFakeIBEP20Address,
       token_b: FakeFakeIBEP20Address,
       lp_token: FakePancakePairAddress,
-      crtoken_a: FakeCErc20DelegatorAddress,
-      crtoken_b: FakeCErc20DelegatorAddress,
+      supply_crtoken: FakeCErc20DelegatorAddress,
+      borrowed_crtoken_a: FakeCErc20DelegatorAddress,
+      borrowed_crtoken_b: FakeCErc20DelegatorAddress,
       max_amount_per_position: 10,
-      freefunds_percentage: 5
+      supply_funds_percentage: 95
     });
 
     Assert.equal(result.pool_id, expected.pool_id, "It should get the position data pool_id.");
-    Assert.equal(result.a_amount, expected.a_amount, "It should get the position data a_amount.");
-    Assert.equal(result.b_amount, expected.b_amount, "It should get the position data b_amount.");
+    Assert.equal(result.token_amount, expected.token_amount, "It should get the position data token_amount.");
+    Assert.equal(result.token_a_amount, expected.token_a_amount, "It should get the position data token_a_amount.");
+    Assert.equal(result.token_b_amount, expected.token_b_amount, "It should get the position data token_b_amount.");
+    Assert.equal(result.lp_token_amount, expected.lp_token_amount, "It should get the position data lp_token_amount.");
+    Assert.equal(result.crtoken_amount, expected.crtoken_amount, "It should get the position data crtoken_amount.");
+    Assert.equal(result.supply_crtoken_amount, expected.supply_crtoken_amount, "It should get the position data supply_crtoken_amount.");
+    Assert.equal(result.token, expected.token, "It should get the position data token.");
     Assert.equal(result.token_a, expected.token_a, "It should get the position data token_a.");
     Assert.equal(result.token_b, expected.token_b, "It should get the position data token_b.");
     Assert.equal(result.lp_token, expected.lp_token, "It should get the position data lp_token.");
-    Assert.equal(result.crtoken_a, expected.crtoken_a, "It should get the position data crtoken_a.");
-    Assert.equal(result.crtoken_b, expected.crtoken_b, "It should get the position data crtoken_b.");
+    Assert.equal(result.supply_crtoken, expected.supply_crtoken, "It should get the position data supply_crtoken.");
+    Assert.equal(result.borrowed_crtoken_a, expected.borrowed_crtoken_a, "It should get the position data borrowed_crtoken_a.");
+    Assert.equal(result.borrowed_crtoken_b, expected.borrowed_crtoken_b, "It should get the position data borrowed_crtoken_b.");
     Assert.equal(result.max_amount_per_position, expected.max_amount_per_position, "It should get the position data max_amount_per_position.");
-    Assert.equal(result.freefunds_percentage, expected.freefunds_percentage, "It should get the position data freefunds_percentage.");
+    Assert.equal(result.supply_funds_percentage, expected.supply_funds_percentage, "It should get the position data supply_funds_percentage.");
   }
 
   function testExit() public {
@@ -229,27 +248,39 @@ contract TestHighLevelSystem {
     HighLevelSystem.Position memory result = HighLevelSystem.generatePosition(HLSConfig, CreamToken, StableCoin, Position);
     HighLevelSystem.Position memory expected = HighLevelSystem.Position({
       pool_id: 10,
-      a_amount: 0,
-      b_amount: 0,
+      token_amount: 10,
+      token_a_amount: 0,
+      token_b_amount: 0,
+      lp_token_amount: 10,
+      crtoken_amount: 10,
+      supply_crtoken_amount: 10,
+      token: FakeFakeIBEP20Address,
       token_a: FakeFakeIBEP20Address,
       token_b: FakeFakeIBEP20Address,
       lp_token: FakePancakePairAddress,
-      crtoken_a: FakeCErc20DelegatorAddress,
-      crtoken_b: FakeCErc20DelegatorAddress,
+      supply_crtoken: FakeCErc20DelegatorAddress,
+      borrowed_crtoken_a: FakeCErc20DelegatorAddress,
+      borrowed_crtoken_b: FakeCErc20DelegatorAddress,
       max_amount_per_position: 10,
-      freefunds_percentage: 5
+      supply_funds_percentage: 95
     });
 
     Assert.equal(result.pool_id, expected.pool_id, "It should get the position data pool_id.");
-    Assert.equal(result.a_amount, expected.a_amount, "It should get the position data a_amount.");
-    Assert.equal(result.b_amount, expected.b_amount, "It should get the position data b_amount.");
+    Assert.equal(result.token_amount, expected.token_amount, "It should get the position data token_amount.");
+    Assert.equal(result.token_a_amount, expected.token_a_amount, "It should get the position data token_a_amount.");
+    Assert.equal(result.token_b_amount, expected.token_b_amount, "It should get the position data token_b_amount.");
+    Assert.equal(result.lp_token_amount, expected.lp_token_amount, "It should get the position data lp_token_amount.");
+    Assert.equal(result.crtoken_amount, expected.crtoken_amount, "It should get the position data crtoken_amount.");
+    Assert.equal(result.supply_crtoken_amount, expected.supply_crtoken_amount, "It should get the position data supply_crtoken_amount.");
+    Assert.equal(result.token, expected.token, "It should get the position data token.");
     Assert.equal(result.token_a, expected.token_a, "It should get the position data token_a.");
     Assert.equal(result.token_b, expected.token_b, "It should get the position data token_b.");
     Assert.equal(result.lp_token, expected.lp_token, "It should get the position data lp_token.");
-    Assert.equal(result.crtoken_a, expected.crtoken_a, "It should get the position data crtoken_a.");
-    Assert.equal(result.crtoken_b, expected.crtoken_b, "It should get the position data crtoken_b.");
+    Assert.equal(result.supply_crtoken, expected.supply_crtoken, "It should get the position data supply_crtoken.");
+    Assert.equal(result.borrowed_crtoken_a, expected.borrowed_crtoken_a, "It should get the position data borrowed_crtoken_a.");
+    Assert.equal(result.borrowed_crtoken_b, expected.borrowed_crtoken_b, "It should get the position data borrowed_crtoken_b.");
     Assert.equal(result.max_amount_per_position, expected.max_amount_per_position, "It should get the position data max_amount_per_position.");
-    Assert.equal(result.freefunds_percentage, expected.freefunds_percentage, "It should get the position data freefunds_percentage.");
+    Assert.equal(result.supply_funds_percentage, expected.supply_funds_percentage, "It should get the position data supply_funds_percentage.");
   }
 
   function testEnterPosition() public {
@@ -259,73 +290,109 @@ contract TestHighLevelSystem {
     HighLevelSystem.Position memory  result_3 = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, Position, 3);
     HighLevelSystem.Position memory expected_1 = HighLevelSystem.Position({
       pool_id: 10,
-      a_amount: 0,
-      b_amount: 0,
+      token_amount: 10,
+      token_a_amount: 10,
+      token_b_amount: 10,
+      lp_token_amount: 10,
+      crtoken_amount: 10,
+      supply_crtoken_amount: 10,
+      token: FakeFakeIBEP20Address,
       token_a: FakeFakeIBEP20Address,
       token_b: FakeFakeIBEP20Address,
       lp_token: FakePancakePairAddress,
-      crtoken_a: FakeCErc20DelegatorAddress,
-      crtoken_b: FakeCErc20DelegatorAddress,
+      supply_crtoken: FakeCErc20DelegatorAddress,
+      borrowed_crtoken_a: FakeCErc20DelegatorAddress,
+      borrowed_crtoken_b: FakeCErc20DelegatorAddress,
       max_amount_per_position: 10,
-      freefunds_percentage: 5
+      supply_funds_percentage: 95
     });
     HighLevelSystem.Position memory expected_2 = HighLevelSystem.Position({
       pool_id: 10,
-      a_amount: 10,
-      b_amount: 10,
+      token_amount: 10,
+      token_a_amount: 10,
+      token_b_amount: 10,
+      lp_token_amount: 10,
+      crtoken_amount: 10,
+      supply_crtoken_amount: 10,
+      token: FakeFakeIBEP20Address,
       token_a: FakeFakeIBEP20Address,
       token_b: FakeFakeIBEP20Address,
       lp_token: FakePancakePairAddress,
-      crtoken_a: FakeCErc20DelegatorAddress,
-      crtoken_b: FakeCErc20DelegatorAddress,
+      supply_crtoken: FakeCErc20DelegatorAddress,
+      borrowed_crtoken_a: FakeCErc20DelegatorAddress,
+      borrowed_crtoken_b: FakeCErc20DelegatorAddress,
       max_amount_per_position: 10,
-      freefunds_percentage: 5
+      supply_funds_percentage: 95
     });
     HighLevelSystem.Position memory expected_3 = HighLevelSystem.Position({
       pool_id: 10,
-      a_amount: 10,
-      b_amount: 10,
+      token_amount: 10,
+      token_a_amount: 10,
+      token_b_amount: 10,
+      lp_token_amount: 10,
+      crtoken_amount: 10,
+      supply_crtoken_amount: 10,
+      token: FakeFakeIBEP20Address,
       token_a: FakeFakeIBEP20Address,
       token_b: FakeFakeIBEP20Address,
       lp_token: FakePancakePairAddress,
-      crtoken_a: FakeCErc20DelegatorAddress,
-      crtoken_b: FakeCErc20DelegatorAddress,
+      supply_crtoken: FakeCErc20DelegatorAddress,
+      borrowed_crtoken_a: FakeCErc20DelegatorAddress,
+      borrowed_crtoken_b: FakeCErc20DelegatorAddress,
       max_amount_per_position: 10,
-      freefunds_percentage: 5
+      supply_funds_percentage: 95
     });
 
     Assert.equal(result_1.pool_id, expected_1.pool_id, "It should get the type1 of position data pool_id.");
-    Assert.equal(result_1.a_amount, expected_1.a_amount, "It should get the type1 of position data a_amount.");
-    Assert.equal(result_1.b_amount, expected_1.b_amount, "It should get the type1 of position data b_amount.");
+    Assert.equal(result_1.token_amount, expected_1.token_amount, "It should get the type1 of position data token_amount.");
+    Assert.equal(result_1.token_a_amount, expected_1.token_a_amount, "It should get the type1 of position data token_a_amount.");
+    Assert.equal(result_1.token_b_amount, expected_1.token_b_amount, "It should get the type1 of position data token_b_amount.");
+    Assert.equal(result_1.lp_token_amount, expected_1.lp_token_amount, "It should get the type1 of position data lp_token_amount.");
+    Assert.equal(result_1.crtoken_amount, expected_1.crtoken_amount, "It should get the type1 of position data crtoken_amount.");
+    Assert.equal(result_1.supply_crtoken_amount, expected_1.supply_crtoken_amount, "It should get the type1 of position data supply_crtoken_amount.");
+    Assert.equal(result_1.token, expected_1.token, "It should get the type1 of position data token.");
     Assert.equal(result_1.token_a, expected_1.token_a, "It should get the type1 of position data token_a.");
     Assert.equal(result_1.token_b, expected_1.token_b, "It should get the type1 of position data token_b.");
     Assert.equal(result_1.lp_token, expected_1.lp_token, "It should get the type1 of position data lp_token.");
-    Assert.equal(result_1.crtoken_a, expected_1.crtoken_a, "It should get the type1 of position data crtoken_a.");
-    Assert.equal(result_1.crtoken_b, expected_1.crtoken_b, "It should get the type1 of position data crtoken_b.");
-    Assert.equal(result_1.max_amount_per_position, expected_1.max_amount_per_position, "It should get the position data max_amount_per_position.");
-    Assert.equal(result_1.freefunds_percentage, expected_1.freefunds_percentage, "It should get the position data freefunds_percentage.");
+    Assert.equal(result_1.supply_crtoken, expected_1.supply_crtoken, "It should get the type1 of position data supply_crtoken.");
+    Assert.equal(result_1.borrowed_crtoken_a, expected_1.borrowed_crtoken_a, "It should get the type1 of position data borrowed_crtoken_a.");
+    Assert.equal(result_1.borrowed_crtoken_b, expected_1.borrowed_crtoken_b, "It should get the type1 of position data borrowed_crtoken_b.");
+    Assert.equal(result_1.max_amount_per_position, expected_1.max_amount_per_position, "It should get the type1 of position data max_amount_per_position.");
+    Assert.equal(result_1.supply_funds_percentage, expected_1.supply_funds_percentage, "It should get the type1 of position data supply_funds_percentage.");
 
     Assert.equal(result_2.pool_id, expected_2.pool_id, "It should get the type2 of position data pool_id.");
-    Assert.equal(result_2.a_amount, expected_2.a_amount, "It should get the type2 of position data a_amount.");
-    Assert.equal(result_2.b_amount, expected_2.b_amount, "It should get the type2 of position data b_amount.");
+    Assert.equal(result_2.token_amount, expected_2.token_amount, "It should get the type2 of position data token_amount.");
+    Assert.equal(result_2.token_a_amount, expected_2.token_a_amount, "It should get the type2 of position data token_a_amount.");
+    Assert.equal(result_2.token_b_amount, expected_2.token_b_amount, "It should get the type2 of position data token_b_amount.");
+    Assert.equal(result_2.lp_token_amount, expected_2.lp_token_amount, "It should get the type2 of position data lp_token_amount.");
+    Assert.equal(result_2.crtoken_amount, expected_2.crtoken_amount, "It should get the type2 of position data crtoken_amount.");
+    Assert.equal(result_2.supply_crtoken_amount, expected_2.supply_crtoken_amount, "It should get the type2 of position data supply_crtoken_amount.");
+    Assert.equal(result_2.token, expected_2.token, "It should get the type2 of position data token.");
     Assert.equal(result_2.token_a, expected_2.token_a, "It should get the type2 of position data token_a.");
     Assert.equal(result_2.token_b, expected_2.token_b, "It should get the type2 of position data token_b.");
     Assert.equal(result_2.lp_token, expected_2.lp_token, "It should get the type2 of position data lp_token.");
-    Assert.equal(result_2.crtoken_a, expected_2.crtoken_a, "It should get the type2 of position data crtoken_a.");
-    Assert.equal(result_2.crtoken_b, expected_2.crtoken_b, "It should get the type2 of position data crtoken_b.");
+    Assert.equal(result_2.supply_crtoken, expected_2.supply_crtoken, "It should get the type2 of position data supply_crtoken.");
+    Assert.equal(result_2.borrowed_crtoken_a, expected_2.borrowed_crtoken_a, "It should get the type2 of position data borrowed_crtoken_a.");
+    Assert.equal(result_2.borrowed_crtoken_b, expected_2.borrowed_crtoken_b, "It should get the type2 of position data borrowed_crtoken_b.");
     Assert.equal(result_2.max_amount_per_position, expected_2.max_amount_per_position, "It should get the type2 of position data max_amount_per_position.");
-    Assert.equal(result_2.freefunds_percentage, expected_2.freefunds_percentage, "It should get the type2 of position data freefunds_percentage.");
+    Assert.equal(result_2.supply_funds_percentage, expected_2.supply_funds_percentage, "It should get the type2 of position data supply_funds_percentage.");
 
     Assert.equal(result_3.pool_id, expected_3.pool_id, "It should get the type3 of position data pool_id.");
-    Assert.equal(result_3.a_amount, expected_3.a_amount, "It should get the type3 of position data a_amount.");
-    Assert.equal(result_3.b_amount, expected_3.b_amount, "It should get the type3 of position data b_amount.");
+    Assert.equal(result_3.token_amount, expected_3.token_amount, "It should get the type3 of position data token_amount.");
+    Assert.equal(result_3.token_a_amount, expected_3.token_a_amount, "It should get the type3 of position data token_a_amount.");
+    Assert.equal(result_3.token_b_amount, expected_3.token_b_amount, "It should get the type3 of position data token_b_amount.");
+    Assert.equal(result_3.lp_token_amount, expected_3.lp_token_amount, "It should get the type3 of position data lp_token_amount.");
+    Assert.equal(result_3.crtoken_amount, expected_3.crtoken_amount, "It should get the type3 of position data crtoken_amount.");
+    Assert.equal(result_3.supply_crtoken_amount, expected_3.supply_crtoken_amount, "It should get the type3 of position data supply_crtoken_amount.");
+    Assert.equal(result_3.token, expected_3.token, "It should get the type3 of position data token.");
     Assert.equal(result_3.token_a, expected_3.token_a, "It should get the type3 of position data token_a.");
     Assert.equal(result_3.token_b, expected_3.token_b, "It should get the type3 of position data token_b.");
     Assert.equal(result_3.lp_token, expected_3.lp_token, "It should get the type3 of position data lp_token.");
-    Assert.equal(result_3.crtoken_a, expected_3.crtoken_a, "It should get the type3 of position data crtoken_a.");
-    Assert.equal(result_3.crtoken_b, expected_3.crtoken_b, "It should get the type3 of position data crtoken_b.");
+    Assert.equal(result_3.supply_crtoken, expected_3.supply_crtoken, "It should get the type3 of position data supply_crtoken.");
+    Assert.equal(result_3.borrowed_crtoken_a, expected_3.borrowed_crtoken_a, "It should get the type3 of position data borrowed_crtoken_a.");
+    Assert.equal(result_3.borrowed_crtoken_b, expected_3.borrowed_crtoken_b, "It should get the type3 of position data borrowed_crtoken_b.");
     Assert.equal(result_3.max_amount_per_position, expected_3.max_amount_per_position, "It should get the type3 of position data max_amount_per_position.");
-    Assert.equal(result_3.freefunds_percentage, expected_3.freefunds_percentage, "It should get the type3 of position data freefunds_percentage.");
+    Assert.equal(result_3.supply_funds_percentage, expected_3.supply_funds_percentage, "It should get the type3 of position data supply_funds_percentage.");
   }
 
   function testExitPosition() public {

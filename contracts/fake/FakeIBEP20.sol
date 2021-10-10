@@ -22,5 +22,10 @@ contract FakeIBEP20 {
 
     return "symbol";
   }
+
+  function transferFrom(address sender, address recipient, uint256 amount) external returns (bool) {
+
+    return true;
+  }
   
 }
