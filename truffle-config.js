@@ -1,3 +1,7 @@
+const HDWalletProvider = require('@truffle/hdwallet-provider');
+const fs = require('fs');
+const BSCTestnet_mnemonic = fs.readFileSync("BSCTestnet.secret").toString().trim();
+const BSCMainnet_mnemonic = fs.readFileSync("BSCMainnet.secret").toString().trim();
 const path = require("path");
 
 module.exports = {
@@ -25,7 +29,23 @@ module.exports = {
   contracts_build_directory: path.join(__dirname, "client/src/contracts"),
   networks: {
     develop: {
-      port: 8545
+      host: "127.0.0.1",
+      port: 7545,
+      network_id: "*",
+    },
+    BSCTestnet: {
+      provider: () => new HDWalletProvider(BSCTestnet_mnemonic, `https://data-seed-prebsc-1-s1.binance.org:8545`),
+      network_id: 97,
+      confirmations: 10,
+      timeoutBlocks: 200,
+      skipDryRun: true
+    },
+    BSCMainnet: {
+      provider: () => new HDWalletProvider(BSCMainnet_mnemonic, `https://bsc-dataseed1.binance.org`),
+      network_id: 56,
+      confirmations: 10,
+      timeoutBlocks: 200,
+      skipDryRun: true
     }
   }
 };

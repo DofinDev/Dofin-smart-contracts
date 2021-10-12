@@ -188,6 +188,11 @@ contract CashBox is BasicContract {
         
         position = HighLevelSystem.checkEntry(HLSConfig, CreamToken, StableCoin, position);
     }
+
+    function exit(uint _type) public onlyOwner checkActivable {
+        
+        HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, _type);
+    }
     
     function checkCurrentBorrowLimit() onlyOwner public returns (uint) {
         

@@ -105,6 +105,13 @@ contract TestCashBox {
 		cashBox.checkAddNewFunds();
 	}
 
+	function testExit() public {
+		// Testing
+		cashBox.exit(1);
+		cashBox.exit(2);
+		cashBox.exit(3);
+	}
+
 	function testCheckEntry() public {
 		// Testing
 		cashBox.checkEntry();
