@@ -7,8 +7,8 @@
 package-lock.json
 package.json
 
-# Secret files
-*.secret
+# ENV file
+env.json
 
 # Node artifact files
 node_modules/
