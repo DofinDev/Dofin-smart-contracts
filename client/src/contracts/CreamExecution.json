@@ -18,7 +18,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -37,7 +38,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -56,7 +58,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -80,7 +83,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -111,7 +115,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -142,7 +147,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -173,7 +179,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -192,7 +199,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -243,7 +251,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -262,7 +271,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -281,7 +291,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -322,7 +333,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -341,7 +353,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     }
   ],
   "metadata": "{\"compiler\":{\"version\":\"0.8.9+commit.e5eed63a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"crtoken_address\",\"type\":\"address\"}],\"name\":\"getAvailableBorrow\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"crtoken_address\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"crWBNB_address\",\"type\":\"address\"}],\"name\":\"getBorrowAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"oracle\",\"type\":\"address\"}],\"internalType\":\"struct CreamExecution.CreamConfig\",\"name\":\"self\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"borrow_crtoken_address\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"crUSDC_address\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"USDC_address\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"supply_amount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"borrow_amount\",\"type\":\"uint256\"}],\"name\":\"getBorrowLimit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"crtoken_address\",\"type\":\"address\"}],\"name\":\"getBorrowRate\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"oracle\",\"type\":\"address\"}],\"internalType\":\"struct CreamExecution.CreamConfig\",\"name\":\"self\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"crtoken_address\",\"type\":\"address\"}],\"name\":\"getCrTokenBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"crtoken_address\",\"type\":\"address\"}],\"name\":\"getExchangeRate\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"crtoken_address\",\"type\":\"address\"}],\"name\":\"getSupplyRate\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token_address\",\"type\":\"address\"}],\"name\":\"getTokenBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"oracle\",\"type\":\"address\"}],\"internalType\":\"struct CreamExecution.CreamConfig\",\"name\":\"self\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"crtoken_address\",\"type\":\"address\"}],\"name\":\"getTokenPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"oracle\",\"type\":\"address\"}],\"internalType\":\"struct CreamExecution.CreamConfig\",\"name\":\"self\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"crUSDC_address\",\"type\":\"address\"}],\"name\":\"getUSDCBNBPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"oracle\",\"type\":\"address\"}],\"internalType\":\"struct CreamExecution.CreamConfig\",\"name\":\"self\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"crtoken_address\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"crUSDC_address\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"USDC_address\",\"type\":\"address\"}],\"name\":\"getUSDPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"crtoken_address\",\"type\":\"address\"}],\"name\":\"getUnderlyingAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"crtoken_address\",\"type\":\"address\"}],\"name\":\"getWalletAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Andrew FU\",\"details\":\"All functions haven't finished unit test\",\"kind\":\"dev\",\"methods\":{\"getAvailableBorrow(address)\":{\"params\":{\"crtoken_address\":\"Cream crToken address.\"}},\"getBorrowAmount(address,address)\":{\"details\":\"Gets the borrowed amount for a particular token.\",\"params\":{\"crWBNB_address\":\"Cream crWBNB address.\",\"crtoken_address\":\"Cream crToken address.\"},\"returns\":{\"_0\":\"crToken amount\"}},\"getBorrowLimit(CreamExecution.CreamConfig,address,address,address,uint256,uint256)\":{\"returns\":{\"_0\":\"the current borrow limit on the platform.\"}},\"getBorrowRate(address)\":{\"details\":\"Gets the current borrow rate for the underlying token.\",\"params\":{\"crtoken_address\":\"Cream crToken address.\"}},\"getCrTokenBalance(CreamExecution.CreamConfig,address)\":{\"details\":\"Gets the bnb amount.\"},\"getExchangeRate(address)\":{\"details\":\"Gets the current exchange rate for a ctoken.\",\"params\":{\"crtoken_address\":\"Cream crToken address.\"}},\"getSupplyRate(address)\":{\"details\":\"Gets the current borrow rate for a token.\",\"params\":{\"crtoken_address\":\"Cream crToken address.\"}},\"getTokenPrice(CreamExecution.CreamConfig,address)\":{\"details\":\"Gets the crtoken/BNB price.\",\"params\":{\"crtoken_address\":\"Cream crToken address.\"}},\"getUSDCBNBPrice(CreamExecution.CreamConfig,address)\":{\"details\":\"Gets the USDCBNB price.\"},\"getUSDPrice(CreamExecution.CreamConfig,address,address,address)\":{\"details\":\"Get the token/BNB price.\",\"params\":{\"crtoken_address\":\"Cream crToken address.\"}},\"getUserTotalSupply(address)\":{\"details\":\"Gets the borrowed amount for a particular token.\",\"params\":{\"crtoken_address\":\"Cream crToken address.\"},\"returns\":{\"_0\":\"crToken amount.\"}},\"getWalletAmount(address)\":{\"returns\":{\"_0\":\"the amount in the wallet for a given token.\"}},\"redeemUnderlying(address,uint256)\":{\"details\":\"Redeem amount worth of crtokens back.\",\"params\":{\"amount\":\"amount of crtokens to redeem.\",\"crtoken_address\":\"Cream crToken address\"}},\"supply(address,uint256)\":{\"details\":\"Supplies amount worth of crtokens into cream.\",\"params\":{\"amount\":\"amount of tokens to mint.\",\"crtoken_address\":\"Cream crToken address\"}}},\"title\":\"Cream execution\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/libs/CreamExecution.sol\":\"CreamExecution\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":1},\"remappings\":[]},\"sources\":{\"project:/contracts/interfaces/cream/CErc20Delegator.sol\":{\"keccak256\":\"0x9ba9b0219d27bbe82a189eecf2e217af126d035060ecafc55d644e1aa0eff2e8\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://0eddd76a876e45045112e1f3cc7bb4cc0c531fad7549978921a09f0fb1ef7525\",\"dweb:/ipfs/QmQGPhatK1DWLHbvLBxrWFu4DEMZz3mTjJR2iqqRCsh6Gh\"]},\"project:/contracts/interfaces/cream/InterestRateModel.sol\":{\"keccak256\":\"0x989760c97d254b59b2554a2a510eff90c37eac3507523a0c2942b9654fe7e0e7\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://313cb1ac1064729c254b91949294a3ffc8a78933acb7ba5c351f04431e46aba3\",\"dweb:/ipfs/QmQdxDBgjcX3FvGkRCs4msRThDRqbKm1JBuwV7PiVCgpoC\"]},\"project:/contracts/interfaces/cream/PriceOracleProxy.sol\":{\"keccak256\":\"0xcd2ef2ad55be532e6eabee0bc7a0dc3d43503049a96e32fb438fed1e92f7e55c\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://93361abac8ba5f41656b913843694857406c7a0634dc4b672636c0600f2068ba\",\"dweb:/ipfs/QmWHhttBydko6fCGoTB19tBKnvHr4iWLdh7vmCUy2vMYRm\"]},\"project:/contracts/libs/CreamExecution.sol\":{\"keccak256\":\"0x964d2e6c42dfd4e5e058746ee79ffff963293f547c63a36edad39051e27c60a5\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://c3f0bdc4b2a8c5a737cb72587a63f289bb675e1c511f5090ccccb1d0bd2f78a3\",\"dweb:/ipfs/QmYZFuk8fyPrA7UYuakMXvDNDU7LLMP6z5GsgqHXTLWaMZ\"]},\"project:/contracts/math/SafeMath.sol\":{\"keccak256\":\"0xd4b1686c1494213666dc1423cea64333c3063f334327216d69ca3d59f75a2517\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://3a3c967dc005a8966266b6052724b7cd04231c6d95abcc03f49e1cbb9ffb890a\",\"dweb:/ipfs/QmRWofmmac5HLRYpMTDQLzmgZyJYeYLB2MY8uTFRKfJuJL\"]},\"project:/contracts/token/BEP20/IBEP20.sol\":{\"keccak256\":\"0xcca9eeefad9d3c8a68e426833a5c790d055beebc3f1cefbeac20b096456c9aef\",\"license\":\"GPL-3.0-or-later\",\"urls\":[\"bzz-raw://61090ac66da4fcf117cb95119cda4c45b5bcf9f8a48203444b0f97b39a9ccbd1\",\"dweb:/ipfs/Qmb1XnfUGdZ7ma31WqhGMaE9mWug1erEUh8xEYvvjZ5v4r\"]}},\"version\":1}",
@@ -26250,9 +26263,17 @@
     "name": "solc",
     "version": "0.8.9+commit.e5eed63a.Emscripten.clang"
   },
-  "networks": {},
+  "networks": {
+    "97": {
+      "events": {},
+      "links": {},
+      "address": "0x6fa618FAf54A54E494F0F4a7Dbc5678763d3F569",
+      "transactionHash": "0xcd552d036d54c9a385fe5dcc896b7bb75beddca4b817e4a3825a0a69eea03ee5"
+    }
+  },
   "schemaVersion": "3.4.3",
-  "updatedAt": "2021-10-12T05:31:09.645Z",
+  "updatedAt": "2021-10-12T06:15:59.466Z",
+  "networkType": "ethereum",
   "devdoc": {
     "author": "Andrew FU",
     "details": "All functions haven't finished unit test",

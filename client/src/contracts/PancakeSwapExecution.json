@@ -23,7 +23,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -42,7 +43,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -66,7 +68,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -90,7 +93,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -146,7 +150,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -175,7 +180,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -221,7 +227,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -265,7 +272,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -294,7 +302,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -335,7 +344,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -381,7 +391,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -400,7 +411,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -441,7 +453,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -482,7 +495,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -528,7 +542,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -569,7 +584,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -610,7 +626,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -649,7 +666,8 @@
         }
       ],
       "stateMutability": "pure",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -668,7 +686,8 @@
         }
       ],
       "stateMutability": "pure",
-      "type": "function"
+      "type": "function",
+      "constant": true
     }
   ],
   "metadata": "{\"compiler\":{\"version\":\"0.8.9+commit.e5eed63a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"router\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"factory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"masterchef\",\"type\":\"address\"}],\"internalType\":\"struct PancakeSwapExecution.PancakeSwapConfig\",\"name\":\"self\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"token_a_address\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token_b_address\",\"type\":\"address\"}],\"name\":\"getAmountsOut\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"wallet_address\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"BNB_address\",\"type\":\"address\"}],\"name\":\"getBalanceBNB\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"lp_token\",\"type\":\"address\"}],\"name\":\"getLPBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"lp_token_amnt\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"lp_token_addr\",\"type\":\"address\"}],\"name\":\"getLPConstituients\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"lp_token_address\",\"type\":\"address\"}],\"name\":\"getLPTokenAddresses\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"lp_token_address\",\"type\":\"address\"}],\"name\":\"getLPTokenSymbols\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"router\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"factory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"masterchef\",\"type\":\"address\"}],\"internalType\":\"struct PancakeSwapExecution.PancakeSwapConfig\",\"name\":\"self\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"token_a_addr\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token_b_addr\",\"type\":\"address\"}],\"name\":\"getPair\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"pair_address\",\"type\":\"address\"}],\"name\":\"getPairDecimals\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"lp_token_address\",\"type\":\"address\"}],\"name\":\"getPairPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"router\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"factory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"masterchef\",\"type\":\"address\"}],\"internalType\":\"struct PancakeSwapExecution.PancakeSwapConfig\",\"name\":\"self\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"pool_id\",\"type\":\"uint256\"}],\"name\":\"getPendingFarmRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"router\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"factory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"masterchef\",\"type\":\"address\"}],\"internalType\":\"struct PancakeSwapExecution.PancakeSwapConfig\",\"name\":\"self\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"pool_id\",\"type\":\"uint256\"}],\"name\":\"getPendingPoolRewards\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"router\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"factory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"masterchef\",\"type\":\"address\"}],\"internalType\":\"struct PancakeSwapExecution.PancakeSwapConfig\",\"name\":\"self\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"pool_id\",\"type\":\"uint256\"}],\"name\":\"getPendingStakedCake\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"router\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"factory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"masterchef\",\"type\":\"address\"}],\"internalType\":\"struct PancakeSwapExecution.PancakeSwapConfig\",\"name\":\"self\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"pool_id\",\"type\":\"uint256\"}],\"name\":\"getPoolInfo\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"lp_token_address\",\"type\":\"address\"}],\"name\":\"getReserves\",\"outputs\":[{\"internalType\":\"uint112\",\"name\":\"reserve0\",\"type\":\"uint112\"},{\"internalType\":\"uint112\",\"name\":\"reserve1\",\"type\":\"uint112\"},{\"internalType\":\"uint32\",\"name\":\"blockTimestampLast\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"router\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"factory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"masterchef\",\"type\":\"address\"}],\"internalType\":\"struct PancakeSwapExecution.PancakeSwapConfig\",\"name\":\"self\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"pool_id\",\"type\":\"uint256\"}],\"name\":\"getStakedLP\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"router\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"factory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"masterchef\",\"type\":\"address\"}],\"internalType\":\"struct PancakeSwapExecution.PancakeSwapConfig\",\"name\":\"self\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"pool_id\",\"type\":\"uint256\"}],\"name\":\"getStakedPoolTokens\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"router\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"factory\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"masterchef\",\"type\":\"address\"}],\"internalType\":\"struct PancakeSwapExecution.PancakeSwapConfig\",\"name\":\"self\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"token_address\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"USDT_address\",\"type\":\"address\"}],\"name\":\"getTokenPriceUSD\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token_a_address\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token_b_address\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"data_a\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"data_b\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"lp_token_address\",\"type\":\"address\"}],\"name\":\"lineUpPairs\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"token_a_bal\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"token_b_bal\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"pair_price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"price_decimals\",\"type\":\"uint256\"}],\"name\":\"splitTokensEvenly\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Andrew FU\",\"details\":\"All functions haven't finished unit test\",\"kind\":\"dev\",\"methods\":{\"addLiquidity(PancakeSwapExecution.PancakeSwapConfig,address,address,uint256,uint256)\":{\"details\":\"Adds a pair of tokens into a liquidity pool.\",\"params\":{\"a_amnt\":\"amount of token a to add.\",\"b_amnt\":\"amount of token b to add.\",\"self\":\"config of PancakeSwap.\",\"token_a_addr\":\"address of the BEP20 token.\",\"token_b_addr\":\"address of the BEP20 token.\"}},\"addLiquidityETH(PancakeSwapExecution.PancakeSwapConfig,address,address,uint256,uint256)\":{\"details\":\"Adds a pair of tokens into a liquidity pool.\",\"params\":{\"eth_amnt\":\"amount of BNB to add.\",\"self\":\"config of PancakeSwap.\",\"token_addr\":\"address of the BEP20 token.\",\"token_amnt\":\"amount of token to add.\"}},\"enableFarm(address)\":{\"details\":\"Enables a syrup staking pool on PancakeSwap.\",\"params\":{\"lp_token_address\":\"address of PancakeSwap LPtoken.\"}},\"enablePool(address,address,uint256)\":{\"details\":\"Enables a syrup staking pool on PancakeSwap.\",\"params\":{\"amount\":\"amount of CAKE tokens to stake.\",\"stake_contract_addr\":\"address of PancakeSwap masterchef.\",\"token_addr\":\"address of BEP20 token.\"}},\"getAmountsOut(PancakeSwapExecution.PancakeSwapConfig,address,address)\":{\"params\":{\"self\":\"config of PancakeSwap.\"}},\"getLPConstituients(uint256,address)\":{\"details\":\"Returns the amount of token0, token1s the specified number of LP token represents.\",\"params\":{\"lp_token_addr\":\"address of the LP token.\",\"lp_token_amnt\":\"The LP token amount.\"}},\"getLPTokenAddresses(address)\":{\"details\":\"Gets the token0 and token1 addresses from LPtoken.\",\"params\":{\"lp_token_address\":\"PancakeSwap LPtoken address.\"},\"returns\":{\"_0\":\"token0, token1.\"}},\"getLPTokenSymbols(address)\":{\"details\":\"Gets the token0 and token1 symbol name from LPtoken.\",\"params\":{\"lp_token_address\":\"PancakeSwap LPtoken address.\"},\"returns\":{\"_0\":\"token0, token1.\"}},\"getPair(PancakeSwapExecution.PancakeSwapConfig,address,address)\":{\"details\":\"Returns the LP token address for the token pairs.\",\"params\":{\"self\":\"config of PancakeSwap.\",\"token_a_addr\":\"BEP20 token address.\",\"token_b_addr\":\"BEP20 token address.\"},\"returns\":{\"_0\":\"pair address.\"}},\"getPairPrice(address)\":{\"details\":\"Gets the current price for a pair.\",\"params\":{\"lp_token_address\":\"address of the LP token.\"}},\"getPendingFarmRewards(PancakeSwapExecution.PancakeSwapConfig,uint256)\":{\"details\":\"Gets the pending CAKE amount for a partictular pool_id.\",\"params\":{\"pool_id\":\"Id of the PancakeSwap pool.\",\"self\":\"config of PancakeSwap.\"}},\"getPendingPoolRewards(PancakeSwapExecution.PancakeSwapConfig,uint256)\":{\"details\":\"Gets pending reward for the syrup pool.\",\"params\":{\"pool_id\":\"Id of the PancakeSwap pool.\",\"self\":\"config of PancakeSwap.\"}},\"getPendingStakedCake(PancakeSwapExecution.PancakeSwapConfig,uint256)\":{\"params\":{\"self\":\"config of PancakeSwap.\"}},\"getPoolInfo(PancakeSwapExecution.PancakeSwapConfig,uint256)\":{\"details\":\"Gets pool info from the masterchef contract and stores results in an array.\",\"params\":{\"pool_id\":\"Id of the PancakeSwap pool.\",\"self\":\"config of PancakeSwap.\"},\"returns\":{\"_0\":\"pooInfo.\"}},\"getStakedLP(PancakeSwapExecution.PancakeSwapConfig,uint256)\":{\"details\":\"Gets the current number of LP tokens staked in the pool.\",\"params\":{\"pool_id\":\"Id of the PancakeSwap pool.\",\"self\":\"config of PancakeSwap.\"}},\"getStakedPoolTokens(PancakeSwapExecution.PancakeSwapConfig,uint256)\":{\"details\":\"Get the number of tokens staked into the pool.\",\"params\":{\"pool_id\":\"Id of the PancakeSwap pool.\",\"self\":\"config of PancakeSwap.\"}},\"getTokenPriceUSD(PancakeSwapExecution.PancakeSwapConfig,address,address)\":{\"details\":\"Returns the USD price for a particular BEP20 token.\",\"params\":{\"USDT_address\":\"address of USDT token.\",\"self\":\"config of PancakeSwap.\",\"token_address\":\"address of BEP20 token.\"}},\"lineUpPairs(address,address,uint256,uint256,address)\":{\"details\":\"Will line up our assumption with the contracts.\"},\"removeLiquidity(PancakeSwapExecution.PancakeSwapConfig,address,address,address,uint256,uint256,uint256)\":{\"details\":\"Removes a pair of tokens from a liquidity pool.\",\"params\":{\"a_amnt\":\"amount of token a to remove.\",\"b_amnt\":\"amount of token b to remove.\",\"liquidity\":\"amount of LP tokens to be removed.\",\"lp_contract_addr\":\"address of the BEP20 token.\",\"self\":\"config of PancakeSwap.\",\"token_a_addr\":\"address of the BEP20 token.\",\"token_b_addr\":\"address of the BEP20 token.\"}},\"removeLiquidityETH(PancakeSwapExecution.PancakeSwapConfig,address,address,uint256,uint256,uint256)\":{\"details\":\"Removes a pair of tokens from a liquidity pool.\",\"params\":{\"a_amnt\":\"amount of token a to remove.\",\"b_amnt\":\"amount of BNB to remove.\",\"liquidity\":\"amount of LP tokens to be removed.\",\"lp_contract_addr\":\"address of the BEP20 token.\",\"self\":\"config of PancakeSwap.\",\"token_addr\":\"address of the BEP20 token.\"}},\"stakeLP(PancakeSwapExecution.PancakeSwapConfig,uint256,uint256)\":{\"details\":\"Gets pending reward for the user from the specific pool_id.\",\"params\":{\"pool_id\":\"Id of the PancakeSwap pool.\",\"self\":\"config of PancakeSwap.\",\"stake_amount\":\"amount of LP tokens to stake.\"}},\"stakePool(PancakeSwapExecution.PancakeSwapConfig,uint256,uint256)\":{\"details\":\"Adds 'stake_amount' of coins into the syrup pools.\",\"params\":{\"pool_id\":\"Id of the PancakeSwap pool.\",\"self\":\"config of PancakeSwap.\",\"stake_amount\":\"amount of CAKE tokens to stake.\"}},\"unstakeLP(PancakeSwapExecution.PancakeSwapConfig,uint256,uint256)\":{\"details\":\"Removes 'unstake_amount' of LP tokens from 'pool_id'.\",\"params\":{\"pool_id\":\"Id of the PancakeSwap pool.\",\"self\":\"config of PancakeSwap.\",\"unstake_amount\":\"amount of LP tokens to unstake.\"}},\"unstakePool(PancakeSwapExecution.PancakeSwapConfig,uint256,uint256)\":{\"details\":\"Removes 'unstake_amount' of coins into the syrup pools.\",\"params\":{\"pool_id\":\"Id of the PancakeSwap pool.\",\"self\":\"config of PancakeSwap.\",\"unstake_amount\":\"amount of CAKE tokens to unstake.\"}}},\"title\":\"PancakeSwap execution\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/libs/PancakeSwapExecution.sol\":\"PancakeSwapExecution\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":1},\"remappings\":[]},\"sources\":{\"project:/contracts/interfaces/pancakeswap/IPancakeFactory.sol\":{\"keccak256\":\"0x5b41363a5bf4bfaedefd6b853384482b28b3074a99f082ec97d516752c55d9fb\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://aae21f08798d73fd104fe28a1f95ebae875711674b2f1fa4d2a165fecf1bb9fd\",\"dweb:/ipfs/QmfHJxjjmmcDLXV9hdpSc2WMVFsimA6weWHzerQv9AXkLS\"]},\"project:/contracts/interfaces/pancakeswap/IPancakePair.sol\":{\"keccak256\":\"0x79ddf0f9c7c3a501d7a5dbc81a62d479bf15038ee7512956128af7282bd878fd\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://7058a24af53d6d22e781a1cccfab503347a8934ed9df5e381f39d599390db0c1\",\"dweb:/ipfs/QmSSo7Xnd4oEdVb3u5iAJ5Smk1cpbC6N5esME89iGQPdTG\"]},\"project:/contracts/interfaces/pancakeswap/IPancakeRouter01.sol\":{\"keccak256\":\"0xa042e96624eb0221c6f1380eea9ec65595cf8cc2340e57fea5780a4dc708e9f2\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://ed2559ea7d1115420607877f773bf72cda30685297614a78aee17563359fd91b\",\"dweb:/ipfs/QmeKqC2HewgUP1xPBZAkJAAaSUmv5iGkEB9EJgVKCg3zUM\"]},\"project:/contracts/interfaces/pancakeswap/IPancakeRouter02.sol\":{\"keccak256\":\"0xb2fec7b0295b9beff4a9b9d73c5ee62ed22833a2bba88f0c32dd3c84c4105494\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://b3b6178c01bd02c0cc45874e0f5e435ad892a76fa8881916465b6a1507751235\",\"dweb:/ipfs/QmPL6GZJiH75yEaFZRCQbJL4a5kiDjjsSLkNPGbQz6sHYA\"]},\"project:/contracts/interfaces/pancakeswap/MasterChef.sol\":{\"keccak256\":\"0xf912bf1b4c4e9edff09668112b4fb9298927b263c8e61ebabd3196059cbb647b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://df3afb051e75ef9e8b61f3f6d27a44a41f992f8dc21ab4f117abb84879a769e8\",\"dweb:/ipfs/QmejUn4PrsNGKywEACwNWwQLSCmiX9eFuEGbXUYBSTVXh2\"]},\"project:/contracts/libs/PancakeSwapExecution.sol\":{\"keccak256\":\"0x9c736e590b529fe4c2bb872a8555c8b2e958e189ca69be0a46ad4dd445b60c6c\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://dda32796902ae6f9229470719b15e0d823d636071a74a45e94e5a85d3b8fba62\",\"dweb:/ipfs/QmWLxK3s7dWnzQZUvJfVhHXHrw64ybVNn7HojUAkN8Vuz3\"]},\"project:/contracts/math/SafeMath.sol\":{\"keccak256\":\"0xd4b1686c1494213666dc1423cea64333c3063f334327216d69ca3d59f75a2517\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://3a3c967dc005a8966266b6052724b7cd04231c6d95abcc03f49e1cbb9ffb890a\",\"dweb:/ipfs/QmRWofmmac5HLRYpMTDQLzmgZyJYeYLB2MY8uTFRKfJuJL\"]},\"project:/contracts/token/BEP20/IBEP20.sol\":{\"keccak256\":\"0xcca9eeefad9d3c8a68e426833a5c790d055beebc3f1cefbeac20b096456c9aef\",\"license\":\"GPL-3.0-or-later\",\"urls\":[\"bzz-raw://61090ac66da4fcf117cb95119cda4c45b5bcf9f8a48203444b0f97b39a9ccbd1\",\"dweb:/ipfs/Qmb1XnfUGdZ7ma31WqhGMaE9mWug1erEUh8xEYvvjZ5v4r\"]}},\"version\":1}",
@@ -46146,9 +46165,17 @@
     "name": "solc",
     "version": "0.8.9+commit.e5eed63a.Emscripten.clang"
   },
-  "networks": {},
+  "networks": {
+    "97": {
+      "events": {},
+      "links": {},
+      "address": "0x48dDd66a13599592ca952350B95244Cc0A3f0021",
+      "transactionHash": "0xf5e6fa758b6d63dea077ffaa1fdd652ff2972dc7d2a7bd6f8388ea27884dcd76"
+    }
+  },
   "schemaVersion": "3.4.3",
-  "updatedAt": "2021-10-12T05:31:09.730Z",
+  "updatedAt": "2021-10-12T06:15:59.484Z",
+  "networkType": "ethereum",
   "devdoc": {
     "author": "Andrew FU",
     "details": "All functions haven't finished unit test",

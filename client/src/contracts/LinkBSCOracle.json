@@ -25,7 +25,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -51,7 +52,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     }
   ],
   "metadata": "{\"compiler\":{\"version\":\"0.8.9+commit.e5eed63a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"oracle\",\"type\":\"address\"}],\"internalType\":\"struct LinkBSCOracle.LinkConfig\",\"name\":\"self\",\"type\":\"tuple\"}],\"name\":\"getDecimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"oracle\",\"type\":\"address\"}],\"internalType\":\"struct LinkBSCOracle.LinkConfig\",\"name\":\"self\",\"type\":\"tuple\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/libs/LinkBSCOracle.sol\":\"LinkBSCOracle\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":1},\"remappings\":[]},\"sources\":{\"project:/contracts/interfaces/chainlink/AggregatorInterface.sol\":{\"keccak256\":\"0x013099e55469c42556ebe7578485efa1a4a242e526c98230ae5cde4f794c33f1\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://5183a4b0a5e5d4bd131cb6ee4a05ca559c11f9d95c1add493d97d83902791870\",\"dweb:/ipfs/QmakntUyx4GgHFqmeAK1QWchg5QpdxDMAt4A5EHzCkBcEN\"]},\"project:/contracts/libs/LinkBSCOracle.sol\":{\"keccak256\":\"0x44baba57e602efe1c8d9457476d90203346b235b139b878b0cabb5509d451843\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://dc0017f1c0578b84af56f740df3cccd0f2ad1c108ee8f2f5dd6cc8a0c054adfe\",\"dweb:/ipfs/QmWHzytVCUb4ed6EGnJdYvLpZA5SkGxdX6mjSYW7ekKb4D\"]}},\"version\":1}",
@@ -2267,9 +2269,17 @@
     "name": "solc",
     "version": "0.8.9+commit.e5eed63a.Emscripten.clang"
   },
-  "networks": {},
+  "networks": {
+    "97": {
+      "events": {},
+      "links": {},
+      "address": "0x0d3a3e6f3A53BD3bDBEa58405e1DbcF7e8d30CE6",
+      "transactionHash": "0xec3c627ebbd1d63d304a9670a0975a4b2ae152a0fbb2cf0fee4170858033abb4"
+    }
+  },
   "schemaVersion": "3.4.3",
-  "updatedAt": "2021-10-12T05:31:09.715Z",
+  "updatedAt": "2021-10-12T06:15:59.457Z",
+  "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
     "methods": {},
