@@ -10,12 +10,6 @@ import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
 /// @author Andrew FU
 /// @dev All functions haven't finished unit test
 contract CashBox is BasicContract {
-     
-    using SafeMath for uint;
-    // using HighLevelSystem for HighLevelSystem.HLSConfig;
-    // using HighLevelSystem for HighLevelSystem.CreamToken;
-    // using HighLevelSystem for HighLevelSystem.StableCoin;
-    // using HighLevelSystem for HighLevelSystem.Position;
     
     // Link
     // address private link_oracle;
@@ -47,6 +41,7 @@ contract CashBox is BasicContract {
     HighLevelSystem.StableCoin private StableCoin;
     HighLevelSystem.Position private position;
     
+    using SafeMath for uint;
     using SafeMath for uint256;
     string public constant name = "Proof token";
     string public constant symbol = "pToken";
@@ -63,35 +58,6 @@ contract CashBox is BasicContract {
     
     mapping(address => uint256) private balances;
     mapping(address => mapping (address => uint256)) private allowed;
-     
-    // constructor(address[] memory _config, address[] memory _creamtokens, address[] memory _stablecoins, uint[] memory _uints, address[] memory _addrs, address _dofin, uint _deposit_limit, uint _add_funds_condition) {
-    //     setConfig(_config);
-    //     setCreamTokens(_creamtokens);
-    //     setStableCoins(_stablecoins);
-    //     position = HighLevelSystem.Position({
-    //         pool_id: _uints[0],
-    //         token_amount: 0,
-    //         token_a_amount: 0,
-    //         token_b_amount: 0,
-    //         lp_token_amount: 0,
-    //         crtoken_amount: 0,
-    //         supply_crtoken_amount: 0,
-    //         token: _addrs[0],
-    //         token_a: _addrs[1],
-    //         token_b: _addrs[2],
-    //         lp_token: _addrs[3],
-    //         supply_crtoken: _addrs[4],
-    //         borrowed_crtoken_a: _addrs[5],
-    //         borrowed_crtoken_b: _addrs[6],
-    //         max_amount_per_position: _uints[1],
-    //         supply_funds_percentage: _uints[2]
-    //     });
-        
-    //     activable = true;
-    //     dofin = _dofin;
-    //     deposit_limit = _deposit_limit;
-    //     add_funds_condition = add_funds_condition;
-    // }
 
     constructor(uint[] memory _uints, address[] memory _addrs, address _dofin, uint _deposit_limit, uint _add_funds_condition) {
         position = HighLevelSystem.Position({
@@ -172,7 +138,7 @@ contract CashBox is BasicContract {
         position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 1);
     }
     
-    function checkAddNewFunds() public {
+    function checkAddNewFunds() public onlyOwner checkActivable {
         uint free_funds = IBEP20(position.token).balanceOf(address(this));
         uint condition = SafeMath.mul(add_funds_condition, 10**IBEP20(position.token).decimals());
         if (free_funds >= condition) {
@@ -276,13 +242,8 @@ contract CashBox is BasicContract {
         total_assets = SafeMath.add(total_assets, IBEP20(position.token).balanceOf(address(this)));
         return total_assets;
     }
-    
-    function deposit(address _token, uint _deposit_amount) public checkActivable returns (bool) {
-        require(_deposit_amount <= SafeMath.mul(deposit_limit, 10**IBEP20(position.token).decimals()), "Deposit too much!");
-        require(_token == position.token, "Wrong token to deposit.");
-        require(_deposit_amount > 0, "Deposit amount must bigger than 0.");
-        
-        // Calculation of pToken amount need to mint
+
+    function getDepositAmountOut(uint _deposit_amount) public view returns (uint) {
         uint totalAssets = getTotalAssets();
         uint shares;
         if (totalSupply_ > 0) {
@@ -290,13 +251,23 @@ contract CashBox is BasicContract {
         } else {
             shares = _deposit_amount;
         }
+        return shares;
+    }
+    
+    function deposit(address _token, uint _deposit_amount) public checkActivable returns (bool) {
+        require(_deposit_amount <= SafeMath.mul(deposit_limit, 10**IBEP20(position.token).decimals()), "Deposit too much!");
+        require(_token == position.token, "Wrong token to deposit.");
+        require(_deposit_amount > 0, "Deposit amount must bigger than 0.");
+        
+        // Calculation of pToken amount need to mint
+        uint shares = getDepositAmountOut(_deposit_amount);
         
         // Mint pToken and transfer Token to cashbox
         mint(msg.sender, shares);
         IBEP20(position.token).transferFrom(msg.sender, address(this), _deposit_amount);
         
         // Check need to supply or not.
-        checkAddNewFunds();
+        // checkAddNewFunds();
         
         return true;
     }
