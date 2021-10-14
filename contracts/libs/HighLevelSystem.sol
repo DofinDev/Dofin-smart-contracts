@@ -371,25 +371,6 @@ library HighLevelSystem {
     /// @param _crtokens refer CreamToken struct on the top.
     /// @param _stablecoins refer StableCoin struct on the top.
     /// @param _position refer Position struct on the top.
-    /// @param new_amount_a amount of token a.
-    /// @param new_amount_b amount of token b.
-    /// @dev Check if entering this new position will violate any borrow/lending limits.
-    function checkPotentialBorrowLimit(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position, uint new_amount_a, uint new_amount_b) public returns (uint) {
-        uint current_borrow_limit = checkCurrentBorrowLimit(self, _crtokens, _stablecoins, _position);
-
-        uint crtoken_a_supply_amount = CreamExecution.getUserTotalSupply(_position.borrowed_crtoken_a);
-        uint borrow_limit_a = CreamExecution.getBorrowLimit(self.CreamConfig, _position.borrowed_crtoken_a, _crtokens.crUSDC, _stablecoins.USDC, crtoken_a_supply_amount, new_amount_a);
-        
-        uint crtoken_b_supply_amount = CreamExecution.getUserTotalSupply(_position.borrowed_crtoken_b);
-        uint borrow_limit_b = CreamExecution.getBorrowLimit(self.CreamConfig, _position.borrowed_crtoken_b, _crtokens.crUSDC, _stablecoins.USDC, crtoken_b_supply_amount, new_amount_b);
-
-        return current_borrow_limit + borrow_limit_a + borrow_limit_b;
-    }
-
-    /// @param self refer HLSConfig struct on the top.
-    /// @param _crtokens refer CreamToken struct on the top.
-    /// @param _stablecoins refer StableCoin struct on the top.
-    /// @param _position refer Position struct on the top.
     /// @dev Adds liquidity to a given pool.
     function addLiquidity(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public returns (uint) {
         // TODO need to test about modification

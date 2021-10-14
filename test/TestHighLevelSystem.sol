@@ -344,17 +344,6 @@ contract TestHighLevelSystem {
     Assert.equal(result, expected, "It should get the value 10 of current borrow limit.");
   }
 
-  function testCheckPotentialBorrowLimit() public {
-    // Parms
-    uint new_amount_a = 10;
-    uint new_amount_b = 10;
-    // Testing
-    uint result = HighLevelSystem.checkPotentialBorrowLimit(HLSConfig, CreamToken, StableCoin, Position, new_amount_a, new_amount_b);
-    uint expected = 3007518796;
-
-    Assert.equal(result, expected, "It should get the value 10 of potential borrow limit.");
-  }
-
   function testAddLiquidity() public {
     // Testing
     uint result = HighLevelSystem.addLiquidity(HLSConfig, CreamToken, StableCoin, Position);
