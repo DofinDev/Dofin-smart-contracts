@@ -103,20 +103,6 @@ contract TestHighLevelSystem {
     Assert.equal(result, expected, "It should get the bool of true.");
   }
 
-  function testGetLPUSDValue() public {
-    // Parms
-    uint lp_constituient_0 = 10;
-    uint lp_constituient_1 = 10;
-    address _lp_token = FakePancakePairAddress;
-    address _crtoken_a = FakeCErc20DelegatorAddress;
-    address _crtoken_b = FakeCErc20DelegatorAddress;
-    // Testing
-    uint result = HighLevelSystem.getLPUSDValue(HLSConfig, CreamToken, StableCoin, lp_constituient_0, lp_constituient_1, _lp_token, _crtoken_a, _crtoken_b);
-    uint expected = 20;
-
-    Assert.equal(result, expected, "It should get the value 200 of USD.");
-  }
-
   function testCheckEntry() public {
     // Testing
     HighLevelSystem.Position memory result = HighLevelSystem.checkEntry(HLSConfig, CreamToken, StableCoin, Position);
@@ -208,79 +194,6 @@ contract TestHighLevelSystem {
     uint expected = 10;
 
     Assert.equal(result, expected, "It should get the value 10 of redeem amount.");
-  }
-
-  function testGetFreeCash() public {
-    // Parms
-    address _crtoken_a = FakeCErc20DelegatorAddress;
-    address _crtoken_b = FakeCErc20DelegatorAddress;
-    // Testing
-    uint result = HighLevelSystem.getFreeCash(CreamToken, _crtoken_a, _crtoken_b);
-    uint expected = 55;
-
-    Assert.equal(result, expected, "It should get the value 0 of free cash.");
-  }
-
-  function testSplitUnits() public {
-    // Parms
-    uint dollar_amount = 100;
-    // Testing
-    (uint result_1, uint result_2) = HighLevelSystem.splitUnits(HLSConfig, CreamToken, StableCoin, Position, dollar_amount);
-    uint expected_1 = 50;
-    uint expected_2 = 50;
-
-    Assert.equal(result_1, expected_1, "It should get the value 5 of units 1.");
-    Assert.equal(result_2, expected_2, "It should get the value 5 of units 2.");
-  }
-
-  function testCalculateEntryAmounts() public {
-    // Testing
-    (uint result_1, uint result_2) = HighLevelSystem.calculateEntryAmounts(HLSConfig, CreamToken, StableCoin, Position);
-    uint expected_1 = 0;
-    uint expected_2 = 0;
-
-    Assert.equal(result_1, expected_1, "It should get the value 0 of entry amount 1.");
-    Assert.equal(result_2, expected_2, "It should get the value 0 of entry amount 2.");
-  }
-
-  function testGeneratePosition() public {
-    // Testing
-    HighLevelSystem.Position memory result = HighLevelSystem.generatePosition(HLSConfig, CreamToken, StableCoin, Position);
-    HighLevelSystem.Position memory expected = HighLevelSystem.Position({
-      pool_id: 10,
-      token_amount: 10,
-      token_a_amount: 0,
-      token_b_amount: 0,
-      lp_token_amount: 10,
-      crtoken_amount: 10,
-      supply_crtoken_amount: 10,
-      token: FakeFakeIBEP20Address,
-      token_a: FakeFakeIBEP20Address,
-      token_b: FakeFakeIBEP20Address,
-      lp_token: FakePancakePairAddress,
-      supply_crtoken: FakeCErc20DelegatorAddress,
-      borrowed_crtoken_a: FakeCErc20DelegatorAddress,
-      borrowed_crtoken_b: FakeCErc20DelegatorAddress,
-      max_amount_per_position: 10,
-      supply_funds_percentage: 95
-    });
-
-    Assert.equal(result.pool_id, expected.pool_id, "It should get the position data pool_id.");
-    Assert.equal(result.token_amount, expected.token_amount, "It should get the position data token_amount.");
-    Assert.equal(result.token_a_amount, expected.token_a_amount, "It should get the position data token_a_amount.");
-    Assert.equal(result.token_b_amount, expected.token_b_amount, "It should get the position data token_b_amount.");
-    Assert.equal(result.lp_token_amount, expected.lp_token_amount, "It should get the position data lp_token_amount.");
-    Assert.equal(result.crtoken_amount, expected.crtoken_amount, "It should get the position data crtoken_amount.");
-    Assert.equal(result.supply_crtoken_amount, expected.supply_crtoken_amount, "It should get the position data supply_crtoken_amount.");
-    Assert.equal(result.token, expected.token, "It should get the position data token.");
-    Assert.equal(result.token_a, expected.token_a, "It should get the position data token_a.");
-    Assert.equal(result.token_b, expected.token_b, "It should get the position data token_b.");
-    Assert.equal(result.lp_token, expected.lp_token, "It should get the position data lp_token.");
-    Assert.equal(result.supply_crtoken, expected.supply_crtoken, "It should get the position data supply_crtoken.");
-    Assert.equal(result.borrowed_crtoken_a, expected.borrowed_crtoken_a, "It should get the position data borrowed_crtoken_a.");
-    Assert.equal(result.borrowed_crtoken_b, expected.borrowed_crtoken_b, "It should get the position data borrowed_crtoken_b.");
-    Assert.equal(result.max_amount_per_position, expected.max_amount_per_position, "It should get the position data max_amount_per_position.");
-    Assert.equal(result.supply_funds_percentage, expected.supply_funds_percentage, "It should get the position data supply_funds_percentage.");
   }
 
   function testEnterPosition() public {
@@ -421,19 +334,6 @@ contract TestHighLevelSystem {
     uint expected = 2;
 
     Assert.equal(result, expected, "It should get the value 1 if is WBNB.");
-  }
-
-  function testGetBorrowedCreamTokens() public {
-    // Parms
-    address _crtoken_a = FakeCErc20DelegatorAddress;
-    address _crtoken_b = FakeCErc20DelegatorAddress;
-    // Testing
-    (address result_1, address result_2) = HighLevelSystem.getBorrowedCreamTokens(_crtoken_a, _crtoken_b);
-    address expected_1 = FakeCErc20DelegatorAddress;
-    address expected_2 = FakeCErc20DelegatorAddress;
-
-    Assert.equal(result_1, expected_1, "It should get the address of Cream token.");
-    Assert.equal(result_2, expected_2, "It should get the address of Cream token.");
   }
 
   function testCheckCurrentBorrowLimit() public {

@@ -153,27 +153,6 @@ library HighLevelSystem {
             return false;
         }
     }
-
-    /// @param self refer HLSConfig struct on the top.
-    /// @param _crtokens refer CreamToken struct on the top.
-    /// @param _stablecoins refer StableCoin struct on the top.
-    /// @param lp_constituient_0 The LP token amount.
-    /// @param lp_constituient_1 The LP token amount.
-    /// @param _lp_token address of the LP token.
-    /// @param _crtoken_a address of the Cream token.
-    /// @param _crtoken_b address of the Cream token.
-    /// @dev Function returns the amount of token0, token1s the specified number of LP token represents.
-    function getLPUSDValue(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, uint lp_constituient_0, uint lp_constituient_1, address _lp_token, address _crtoken_a, address _crtoken_b) public view returns (uint) {
-        (address token_0, address token_1) = PancakeSwapExecution.getLPTokenAddresses(_lp_token);
-
-        uint token_0_exch_rate = getPrice(self, _crtokens, _stablecoins, token_0, _stablecoins.USDC, _crtoken_a, _crtokens.crUSDC);
-        uint token_1_exch_rate = getPrice(self, _crtokens, _stablecoins, token_1, _stablecoins.USDC, _crtoken_b, _crtokens.crUSDC);
-
-        uint usd_value_0 = SafeMath.mul(token_0_exch_rate, lp_constituient_0);
-        uint usd_value_1 = SafeMath.mul(token_1_exch_rate, lp_constituient_1);
-
-        return usd_value_0 + usd_value_1;
-    }
     
     /// @param self refer HLSConfig struct on the top.
     /// @param _crtokens refer CreamToken struct on the top.
@@ -234,79 +213,6 @@ library HighLevelSystem {
     function redeemCream(address _crtoken, uint _amount) public returns (uint) {
         
         return CreamExecution.redeemUnderlying(_crtoken, _amount);
-    }
-
-    /// @param _crtokens refer CreamToken struct on the top.
-    /// @dev check how much free cash we have left (whatever we can borrow up to 75% will be regarded as free cash) => after > 75% free cash would be negative.
-    function getFreeCash(CreamToken memory _crtokens, address _crtoken_a, address _crtoken_b) public returns (uint) {
-        address crWBNB = _crtokens.crWBNB;
-        uint current_supply_amount = CreamExecution.getUserTotalSupply(_crtokens.crUSDC);
-        uint position_a_amnt = CreamExecution.getBorrowAmount(_crtoken_a, crWBNB);
-        uint position_b_amnt = CreamExecution.getBorrowAmount(_crtoken_b, crWBNB);
-        uint current_borrow_amount = SafeMath.add(position_a_amnt, position_b_amnt);
-        // 75% of current_supply_amount
-        current_supply_amount = SafeMath.div(SafeMath.mul(current_supply_amount, 75), 100);
-        uint free_cash = SafeMath.sub(current_supply_amount, current_borrow_amount);
-
-        return free_cash;
-    }
-
-    /// @param self refer HLSConfig struct on the top.
-    /// @param _crtokens refer CreamToken struct on the top.
-    /// @param _stablecoins refer StableCoin struct on the top.
-    /// @param _position refer Position struct on the top.
-    /// @dev Given a dollar amount, find out how many units of a and b can we get.
-    function splitUnits(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position, uint dollar_amount) public view returns (uint, uint) {
-        uint half_amount = SafeMath.div(dollar_amount, 2);
-        address USDT = _stablecoins.USDT;
-        address crUSDC = _crtokens.crUSDC;
-        
-        uint price_a = getPrice(self, _crtokens, _stablecoins, _position.token_a, USDT, _position.borrowed_crtoken_a, crUSDC);
-        uint price_b = getPrice(self, _crtokens, _stablecoins, _position.token_b, USDT, _position.borrowed_crtoken_b, crUSDC);
-        
-        uint units_a = SafeMath.div(half_amount, price_a);
-        uint units_b = SafeMath.div(half_amount, price_b);
-
-        return (units_a, units_b);
-    }
-
-    /// @param self refer HLSConfig struct on the top.
-    /// @param _crtokens refer CreamToken struct on the top.
-    /// @param _stablecoins refer StableCoin struct on the top.
-    /// @param _position refer Position struct on the top.
-    /// @dev Given an opportunity object, calculate the position sizes based on current margin levels.
-    function calculateEntryAmounts(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public returns (uint, uint) {
-        (uint max_position_size_a, uint max_position_size_b) = splitUnits(self, _crtokens, _stablecoins, _position, _position.max_amount_per_position);
-        uint max_borrow_limit = checkPotentialBorrowLimit(self, _crtokens, _stablecoins, _position, max_position_size_a, max_position_size_b);
-        max_borrow_limit = SafeMath.mul(max_borrow_limit, 100);
-        // TODO need to < 0.75
-        if (max_borrow_limit < 75) {
-            return (max_position_size_a, max_position_size_b);
-        }
-
-        uint free_cash = getFreeCash(_crtokens, _position.borrowed_crtoken_a, _position.borrowed_crtoken_b);
-        (uint min_position_size_a, uint min_position_size_b) = splitUnits(self, _crtokens, _stablecoins, _position, free_cash);
-        uint min_borrow_limit = checkPotentialBorrowLimit(self, _crtokens, _stablecoins, _position, max_position_size_a, max_position_size_b);
-        min_borrow_limit = SafeMath.mul(min_borrow_limit, 100);
-        // TODO need to < 0.75
-        if (min_borrow_limit < 75) {
-            return (min_position_size_a, min_position_size_b);
-        }
-
-        // cannot enter position
-        return (0, 0);
-    }
-
-    /// @param self refer HLSConfig struct on the top.
-    /// @param _crtokens refer CreamToken struct on the top.
-    /// @param _stablecoins refer StableCoin struct on the top.
-    /// @param _position refer Position struct on the top.
-    /// @dev use a greedy apporach to allocate the cash.
-    function generatePosition(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public returns (Position memory) {
-        (uint a_amount, uint b_amount) = calculateEntryAmounts(self, _crtokens, _stablecoins, _position);
-        _position.token_a_amount = a_amount;
-        _position.token_b_amount = b_amount;
-        return _position;
     }
 
     /// @param self refer HLSConfig struct on the top.
@@ -442,14 +348,6 @@ library HighLevelSystem {
         } else {
             return 2;
         }
-    }
-
-    /// @param _crtoken_a Cream crToken address..
-    /// @param _crtoken_b Cream crToken address..
-    /// @dev Gets an array of all the cream tokens that have been borrowed.
-    function getBorrowedCreamTokens(address _crtoken_a, address _crtoken_b) public pure returns (address, address) {
-        
-        return (_crtoken_a, _crtoken_b);
     }
 
     /// @param self refer HLSConfig struct on the top.
