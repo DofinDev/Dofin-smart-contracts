@@ -104,7 +104,7 @@ contract CashBox is BasicContract {
     
     function setStableCoins(address[] memory _stablecoins) public onlyOwner {
         StableCoin.WBNB = _stablecoins[0];
-        StableCoin.BNB = _stablecoins[1];
+        StableCoin.CAKE = _stablecoins[1];
         StableCoin.USDT = _stablecoins[2];
         StableCoin.TUSD = _stablecoins[3];
         StableCoin.BUSD = _stablecoins[4];
@@ -238,6 +238,12 @@ contract CashBox is BasicContract {
         uint pending_cake_amount = HighLevelSystem.getTotalCakePendingRewards(HLSConfig, position.pool_id);
         // PancakeSwap staked amount
         (uint token_a_amount, uint token_b_amount) = HighLevelSystem.getStakedTokens(HLSConfig, position);
+
+        crtoken_a_debt = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, position.token_a, position.token, crtoken_a_debt);
+        crtoken_b_debt = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, position.token_b, position.token, crtoken_b_debt);
+        pending_cake_amount = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, StableCoin.CAKE, position.token, pending_cake_amount);
+        token_a_amount = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, position.token_a, position.token, token_a_amount);
+        token_b_amount = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, position.token_b, position.token, token_b_amount);
         
         uint total_assets = SafeMath.sub(SafeMath.add(token_a_amount, token_b_amount), SafeMath.add(crtoken_a_debt, crtoken_b_debt));
         total_assets = SafeMath.add(total_assets, pending_cake_amount);

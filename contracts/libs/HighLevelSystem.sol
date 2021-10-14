@@ -29,7 +29,7 @@ library HighLevelSystem {
     // StableCoin required
     struct StableCoin {
         address WBNB;
-        address BNB;
+        address CAKE;
         address USDT;
         address TUSD;
         address BUSD;
@@ -93,43 +93,13 @@ library HighLevelSystem {
     }
     
     /// @param self refer HLSConfig struct on the top.
-    /// @param _crtokens refer CreamToken struct on the top.
-    /// @param _stablecoins refer StableCoin struct on the top.
     /// @param _token_a BEP20 token address.
     /// @param _token_b BEP20 token address.
-    /// @param _crtoken_a Cream crToken address.
-    /// @param _crtoken_b Cream crToken address.
-    /// @dev Get the price for two tokens, from LINK if possible, else => straight from router.
-    function getPrice(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, address _token_a, address _token_b, address _crtoken_a, address _crtoken_b) public view returns (uint) {
-        CreamExecution.CreamConfig memory CreamConfig = self.CreamConfig;
+    /// @param _amountIn amount of token a.
+    /// @dev Get the amount out from PancakeSwap.
+    function getPancakeSwapAmountOut(HLSConfig memory self, address _token_a, address _token_b, uint _amountIn) public view returns (uint) {
         
-        if (_token_a == _stablecoins.WBNB) {
-            _token_a = _stablecoins.BNB;
-        }
-        if (_token_b == _stablecoins.WBNB) {
-            _token_b = _stablecoins.BNB;
-        }
-        if (isStableCoin(_stablecoins, _token_a) && isStableCoin(_stablecoins, _token_b)) {
-            return 1;
-        }
-
-        // check if we can get data from chainlink
-        uint price;
-        if (self.LinkConfig.oracle != address(0)) {
-            price = uint(LinkBSCOracle.getPrice(self.LinkConfig));
-            return price;
-        }
-
-        // check if we can get data from cream
-        if (_crtoken_a != address(0) && _crtoken_b != address(0)) {
-            uint price_a = CreamExecution.getUSDPrice(CreamConfig, _crtoken_a, _crtokens.crUSDC, _stablecoins.USDC);
-            uint price_b = CreamExecution.getUSDPrice(CreamConfig, _crtoken_b, _crtokens.crUSDC, _stablecoins.USDC);
-            return SafeMath.div(price_a, price_b);
-        }
-
-        // check if we can get data from pancake
-        price = PancakeSwapExecution.getAmountsOut(self.PancakeSwapConfig, _token_a, _token_b);
-        return price;
+        return PancakeSwapExecution.getAmountsOut(self.PancakeSwapConfig, _token_a, _token_b, _amountIn);
     }
     
     /// @param self refer HLSConfig struct on the top.
@@ -336,13 +306,6 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Adds liquidity to a given pool.
     function addLiquidity(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public returns (uint) {
-        // TODO need to test about modification
-        // uint pair_price = getPrice(self, _crtokens, _stablecoins, _position.token_a, _position.token_b, _position.borrowed_crtoken_a, _position.borrowed_crtoken_b);
-        // uint price_decimals = PancakeSwapExecution.getPairDecimals(_position.lp_token);
-
-        // make sure if one of the tokens is WBNB => have a minimum of 0.3 BNB in the wallet at all times
-        // get a 50:50 split of the tokens in USD and make sure the two tokens are in correct order
-        // (uint max_available_staking_a, uint max_available_staking_b) = PancakeSwapExecution.splitTokensEvenly(_position.token_a_amount, _position.token_b_amount, pair_price, price_decimals);
         uint max_available_staking_a;
         uint max_available_staking_b;
 
@@ -351,10 +314,12 @@ library HighLevelSystem {
             if (bnb_check == 1) {
                 max_available_staking_a = IBEP20(_position.token_a).balanceOf(address(this));
                 max_available_staking_b = address(this).balance;
+                require(SafeMath.sub(max_available_staking_b, SafeMath.mul(3, 10**17)) > 0, "No enought BNB to pay transaction fees");
                 return PancakeSwapExecution.addLiquidityETH(self.PancakeSwapConfig, _position.token_a, _stablecoins.WBNB, max_available_staking_a, max_available_staking_b);
             } else {
                 max_available_staking_a = address(this).balance;
                 max_available_staking_b = IBEP20(_position.token_b).balanceOf(address(this));
+                require(SafeMath.sub(max_available_staking_a, SafeMath.mul(3, 10**17)) > 0, "No enought BNB to pay transaction fees");
                 return PancakeSwapExecution.addLiquidityETH(self.PancakeSwapConfig, _position.token_b, _stablecoins.WBNB, max_available_staking_b, max_available_staking_a);
             }
         } else {

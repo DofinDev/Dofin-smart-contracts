@@ -244,13 +244,14 @@ contract TestPancakeSwapExecution {
     // Parms
     address token_a_address = FakeFakeIBEP20Address;
     address token_b_address = FakeFakeIBEP20Address;
+    uint amountIn = 10;
     PancakeSwapExecution.PancakeSwapConfig memory pancakeSwapConfig = PancakeSwapExecution.PancakeSwapConfig({
       router: FakePancakeRouterAddress,
       factory: FakePancakeFactoryAddress,
       masterchef: address(0)
     });
     // Testing
-    uint result = PancakeSwapExecution.getAmountsOut(pancakeSwapConfig, token_a_address, token_b_address);
+    uint result = PancakeSwapExecution.getAmountsOut(pancakeSwapConfig, token_a_address, token_b_address, amountIn);
     uint expected = 10;
 
     Assert.equal(result, expected, "It should get the value 10 of amountOut.");

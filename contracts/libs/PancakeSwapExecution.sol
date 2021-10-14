@@ -160,14 +160,15 @@ library PancakeSwapExecution {
     }
     
     /// @param self config of PancakeSwap.
-    function getAmountsOut(PancakeSwapConfig memory self, address token_a_address, address token_b_address) public view returns (uint) {
-        uint token_a_decimals = IBEP20(token_a_address).decimals();
-        uint min_amountIn = SafeMath.mul(1, 10**token_a_decimals);
+    function getAmountsOut(PancakeSwapConfig memory self, address token_a_address, address token_b_address, uint amountIn) public view returns (uint) {
         address pair = IPancakeFactory(self.factory).getPair(token_a_address, token_b_address);
         (uint reserve0, uint reserve1, uint blockTimestampLast) = IPancakePair(pair).getReserves();
-        uint price = IPancakeRouter02(self.router).getAmountOut(min_amountIn, reserve0, reserve1);
-        
-        return price;
+        if (token_a_address == IPancakePair(pair).token0()) {
+            return IPancakeRouter02(self.router).getAmountOut(amountIn, reserve0, reserve1);
+        }
+        else {
+            return IPancakeRouter02(self.router).getAmountOut(amountIn, reserve1, reserve0);
+        }
     }
     
     /// @param lp_token_address address of the LP token.

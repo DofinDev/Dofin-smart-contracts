@@ -37,7 +37,7 @@ contract TestHighLevelSystem {
 
     StableCoin = HighLevelSystem.StableCoin({
       WBNB: address(0),
-      BNB: address(0),
+      CAKE: address(0),
       USDT: FakeFakeIBEP20Address,
       TUSD: address(0),
       BUSD: address(0),
@@ -82,17 +82,16 @@ contract TestHighLevelSystem {
     Assert.equal(result, expected, "It should get the bool true.");
   }
 
-  function testGetPrice() public {
+  function testGetPancakeSwapAmountOut() public {
     // Parms
     address _token_a = FakeFakeIBEP20Address;
     address _token_b = FakeFakeIBEP20Address;
-    address _crtoken_a = FakeCErc20DelegatorAddress;
-    address _crtoken_b = FakeCErc20DelegatorAddress;
+    uint _amountIn = 10;
     // Testing
-    uint result = HighLevelSystem.getPrice(HLSConfig, CreamToken, StableCoin, _token_a, _token_b, _crtoken_a, _crtoken_b);
-    uint expected = 1;
+    uint result = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, _token_a, _token_b, _amountIn);
+    uint expected = 10;
 
-    Assert.equal(result, expected, "It should get the value 10 of price.");
+    Assert.equal(result, expected, "It should get the value 10 of amount out.");
   }
 
   function testExit() public {
