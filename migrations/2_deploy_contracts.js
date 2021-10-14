@@ -18,7 +18,7 @@ var HighLevelSystem = artifacts.require("./libs/HighLevelSystem.sol");
 var CashBox = artifacts.require("./CashBox.sol");
 
 module.exports = async function(deployer, network, accounts) {
-  if (network == "develop" || network == "BSCTestnet") {
+  if (network == "develop" || network == "BSCTestnet" || network == "test") {
     await deployer.deploy(FakeIBEP20);
     // chainlink fake contracts
     await deployer.deploy(FakeLinkBSCOracle);
@@ -49,8 +49,7 @@ module.exports = async function(deployer, network, accounts) {
     var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakePancakePair.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address];
     var _dofin = '0x0000000000000000000000000000000000000000';
     var _deposit_limit = 100000;
-    var _add_funds_condition = 100000;
-    await deployer.deploy(CashBox, _uints, _addrs, _dofin, _deposit_limit, _add_funds_condition);
+    await deployer.deploy(CashBox, _uints, _addrs, _dofin, _deposit_limit);
   
   } else if (network == "BSCMainnet") {
     // librarys
@@ -80,7 +79,6 @@ module.exports = async function(deployer, network, accounts) {
     var _dofin = '0x503cF1B6253b02575bAf33E83000ff9209243784';
     // _deposit_limit will be same as max_amount_per_position
     var _deposit_limit = 500;
-    var _add_funds_condition = 500;
-    await deployer.deploy(CashBox, _uints, _addrs, _dofin, _deposit_limit, _add_funds_condition);
+    await deployer.deploy(CashBox, _uints, _addrs, _dofin, _deposit_limit);
   }
 };

@@ -196,6 +196,16 @@ contract TestCashBox {
 		Assert.equal(result, expected, "It should get the value 20 of total assets.");
 	}
 
+	function testGetDepositAmountOut() public {
+		// Params
+		uint _deposit_amount = 10;
+		// Testing
+		uint result = cashBox.getDepositAmountOut(_deposit_amount);
+		uint expected = 10;
+
+		Assert.equal(result, expected, "It should get the value 10 of Deposit Amount Out.");
+	}
+
 	function testDeposit() public {
 		// Params
 		address _token = FakeIBEP20Address;

@@ -51,7 +51,6 @@ contract CashBox is BasicContract {
     bool public activable;
     address private dofin;
     uint private deposit_limit;
-    uint private add_funds_condition;
     
     event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
     event Transfer(address indexed from, address indexed to, uint tokens);
@@ -59,7 +58,7 @@ contract CashBox is BasicContract {
     mapping(address => uint256) private balances;
     mapping(address => mapping (address => uint256)) private allowed;
 
-    constructor(uint[] memory _uints, address[] memory _addrs, address _dofin, uint _deposit_limit, uint _add_funds_condition) {
+    constructor(uint[] memory _uints, address[] memory _addrs, address _dofin, uint _deposit_limit) {
         position = HighLevelSystem.Position({
             pool_id: _uints[0],
             token_amount: 0,
@@ -82,7 +81,6 @@ contract CashBox is BasicContract {
         activable = true;
         dofin = _dofin;
         deposit_limit = _deposit_limit;
-        add_funds_condition = add_funds_condition;
     }
 
     modifier checkActivable() {
@@ -140,7 +138,8 @@ contract CashBox is BasicContract {
     
     function checkAddNewFunds() public onlyOwner checkActivable {
         uint free_funds = IBEP20(position.token).balanceOf(address(this));
-        uint condition = SafeMath.mul(add_funds_condition, 10**IBEP20(position.token).decimals());
+        uint token_balance = getTotalAssets();
+        uint condition = SafeMath.div(SafeMath.mul(token_balance, position.supply_funds_percentage), 100);
         if (free_funds >= condition) {
             if (position.token_a_amount == 0 && position.token_b_amount == 0) {
                 checkEntry();
