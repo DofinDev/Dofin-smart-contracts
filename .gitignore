@@ -3,6 +3,9 @@
 # Learn more about .gitignore:
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
+# Ignore migrate contract json files
+client/src/contracts/*.json
+
 # Package files
 package-lock.json
 package.json
