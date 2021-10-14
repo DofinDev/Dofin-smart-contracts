@@ -143,7 +143,7 @@ contract CashBox is BasicContract {
         uint condition = SafeMath.div(SafeMath.mul(token_balance, SafeMath.sub(100, position.supply_funds_percentage)), 100);
         if (free_funds >= condition) {
             if (position.token_a_amount == 0 && position.token_b_amount == 0) {
-                // Need to checkEntry
+                // Need to enter
                 return 1;
             } else {
                 // Need to rebalance
@@ -152,9 +152,9 @@ contract CashBox is BasicContract {
         }
     }
     
-    function checkEntry() public onlyOwner checkActivable {
+    function enter(uint _type) public onlyOwner checkActivable {
         
-        position = HighLevelSystem.checkEntry(HLSConfig, CreamToken, StableCoin, position);
+        position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, _type);
     }
 
     function exit(uint _type) public onlyOwner checkActivable {

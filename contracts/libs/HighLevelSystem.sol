@@ -10,17 +10,8 @@ import { LinkBSCOracle } from "./LinkBSCOracle.sol";
 /// @title High level system execution
 /// @author Andrew FU
 /// @dev All functions haven't finished unit test
-library HighLevelSystem {
-    // Chainlink
-    using LinkBSCOracle for LinkBSCOracle.LinkConfig;
-    // address private link_oracle;
+library HighLevelSystem {    
 
-    // Cream
-    using CreamExecution for CreamExecution.CreamConfig;
-
-    // PancakeSwap
-    using PancakeSwapExecution for PancakeSwapExecution.PancakeSwapConfig;
-    
     // HighLevelSystem config
     struct HLSConfig {
         LinkBSCOracle.LinkConfig LinkConfig;
@@ -139,34 +130,6 @@ library HighLevelSystem {
         // check if we can get data from pancake
         price = PancakeSwapExecution.getAmountsOut(self.PancakeSwapConfig, _token_a, _token_b);
         return price;
-    }
-
-    /// @param _position refer Position struct on the top.
-    /// @dev Checks if there is sufficient borrow liquidity on cream. Only borrow if there is 2x more liquidty than our borrow amount.
-    function checkBorrowLiquidity(Position memory _position) public view returns (bool) {
-        uint available_a = CreamExecution.getAvailableBorrow(_position.borrowed_crtoken_a);
-        uint available_b = CreamExecution.getAvailableBorrow(_position.borrowed_crtoken_b);
-
-        if (available_a > _position.token_a_amount && available_b > _position.token_b_amount) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    /// @param self refer HLSConfig struct on the top.
-    /// @param _crtokens refer CreamToken struct on the top.
-    /// @param _stablecoins refer StableCoin struct on the top.
-    /// @param _position refer Position struct on the top.
-    /// @dev Enters positions based on the opportunity.
-    function checkEntry(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public returns (Position memory) {
-        bool signal = checkBorrowLiquidity(_position);
-        if (signal == true) {
-            Position memory update_position = enterPosition(self, _crtokens, _stablecoins, _position, 1);
-            return update_position;
-        }
-
-        return _position;
     }
     
     /// @param self refer HLSConfig struct on the top.

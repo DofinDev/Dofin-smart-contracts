@@ -112,9 +112,11 @@ contract TestCashBox {
 		cashBox.exit(3);
 	}
 
-	function testCheckEntry() public {
+	function testEnter() public {
 		// Testing
-		cashBox.checkEntry();
+		cashBox.enter(1);
+		cashBox.enter(2);
+		cashBox.enter(3);
 	}
 
 	function testCheckCurrentBorrowLimit() public {

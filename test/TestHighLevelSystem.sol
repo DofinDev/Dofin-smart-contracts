@@ -95,54 +95,6 @@ contract TestHighLevelSystem {
     Assert.equal(result, expected, "It should get the value 10 of price.");
   }
 
-  function testCheckBorrowLiquidity() public {
-    // Testing
-    bool result = HighLevelSystem.checkBorrowLiquidity(Position);
-    bool expected = false;
-
-    Assert.equal(result, expected, "It should get the bool of true.");
-  }
-
-  function testCheckEntry() public {
-    // Testing
-    HighLevelSystem.Position memory result = HighLevelSystem.checkEntry(HLSConfig, CreamToken, StableCoin, Position);
-    HighLevelSystem.Position memory expected = HighLevelSystem.Position({
-      pool_id: 10,
-      token_amount: 10,
-      token_a_amount: 10,
-      token_b_amount: 10,
-      lp_token_amount: 10,
-      crtoken_amount: 10,
-      supply_crtoken_amount: 10,
-      token: FakeFakeIBEP20Address,
-      token_a: FakeFakeIBEP20Address,
-      token_b: FakeFakeIBEP20Address,
-      lp_token: FakePancakePairAddress,
-      supply_crtoken: FakeCErc20DelegatorAddress,
-      borrowed_crtoken_a: FakeCErc20DelegatorAddress,
-      borrowed_crtoken_b: FakeCErc20DelegatorAddress,
-      max_amount_per_position: 10,
-      supply_funds_percentage: 95
-    });
-
-    Assert.equal(result.pool_id, expected.pool_id, "It should get the position data pool_id.");
-    Assert.equal(result.token_amount, expected.token_amount, "It should get the position data token_amount.");
-    Assert.equal(result.token_a_amount, expected.token_a_amount, "It should get the position data token_a_amount.");
-    Assert.equal(result.token_b_amount, expected.token_b_amount, "It should get the position data token_b_amount.");
-    Assert.equal(result.lp_token_amount, expected.lp_token_amount, "It should get the position data lp_token_amount.");
-    Assert.equal(result.crtoken_amount, expected.crtoken_amount, "It should get the position data crtoken_amount.");
-    Assert.equal(result.supply_crtoken_amount, expected.supply_crtoken_amount, "It should get the position data supply_crtoken_amount.");
-    Assert.equal(result.token, expected.token, "It should get the position data token.");
-    Assert.equal(result.token_a, expected.token_a, "It should get the position data token_a.");
-    Assert.equal(result.token_b, expected.token_b, "It should get the position data token_b.");
-    Assert.equal(result.lp_token, expected.lp_token, "It should get the position data lp_token.");
-    Assert.equal(result.supply_crtoken, expected.supply_crtoken, "It should get the position data supply_crtoken.");
-    Assert.equal(result.borrowed_crtoken_a, expected.borrowed_crtoken_a, "It should get the position data borrowed_crtoken_a.");
-    Assert.equal(result.borrowed_crtoken_b, expected.borrowed_crtoken_b, "It should get the position data borrowed_crtoken_b.");
-    Assert.equal(result.max_amount_per_position, expected.max_amount_per_position, "It should get the position data max_amount_per_position.");
-    Assert.equal(result.supply_funds_percentage, expected.supply_funds_percentage, "It should get the position data supply_funds_percentage.");
-  }
-
   function testExit() public {
     // Testing
     bool result = HighLevelSystem.exit(HLSConfig, StableCoin, Position);
