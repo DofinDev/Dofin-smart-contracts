@@ -139,7 +139,8 @@ contract CashBox is BasicContract {
     function checkAddNewFunds() public onlyOwner checkActivable {
         uint free_funds = IBEP20(position.token).balanceOf(address(this));
         uint token_balance = getTotalAssets();
-        uint condition = SafeMath.div(SafeMath.mul(token_balance, position.supply_funds_percentage), 100);
+        token_balance = SafeMath.div(SafeMath.mul(token_balance, 100), position.supply_funds_percentage);
+        uint condition = SafeMath.div(SafeMath.mul(token_balance, SafeMath.sub(100, position.supply_funds_percentage)), 100);
         if (free_funds >= condition) {
             if (position.token_a_amount == 0 && position.token_b_amount == 0) {
                 checkEntry();
