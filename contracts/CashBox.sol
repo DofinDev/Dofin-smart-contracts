@@ -136,16 +136,18 @@ contract CashBox is BasicContract {
         position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 1);
     }
     
-    function checkAddNewFunds() public onlyOwner checkActivable {
+    function checkAddNewFunds() onlyOwner checkActivable public returns (uint) {
         uint free_funds = IBEP20(position.token).balanceOf(address(this));
         uint token_balance = getTotalAssets();
         token_balance = SafeMath.div(SafeMath.mul(token_balance, 100), position.supply_funds_percentage);
         uint condition = SafeMath.div(SafeMath.mul(token_balance, SafeMath.sub(100, position.supply_funds_percentage)), 100);
         if (free_funds >= condition) {
             if (position.token_a_amount == 0 && position.token_b_amount == 0) {
-                checkEntry();
+                // Need to checkEntry
+                return 1;
             } else {
-                reblance();
+                // Need to rebalance
+                return 2;
             }
         }
     }

@@ -119,25 +119,6 @@ contract TestPancakeSwapExecution {
     Assert.equal(result, expected, "It should get the address of pair.");
   }
 
-  function testLineUpPairs() public {
-    address FakeFakeIBEP20Address = DeployedAddresses.FakeIBEP20();
-    address FakePancakePairAddress = DeployedAddresses.FakePancakePair();
-
-    // Parms
-    address token_a_address = FakeFakeIBEP20Address;
-    address token_b_address = FakeFakeIBEP20Address;
-    uint data_a = 10;
-    uint data_b = 10;
-    address lp_token_address = FakePancakePairAddress;
-    // Testing
-    (uint result_1, uint result_2) = PancakeSwapExecution.lineUpPairs(token_a_address, token_b_address, data_a, data_b, lp_token_address);
-    uint expected_1 = 10;
-    uint expected_2 = 10;
-
-    Assert.equal(result_1, expected_1, "It should get the value 10 of token0 amount.");
-    Assert.equal(result_2, expected_2, "It should get the value 10 of token1 amount.");
-  }
-
   function testGetLPConstituients() public {
     address FakePancakePairAddress = DeployedAddresses.FakePancakePair();
 

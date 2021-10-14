@@ -110,17 +110,13 @@ library HighLevelSystem {
     /// @param _crtoken_b Cream crToken address.
     /// @dev Get the price for two tokens, from LINK if possible, else => straight from router.
     function getPrice(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, address _token_a, address _token_b, address _crtoken_a, address _crtoken_b) public view returns (uint) {
-        address WBNB = _stablecoins.WBNB;
-        address BNB = _stablecoins.BNB;
-        address USDC = _stablecoins.USDC;
-        address crUSDC = _crtokens.crUSDC;
         CreamExecution.CreamConfig memory CreamConfig = self.CreamConfig;
         
-        if (_token_a == WBNB) {
-            _token_a = BNB;
+        if (_token_a == _stablecoins.WBNB) {
+            _token_a = _stablecoins.BNB;
         }
-        if (_token_b == WBNB) {
-            _token_b = BNB;
+        if (_token_b == _stablecoins.WBNB) {
+            _token_b = _stablecoins.BNB;
         }
         if (isStableCoin(_stablecoins, _token_a) && isStableCoin(_stablecoins, _token_b)) {
             return 1;
@@ -135,8 +131,8 @@ library HighLevelSystem {
 
         // check if we can get data from cream
         if (_crtoken_a != address(0) && _crtoken_b != address(0)) {
-            uint price_a = CreamExecution.getUSDPrice(CreamConfig, _crtoken_a, crUSDC, USDC);
-            uint price_b = CreamExecution.getUSDPrice(CreamConfig, _crtoken_b, crUSDC, USDC);
+            uint price_a = CreamExecution.getUSDPrice(CreamConfig, _crtoken_a, _crtokens.crUSDC, _stablecoins.USDC);
+            uint price_b = CreamExecution.getUSDPrice(CreamConfig, _crtoken_b, _crtokens.crUSDC, _stablecoins.USDC);
             return SafeMath.div(price_a, price_b);
         }
 
@@ -169,11 +165,9 @@ library HighLevelSystem {
     /// @dev Function returns the amount of token0, token1s the specified number of LP token represents.
     function getLPUSDValue(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, uint lp_constituient_0, uint lp_constituient_1, address _lp_token, address _crtoken_a, address _crtoken_b) public view returns (uint) {
         (address token_0, address token_1) = PancakeSwapExecution.getLPTokenAddresses(_lp_token);
-        address USDC = _stablecoins.USDC;
-        address crUSDC = _crtokens.crUSDC;
 
-        uint token_0_exch_rate = getPrice(self, _crtokens, _stablecoins, token_0, USDC, _crtoken_a, crUSDC);
-        uint token_1_exch_rate = getPrice(self, _crtokens, _stablecoins, token_1, USDC, _crtoken_b, crUSDC);
+        uint token_0_exch_rate = getPrice(self, _crtokens, _stablecoins, token_0, _stablecoins.USDC, _crtoken_a, _crtokens.crUSDC);
+        uint token_1_exch_rate = getPrice(self, _crtokens, _stablecoins, token_1, _stablecoins.USDC, _crtoken_b, _crtokens.crUSDC);
 
         uint usd_value_0 = SafeMath.mul(token_0_exch_rate, lp_constituient_0);
         uint usd_value_1 = SafeMath.mul(token_1_exch_rate, lp_constituient_1);
@@ -500,26 +494,31 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Adds liquidity to a given pool.
     function addLiquidity(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public returns (uint) {
-        uint pair_price = getPrice(self, _crtokens, _stablecoins, _position.token_a, _position.token_b, _position.borrowed_crtoken_a, _position.borrowed_crtoken_b);
-        uint price_decimals = PancakeSwapExecution.getPairDecimals(PancakeSwapExecution.getPair(self.PancakeSwapConfig, _position.token_a, _position.token_b));
+        // TODO need to test about modification
+        // uint pair_price = getPrice(self, _crtokens, _stablecoins, _position.token_a, _position.token_b, _position.borrowed_crtoken_a, _position.borrowed_crtoken_b);
+        // uint price_decimals = PancakeSwapExecution.getPairDecimals(_position.lp_token);
 
         // make sure if one of the tokens is WBNB => have a minimum of 0.3 BNB in the wallet at all times
         // get a 50:50 split of the tokens in USD and make sure the two tokens are in correct order
-        (uint max_available_staking_a, uint max_available_staking_b) = PancakeSwapExecution.splitTokensEvenly(_position.token_a_amount, _position.token_b_amount, pair_price, price_decimals);
+        // (uint max_available_staking_a, uint max_available_staking_b) = PancakeSwapExecution.splitTokensEvenly(_position.token_a_amount, _position.token_b_amount, pair_price, price_decimals);
+        uint max_available_staking_a;
+        uint max_available_staking_b;
 
-        // todo check the lineups => amount for tokens a and tokens b is off
-        (max_available_staking_a, max_available_staking_b) = PancakeSwapExecution.lineUpPairs(_position.token_a, _position.token_b, max_available_staking_a, max_available_staking_b, _position.lp_token);
-        (address token_a, address token_b) = PancakeSwapExecution.getLPTokenAddresses(_position.lp_token);
-
-        uint bnb_check = isWBNB(_stablecoins, token_a, token_b);
+        uint bnb_check = isWBNB(_stablecoins, _position.token_a, _position.token_b);
         if (bnb_check != 2) {
             if (bnb_check == 1) {
-                return PancakeSwapExecution.addLiquidityETH(self.PancakeSwapConfig, token_a, _stablecoins.WBNB, max_available_staking_b, max_available_staking_a);
+                max_available_staking_a = IBEP20(_position.token_a).balanceOf(address(this));
+                max_available_staking_b = address(this).balance;
+                return PancakeSwapExecution.addLiquidityETH(self.PancakeSwapConfig, _position.token_a, _stablecoins.WBNB, max_available_staking_a, max_available_staking_b);
             } else {
-                return PancakeSwapExecution.addLiquidityETH(self.PancakeSwapConfig, token_b, _stablecoins.WBNB, max_available_staking_a, max_available_staking_b);
+                max_available_staking_a = address(this).balance;
+                max_available_staking_b = IBEP20(_position.token_b).balanceOf(address(this));
+                return PancakeSwapExecution.addLiquidityETH(self.PancakeSwapConfig, _position.token_b, _stablecoins.WBNB, max_available_staking_b, max_available_staking_a);
             }
         } else {
-            return PancakeSwapExecution.addLiquidity(self.PancakeSwapConfig, token_a, token_b, max_available_staking_a, max_available_staking_b);
+            max_available_staking_a = IBEP20(_position.token_a).balanceOf(address(this));
+            max_available_staking_b = IBEP20(_position.token_b).balanceOf(address(this));
+            return PancakeSwapExecution.addLiquidity(self.PancakeSwapConfig, _position.token_a, _position.token_b, max_available_staking_a, max_available_staking_b);
         }
     }
 

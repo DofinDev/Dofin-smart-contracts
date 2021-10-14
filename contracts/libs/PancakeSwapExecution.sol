@@ -78,20 +78,6 @@ library PancakeSwapExecution {
         return IPancakeFactory(self.factory).getPair(token_a_addr, token_b_addr);
     }
     
-    /// @dev Will line up our assumption with the contracts.
-    function lineUpPairs(address token_a_address, address token_b_address, uint data_a, uint data_b, address lp_token_address) public view returns (uint, uint) {
-        address contract_token_0_address = IPancakePair(lp_token_address).token0();
-        address contract_token_1_address = IPancakePair(lp_token_address).token1();
-        
-        if (token_a_address == contract_token_0_address && token_b_address == contract_token_1_address) {
-            return (data_a, data_b);
-        } else if (token_b_address == contract_token_0_address && token_a_address == contract_token_1_address) {
-            return (data_b, data_a);
-        } else {
-            revert("No this pair");
-        }
-    }
-    
     /// @param lp_token_amnt The LP token amount.
     /// @param lp_token_addr address of the LP token.
     /// @dev Returns the amount of token0, token1s the specified number of LP token represents.
