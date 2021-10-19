@@ -58,12 +58,12 @@ contract FakeCErc20Delegator {
 
   function exchangeRateStored() public returns(uint256) {
 
-    return 10;
+    return 10000000000000000000;
   }
 
   function balanceOf(address owner) public returns(uint256) {
 
-    return 10;
+    return 1000000000000000000000;
   }
 
   function borrow(uint256 borrowAmount) public returns(uint256) {

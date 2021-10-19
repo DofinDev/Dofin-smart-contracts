@@ -65,9 +65,9 @@ contract TestCreamExecution {
     address crtoken_address = FakeCErc20DelegatorAddress;
     // Testing
     uint result = CreamExecution.getUserTotalSupply(crtoken_address);
-    uint expected = 100;
+    uint expected = 100000000000000;
 
-    Assert.equal(result, expected, "It should get the value 10 of user total supply.");
+    Assert.equal(result, expected, "It should get the value 100000000000000 of user total supply.");
   }
 
   function testGetUSDCBNBPrice() public {
@@ -119,7 +119,7 @@ contract TestCreamExecution {
     address crtoken_address = FakeCErc20DelegatorAddress;
     // Testing
     uint result = CreamExecution.getExchangeRate(crtoken_address);
-    uint expected = 10;
+    uint expected = 10000000000000000000;
 
     Assert.equal(result, expected, "It should get the value 10 of Exchange Rate.");
   }
@@ -150,9 +150,9 @@ contract TestCreamExecution {
     address crtoken_address = FakeCErc20DelegatorAddress;
     // Testing
     uint result = CreamExecution.getWalletAmount(crtoken_address);
-    uint expected = 10;
+    uint expected = 1000000000000000000000;
 
-    Assert.equal(result, expected, "It should get the value 10 of wallet amount.");
+    Assert.equal(result, expected, "It should get the value 1000000000000000000000 of wallet amount.");
   }
 
   function testBorrow() public {

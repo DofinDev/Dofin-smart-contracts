@@ -68,9 +68,17 @@ library CreamExecution {
     /// @param crtoken_address Cream crToken address.
     /// @dev Gets the borrowed amount for a particular token.
     /// @return crToken amount.
-    function getUserTotalSupply(address crtoken_address) public returns (uint) {
+    function getUserTotalSupply(address crtoken_address) public view returns (uint) {
+        uint exch_rate = CErc20Delegator(crtoken_address).exchangeRateStored();
+        exch_rate = SafeMath.div(exch_rate, 10**18);
+        uint crtoken_decimals = CErc20Delegator(crtoken_address).decimals();
+        uint token_decimals = IBEP20(CErc20Delegator(crtoken_address).underlying()).decimals();
+        uint balance = CErc20Delegator(crtoken_address).balanceOf(address(this));
+        balance = SafeMath.div(balance, 10**crtoken_decimals);
+        uint total_supply = SafeMath.mul(balance, exch_rate);
+        total_supply = SafeMath.div(total_supply, 10**SafeMath.sub(18, crtoken_decimals));
         
-        return CErc20Delegator(crtoken_address).balanceOfUnderlying(address(this));
+        return SafeMath.mul(total_supply, 10**token_decimals);
     }
     
     /// @dev Gets the USDCBNB price.
