@@ -21,12 +21,15 @@ contract TestCashBox {
 	CashBox public cashBox = CashBox(DeployedAddresses.CashBox());
 
 	function beforeAll() public {
-		address[] memory _config = new address[] (5);
+		address[] memory _config = new address[] (8);
 		_config[0] = FakeLinkBSCOracleAddress;
-		_config[1] = FakePriceOracleProxyAddress;
-		_config[2] = FakePancakeRouterAddress;
-		_config[3] = FakePancakeFactoryAddress;
-		_config[4] = FakeMasterChefAddress;
+		_config[1] = FakeLinkBSCOracleAddress;
+		_config[2] = FakeLinkBSCOracleAddress;
+		_config[3] = FakeLinkBSCOracleAddress;
+		_config[4] = FakePriceOracleProxyAddress;
+		_config[5] = FakePancakeRouterAddress;
+		_config[6] = FakePancakeFactoryAddress;
+		_config[7] = FakeMasterChefAddress;
 		cashBox.setConfig(_config);
 
 		address[] memory _creamtokens = new address[] (3);
@@ -85,19 +88,19 @@ contract TestCashBox {
 		Assert.equal(result.supply_funds_percentage, expected.supply_funds_percentage, "It should get the position data of supply_funds_percentage.");
 	}
 
-	function testReblanceWithRepay() public {
+	function testRebalanceWithRepay() public {
 		// Testing
-		cashBox.reblanceWithRepay();
+		cashBox.rebalanceWithRepay();
 	}
 
-	function testReblanceWithoutRepay() public {
+	function testRebalanceWithoutRepay() public {
 		// Testing
-		cashBox.reblanceWithoutRepay();
+		cashBox.rebalanceWithoutRepay();
 	}
 
-	function testReblance() public {
+	function testRebalance() public {
 		// Testing
-		cashBox.reblance();
+		cashBox.rebalance();
 	}
 
 	function testCheckAddNewFunds() public {
@@ -122,9 +125,9 @@ contract TestCashBox {
 	function testCheckCurrentBorrowLimit() public {
 		// Testing
 		uint result = cashBox.checkCurrentBorrowLimit();
-		uint expected = 1503759398;
+		uint expected = 0;
 
-		Assert.equal(result, expected, "It should get the value 10 of Current Borrow Limit.");
+		Assert.equal(result, expected, "It should get the value 0 of Current Borrow Limit.");
 	}
 
 	function testTotalSupply() public {
@@ -193,9 +196,9 @@ contract TestCashBox {
 	function testGetTotalAssets() public {
 		// Testing
 		uint result = cashBox.getTotalAssets();
-		uint expected = 20;
+		uint expected = 100000000000030;
 
-		Assert.equal(result, expected, "It should get the value 20 of total assets.");
+		Assert.equal(result, expected, "It should get the value 100000000000030 of total assets.");
 	}
 
 	function testGetDepositAmountOut() public {
@@ -224,9 +227,9 @@ contract TestCashBox {
 		uint _ptoken_amount = 10;
 		// Testing
 		uint result = cashBox.getWithdrawAmount(_ptoken_amount);
-		uint expected = 16;
+		uint expected = 80000000000024;
 
-		Assert.equal(result, expected, "It should get the value 0 of total assets.");
+		Assert.equal(result, expected, "It should get the value 80000000000024 of withdraw amount.");
 	}
 
 	function testWithdraw() public {

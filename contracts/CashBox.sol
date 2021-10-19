@@ -89,11 +89,14 @@ contract CashBox is BasicContract {
     }
     
     function setConfig(address[] memory _config) public onlyOwner {
-        HLSConfig.LinkConfig.oracle = _config[0];
-        HLSConfig.CreamConfig.oracle = _config[1];
-        HLSConfig.PancakeSwapConfig.router = _config[2];
-        HLSConfig.PancakeSwapConfig.factory = _config[3];
-        HLSConfig.PancakeSwapConfig.masterchef = _config[4];
+        HLSConfig.LinkConfig.token_oracle = _config[0];
+        HLSConfig.LinkConfig.token_a_oracle = _config[1];
+        HLSConfig.LinkConfig.token_b_oracle = _config[2];
+        HLSConfig.LinkConfig.cake_oracle = _config[3];
+        HLSConfig.CreamConfig.oracle = _config[4];
+        HLSConfig.PancakeSwapConfig.router = _config[5];
+        HLSConfig.PancakeSwapConfig.factory = _config[6];
+        HLSConfig.PancakeSwapConfig.masterchef = _config[7];
     }
     
     function setCreamTokens(address[] memory _creamtokens) public onlyOwner {
@@ -121,17 +124,17 @@ contract CashBox is BasicContract {
         return position;
     }
     
-    function reblanceWithRepay() public onlyOwner checkActivable {
+    function rebalanceWithRepay() public onlyOwner checkActivable {
         HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 3);
         position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 3);
     }
     
-    function reblanceWithoutRepay() public onlyOwner checkActivable {
+    function rebalanceWithoutRepay() public onlyOwner checkActivable {
         HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 2);
         position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 2);
     }
     
-    function reblance() public onlyOwner checkActivable  {
+    function rebalance() public onlyOwner checkActivable  {
         HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 1);
         position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 1);
     }
@@ -239,16 +242,18 @@ contract CashBox is BasicContract {
         // PancakeSwap staked amount
         (uint token_a_amount, uint token_b_amount) = HighLevelSystem.getStakedTokens(HLSConfig, position);
 
-        crtoken_a_debt = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, position.token_a, position.token, crtoken_a_debt);
-        crtoken_b_debt = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, position.token_b, position.token, crtoken_b_debt);
-        pending_cake_amount = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, StableCoin.CAKE, position.token, pending_cake_amount);
-        token_a_amount = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, position.token_a, position.token, token_a_amount);
-        token_b_amount = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, position.token_b, position.token, token_b_amount);
+        uint cream_total_supply = HighLevelSystem.getCreamUserTotalSupply(position.supply_crtoken);
+        (uint token_a_value, uint token_b_value) = HighLevelSystem.getChainLinkValues(HLSConfig, SafeMath.sub(token_a_amount, crtoken_a_debt), SafeMath.sub(token_b_amount, crtoken_b_debt));
+        uint pending_cake_value = HighLevelSystem.getCakeChainLinkValue(HLSConfig, pending_cake_amount);
+        if (token_a_value == 0 && token_b_value == 0) {
+            token_a_value = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, position.token_a, position.token, SafeMath.sub(token_a_amount, crtoken_a_debt));
+            token_b_value = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, position.token_b, position.token, SafeMath.sub(token_b_amount, crtoken_b_debt));
+        }
+        if (pending_cake_value ==0) {
+            pending_cake_value = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, StableCoin.CAKE, position.token, pending_cake_amount);
+        }
         
-        uint total_assets = SafeMath.sub(SafeMath.add(token_a_amount, token_b_amount), SafeMath.add(crtoken_a_debt, crtoken_b_debt));
-        total_assets = SafeMath.add(total_assets, pending_cake_amount);
-        total_assets = SafeMath.add(total_assets, IBEP20(position.token).balanceOf(address(this)));
-        return total_assets;
+        return SafeMath.add(SafeMath.add(cream_total_supply, pending_cake_value), SafeMath.add(token_a_value, token_b_value));
     }
 
     function getDepositAmountOut(uint _deposit_amount) public view returns (uint) {
