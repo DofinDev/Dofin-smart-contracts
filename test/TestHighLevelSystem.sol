@@ -23,7 +23,10 @@ contract TestHighLevelSystem {
   HighLevelSystem.Position private Position;
 
   function beforeEach() public {
-    HLSConfig.LinkConfig.oracle = FakeLinkBSCOracleAddress;
+    HLSConfig.LinkConfig.token_oracle = FakeLinkBSCOracleAddress;
+    HLSConfig.LinkConfig.token_a_oracle = FakeLinkBSCOracleAddress;
+    HLSConfig.LinkConfig.token_b_oracle = FakeLinkBSCOracleAddress;
+    HLSConfig.LinkConfig.cake_oracle = FakeLinkBSCOracleAddress;
     HLSConfig.CreamConfig.oracle = FakePriceOracleProxyAddress;
     HLSConfig.PancakeSwapConfig.router = FakePancakeRouterAddress;
     HLSConfig.PancakeSwapConfig.factory = FakePancakeFactoryAddress;
@@ -80,6 +83,28 @@ contract TestHighLevelSystem {
     bool expected = true;
 
     Assert.equal(result, expected, "It should get the bool true.");
+  }
+
+  function testGetChainLinkValues() public {
+    // Parms
+    uint token_a_amount = 10;
+    uint token_b_amount = 10;
+    // Testing
+    (uint result_1, uint result_2) = HighLevelSystem.getChainLinkValues(HLSConfig, token_a_amount, token_b_amount);
+    uint expected = 10;
+
+    Assert.equal(result_1, expected, "It should get the value 10 of amount out.");
+    Assert.equal(result_2, expected, "It should get the value 10 of amount out.");
+  }
+
+  function testGetCakeChainLinkValue() public {
+    // Parms
+    uint cake_amount = 10;
+    // Testing
+    uint result = HighLevelSystem.getCakeChainLinkValue(HLSConfig, cake_amount);
+    uint expected = 10;
+
+    Assert.equal(result, expected, "It should get the value 10 of amount out.");
   }
 
   function testGetPancakeSwapAmountOut() public {
@@ -158,7 +183,7 @@ contract TestHighLevelSystem {
       token_a_amount: 10,
       token_b_amount: 10,
       lp_token_amount: 10,
-      crtoken_amount: 10,
+      crtoken_amount: 1000000000000000000000,
       supply_crtoken_amount: 10,
       token: FakeFakeIBEP20Address,
       token_a: FakeFakeIBEP20Address,
@@ -290,9 +315,19 @@ contract TestHighLevelSystem {
   function testCheckCurrentBorrowLimit() public {
     // Testing
     uint result = HighLevelSystem.checkCurrentBorrowLimit(HLSConfig, CreamToken, StableCoin, Position);
-    uint expected = 1503759398;
+    uint expected = 0;
 
-    Assert.equal(result, expected, "It should get the value 10 of current borrow limit.");
+    Assert.equal(result, expected, "It should get the value 0 of current borrow limit.");
+  }
+
+  function testGetCreamUserTotalSupply() public {
+    // Parms
+    address _crtoken = FakeCErc20DelegatorAddress;
+    // Testing
+    uint result = HighLevelSystem.getCreamUserTotalSupply(_crtoken);
+    uint expected = 100000000000000;
+
+    Assert.equal(result, expected, "It should get the value 100000000000000 of user total supply.");
   }
 
   function testAddLiquidity() public {

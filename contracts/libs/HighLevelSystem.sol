@@ -5,16 +5,24 @@ import "../token/BEP20/IBEP20.sol";
 import "../math/SafeMath.sol";
 import { PancakeSwapExecution } from "./PancakeSwapExecution.sol";
 import { CreamExecution } from "./CreamExecution.sol";
-import { LinkBSCOracle } from "./LinkBSCOracle.sol";
+import "../interfaces/chainlink/AggregatorInterface.sol";
 
 /// @title High level system execution
 /// @author Andrew FU
 /// @dev All functions haven't finished unit test
 library HighLevelSystem {    
 
+    // Addresss of ChainLink.
+    struct LinkConfig {
+        address token_oracle; // Address of Link oracle contract.
+        address token_a_oracle; // Address of Link oracle contract.
+        address token_b_oracle; // Address of Link oracle contract.
+        address cake_oracle; // Address of Link oracle contract.
+    }
+
     // HighLevelSystem config
     struct HLSConfig {
-        LinkBSCOracle.LinkConfig LinkConfig;
+        LinkConfig LinkConfig;
         CreamExecution.CreamConfig CreamConfig;
         PancakeSwapExecution.PancakeSwapConfig PancakeSwapConfig;
     }
@@ -90,6 +98,51 @@ library HighLevelSystem {
         else {
             return false;
         }
+    }
+
+    /// @param self refer HLSConfig struct on the top.
+    /// @param token_a_amount amountIn of token a.
+    /// @param token_b_amount amountIn of token b.
+    /// @dev Get the price for two tokens, from LINK if possible, else => straight from router.
+    function getChainLinkValues(HLSConfig memory self, uint token_a_amount, uint token_b_amount) public view returns (uint, uint) {
+        
+        // check if we can get data from chainlink
+        uint token_price;
+        uint token_a_price;
+        uint token_b_price;
+        uint token_a_rate;
+        uint token_b_rate;
+        if (self.LinkConfig.token_oracle != address(0)  && self.LinkConfig.token_a_oracle != address(0) && self.LinkConfig.token_b_oracle != address(0)) {
+            token_price = uint(AggregatorInterface(self.LinkConfig.token_oracle).latestAnswer());
+            token_a_price = uint(AggregatorInterface(self.LinkConfig.token_a_oracle).latestAnswer());
+            token_b_price = uint(AggregatorInterface(self.LinkConfig.token_b_oracle).latestAnswer());
+
+            token_a_rate = SafeMath.div(token_a_price, token_price);
+            token_b_rate = SafeMath.div(token_b_price, token_price);
+            return (SafeMath.mul(token_a_amount, token_a_rate), SafeMath.mul(token_b_amount, token_b_rate));
+        }
+
+        return (0, 0);
+    }
+
+    /// @param self refer HLSConfig struct on the top.
+    /// @param cake_amount amountIn of CAKE.
+    /// @dev Get the price for two tokens, from LINK if possible, else => straight from router.
+    function getCakeChainLinkValue(HLSConfig memory self, uint cake_amount) public view returns (uint) {
+        
+        // check if we can get data from chainlink
+        uint token_price;
+        uint cake_price;
+        uint cake_rate;
+        if (self.LinkConfig.token_oracle != address(0)  && self.LinkConfig.cake_oracle != address(0)) {
+            token_price = uint(AggregatorInterface(self.LinkConfig.token_oracle).latestAnswer());
+            cake_price = uint(AggregatorInterface(self.LinkConfig.cake_oracle).latestAnswer());
+
+            cake_rate = SafeMath.div(cake_price, token_price);
+            return SafeMath.mul(cake_amount, cake_rate);
+        }
+
+        return 0;
     }
     
     /// @param self refer HLSConfig struct on the top.
@@ -298,6 +351,13 @@ library HighLevelSystem {
         uint crtoken_b_borrow_amount = CreamExecution.getBorrowAmount(_position.borrowed_crtoken_b, _crtokens.crWBNB);
         uint crtoken_b_limit = CreamExecution.getBorrowLimit(self.CreamConfig, _position.borrowed_crtoken_b, _crtokens.crUSDC, _stablecoins.USDC, crtoken_b_supply_amount, crtoken_b_borrow_amount);
         return crtoken_a_limit + crtoken_b_limit;
+    }
+
+    /// @param _crtoken Cream crToken address.
+    /// @dev Gets the total supply amount on cream.
+    function getCreamUserTotalSupply(address _crtoken) public view returns (uint) {
+
+        return CreamExecution.getUserTotalSupply(_crtoken);
     }
 
     /// @param self refer HLSConfig struct on the top.
