@@ -7,17 +7,19 @@ library LinkBSCOracle {
     
     // Addresss of Link.
     struct LinkConfig {
-        address oracle; // Address of Link oracle contract.
+        address token_oracle; // Address of Link oracle contract.
+        address token_a_oracle; // Address of Link oracle contract.
+        address token_b_oracle; // Address of Link oracle contract.
     }
     
-    function getPrice(LinkConfig memory self) public view returns(int256) {
+    function getPrice(address _chain_link_addr) public view returns(int256) {
         
-        return AggregatorInterface(self.oracle).latestAnswer();
+        return AggregatorInterface(_chain_link_addr).latestAnswer();
     }
     
-    function getDecimals(LinkConfig memory self) public view returns(uint8) {
+    function getDecimals(address _chain_link_addr) public view returns(uint8) {
         
-        return AggregatorInterface(self.oracle).decimals();
+        return AggregatorInterface(_chain_link_addr).decimals();
     }
     
 }

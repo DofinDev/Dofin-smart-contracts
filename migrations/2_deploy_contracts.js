@@ -38,7 +38,6 @@ module.exports = async function(deployer, network, accounts) {
     await deployer.deploy(PancakeSwapExecution);
 
     // testing high level system library
-    await deployer.link(LinkBSCOracle, HighLevelSystem);
     await deployer.link(CreamExecution, HighLevelSystem);
     await deployer.link(PancakeSwapExecution, HighLevelSystem);
     await deployer.deploy(HighLevelSystem);
@@ -53,12 +52,10 @@ module.exports = async function(deployer, network, accounts) {
   
   } else if (network == "BSCMainnet") {
     // librarys
-    await deployer.deploy(LinkBSCOracle);
     await deployer.deploy(CreamExecution);
     await deployer.deploy(PancakeSwapExecution);
 
     // high level system library
-    await deployer.link(LinkBSCOracle, HighLevelSystem);
     await deployer.link(CreamExecution, HighLevelSystem);
     await deployer.link(PancakeSwapExecution, HighLevelSystem);
     await deployer.deploy(HighLevelSystem);

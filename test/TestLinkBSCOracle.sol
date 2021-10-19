@@ -10,9 +10,9 @@ contract TestLinkBSCOracle {
   function testGetPriceFunction() public {
     address FakeLinkBSCOracleAddress = DeployedAddresses.FakeLinkBSCOracle();
 
-    LinkBSCOracle.LinkConfig memory linkConfig = LinkBSCOracle.LinkConfig({oracle: FakeLinkBSCOracleAddress});
+    address _chain_link_addr = FakeLinkBSCOracleAddress;
 
-    int256 result = LinkBSCOracle.getPrice(linkConfig);
+    int256 result = LinkBSCOracle.getPrice(_chain_link_addr);
     int256 expected = 10;
 
     Assert.equal(result, expected, "It should get the value 10 of price.");
@@ -21,9 +21,9 @@ contract TestLinkBSCOracle {
   function testGetDecimalsFunction() public {
     address FakeLinkBSCOracleAddress = DeployedAddresses.FakeLinkBSCOracle();
 
-    LinkBSCOracle.LinkConfig memory linkConfig = LinkBSCOracle.LinkConfig({oracle: FakeLinkBSCOracleAddress});
+    address _chain_link_addr = FakeLinkBSCOracleAddress;
 
-    uint8 result = LinkBSCOracle.getDecimals(linkConfig);
+    uint8 result = LinkBSCOracle.getDecimals(_chain_link_addr);
     uint8 expected = 10;
 
     Assert.equal(result, expected, "It should get the value 10 of decimals.");
