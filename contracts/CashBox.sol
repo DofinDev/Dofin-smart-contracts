@@ -11,40 +11,14 @@ import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
 /// @dev All functions haven't finished unit test
 contract CashBox is BasicContract {
     
-    // Link
-    // address private link_oracle;
-    
-    // Cream
-    // address private constant cream_oracle = 0xab548FFf4Db8693c999e98551C756E6C2948C408;
-    // address private constant cream_troller = 0x589DE0F0Ccf905477646599bb3E5C622C84cC0BA;
-    
-    // PancakeSwap
-    // address private constant ROUTER = 0x10ED43C718714eb63d5aA57B78B54704E256024E;
-    // address private constant FACTORY = 0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73;
-    // address private constant MASTERCHEF = 0x73feaa1eE314F8c655E354234017bE2193C9E24E;
-    
-    // Cream token
-    // address private constant crWBNB = 0x15CC701370cb8ADA2a2B6f4226eC5CF6AA93bC67;
-    // address private constant crBNB = 0x1Ffe17B99b439bE0aFC831239dDECda2A790fF3A;
-    // address private constant crUSDC = 0xD83C88DB3A6cA4a32FFf1603b0f7DDce01F5f727;
-    
-    // StableCoin
-    // address private constant WBNB = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
-    // address private constant BNB = 0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73;
-    // address private constant USDT = 0x55d398326f99059fF775485246999027B3197955;
-    // address private constant TUSD = 0x14016E85a25aeb13065688cAFB43044C2ef86784;
-    // address private constant BUSD = 0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56;
-    // address private constant USDC = 0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d;
-    
     HighLevelSystem.HLSConfig private HLSConfig;
     HighLevelSystem.CreamToken private CreamToken;
     HighLevelSystem.StableCoin private StableCoin;
     HighLevelSystem.Position private position;
     
-    using SafeMath for uint;
     using SafeMath for uint256;
-    string public constant name = "Proof token";
-    string public constant symbol = "pToken";
+    string public constant name = "Proof token of USDC";
+    string public constant symbol = "pUSDC";
     uint8 public constant decimals = 18;
     uint256 private totalSupply_;
     
@@ -125,21 +99,21 @@ contract CashBox is BasicContract {
     }
     
     function rebalanceWithRepay() public onlyOwner checkActivable {
-        HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 3);
+        position = HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 3);
         position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 3);
     }
     
     function rebalanceWithoutRepay() public onlyOwner checkActivable {
-        HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 2);
+        position = HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 2);
         position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 2);
     }
     
     function rebalance() public onlyOwner checkActivable  {
-        HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 1);
+        position = HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 1);
         position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 1);
     }
     
-    function checkAddNewFunds() onlyOwner checkActivable public returns (uint) {
+    function checkAddNewFunds() onlyOwner checkActivable public view returns (uint) {
         uint free_funds = IBEP20(position.token).balanceOf(address(this));
         uint token_balance = getTotalAssets();
         token_balance = SafeMath.div(SafeMath.mul(token_balance, 100), position.supply_funds_percentage);
@@ -153,6 +127,7 @@ contract CashBox is BasicContract {
                 return 2;
             }
         }
+        return 0;
     }
     
     function enter(uint _type) public onlyOwner checkActivable {
@@ -162,7 +137,7 @@ contract CashBox is BasicContract {
 
     function exit(uint _type) public onlyOwner checkActivable {
         
-        HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, _type);
+        position = HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, _type);
     }
     
     function checkCurrentBorrowLimit() onlyOwner public returns (uint) {

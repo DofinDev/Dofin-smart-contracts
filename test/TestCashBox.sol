@@ -196,9 +196,9 @@ contract TestCashBox {
 	function testGetTotalAssets() public {
 		// Testing
 		uint result = cashBox.getTotalAssets();
-		uint expected = 100000000000030;
+		uint expected = 100000000000040;
 
-		Assert.equal(result, expected, "It should get the value 100000000000030 of total assets.");
+		Assert.equal(result, expected, "It should get the value 100000000000040 of total assets.");
 	}
 
 	function testGetDepositAmountOut() public {
@@ -227,9 +227,9 @@ contract TestCashBox {
 		uint _ptoken_amount = 10;
 		// Testing
 		uint result = cashBox.getWithdrawAmount(_ptoken_amount);
-		uint expected = 80000000000024;
+		uint expected = 80000000000032;
 
-		Assert.equal(result, expected, "It should get the value 80000000000024 of withdraw amount.");
+		Assert.equal(result, expected, "It should get the value 80000000000032 of withdraw amount.");
 	}
 
 	function testWithdraw() public {
