@@ -75,16 +75,6 @@ contract TestHighLevelSystem {
     Assert.equal(result, expected, "It should get the bool true.");
   }
 
-  function testIsStableCoin() public {
-    // Parms
-    address _token = FakeFakeIBEP20Address;
-    // Testing
-    bool result = HighLevelSystem.isStableCoin(StableCoin, _token);
-    bool expected = true;
-
-    Assert.equal(result, expected, "It should get the bool true.");
-  }
-
   function testGetChainLinkValues() public {
     // Parms
     uint token_a_amount = 10;

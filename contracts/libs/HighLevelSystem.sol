@@ -69,7 +69,7 @@ library HighLevelSystem {
     /// @param _stablecoins refer StableCoin struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Helper function to enter => addLiquidity + stakeLP.
-    function enter(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public returns (bool) {
+    function enter(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) internal returns (bool) {
         // add liquidity
         addLiquidity(self, _crtokens, _stablecoins, _position);
         
@@ -78,33 +78,12 @@ library HighLevelSystem {
 
         return true;
     }
-    
-    /// @param _stablecoins refer StableCoin struct on the top.
-    /// @param _token BEP20 token address.
-    /// @dev Checks whether a token is a stable coin or not.
-    function isStableCoin(StableCoin memory _stablecoins, address _token) public pure returns (bool) {
-        if (_token == _stablecoins.USDT) {
-            return true;
-        }
-        else if (_token == _stablecoins.TUSD) {
-            return true;
-        }
-        else if (_token == _stablecoins.BUSD) {
-            return true;
-        }
-        else if (_token == _stablecoins.USDC) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
 
     /// @param self refer HLSConfig struct on the top.
     /// @param token_a_amount amountIn of token a.
     /// @param token_b_amount amountIn of token b.
     /// @dev Get the price for two tokens, from LINK if possible, else => straight from router.
-    function getChainLinkValues(HLSConfig memory self, uint token_a_amount, uint token_b_amount) public view returns (uint, uint) {
+    function getChainLinkValues(HLSConfig memory self, uint token_a_amount, uint token_b_amount) external view returns (uint, uint) {
         
         // check if we can get data from chainlink
         uint token_price;
@@ -128,7 +107,7 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param cake_amount amountIn of CAKE.
     /// @dev Get the price for two tokens, from LINK if possible, else => straight from router.
-    function getCakeChainLinkValue(HLSConfig memory self, uint cake_amount) public view returns (uint) {
+    function getCakeChainLinkValue(HLSConfig memory self, uint cake_amount) external view returns (uint) {
         
         // check if we can get data from chainlink
         uint token_price;
@@ -150,7 +129,7 @@ library HighLevelSystem {
     /// @param _token_b BEP20 token address.
     /// @param _amountIn amount of token a.
     /// @dev Get the amount out from PancakeSwap.
-    function getPancakeSwapAmountOut(HLSConfig memory self, address _token_a, address _token_b, uint _amountIn) public view returns (uint) {
+    function getPancakeSwapAmountOut(HLSConfig memory self, address _token_a, address _token_b, uint _amountIn) external view returns (uint) {
         
         return PancakeSwapExecution.getAmountsOut(self.PancakeSwapConfig, _token_a, _token_b, _amountIn);
     }
@@ -159,7 +138,7 @@ library HighLevelSystem {
     /// @param _stablecoins refer StableCoin struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Helper function to exit => removeLiquidity + unstakeLP.
-    function exit(HLSConfig memory self, StableCoin memory _stablecoins, Position memory _position) public returns (bool) {
+    function exit(HLSConfig memory self, StableCoin memory _stablecoins, Position memory _position) internal returns (bool) {
         // unstake
         unstakeLP(self, _position);
 
@@ -171,7 +150,7 @@ library HighLevelSystem {
 
     /// @param _crtokens refer CreamToken struct on the top.
     /// @dev Returns a map of <crtoken_address, borrow_amount> of all the borrowed coins.
-    function getTotalBorrowAmount(CreamToken memory _crtokens, address _crtoken_a, address _crtoken_b) public view returns (uint, uint) {
+    function getTotalBorrowAmount(CreamToken memory _crtokens, address _crtoken_a, address _crtoken_b) external view returns (uint, uint) {
         uint crtoken_a_borrow_amount = CreamExecution.getBorrowAmount(_crtoken_a, _crtokens.crWBNB);
         uint crtoken_b_borrow_amount = CreamExecution.getBorrowAmount(_crtoken_b, _crtokens.crWBNB);
         return (crtoken_a_borrow_amount, crtoken_b_borrow_amount);
@@ -179,7 +158,7 @@ library HighLevelSystem {
 
     /// @param self refer HLSConfig struct on the top.
     /// @dev Returns pending cake rewards for all the positions we are in.
-    function getTotalCakePendingRewards(HLSConfig memory self, uint _pool_id) public view returns (uint) {
+    function getTotalCakePendingRewards(HLSConfig memory self, uint _pool_id) external view returns (uint) {
         uint cake_amnt = PancakeSwapExecution.getPendingFarmRewards(self.PancakeSwapConfig, _pool_id);
         return cake_amnt;
     }
@@ -187,7 +166,7 @@ library HighLevelSystem {
     /// @param _crtoken Cream crToken address.
     /// @param _amount amount of tokens to supply.
     /// @dev Supplies 'amount' worth of tokens to cream.
-    function supplyCream(address _crtoken, uint _amount) public returns (uint) {
+    function supplyCream(address _crtoken, uint _amount) internal returns (uint) {
         uint exchange_rate = CreamExecution.getExchangeRate(_crtoken);
         uint crtoken_amount = SafeMath.div(_amount, exchange_rate);
         return CreamExecution.supply(_crtoken, crtoken_amount);
@@ -196,7 +175,7 @@ library HighLevelSystem {
     /// @param _crtoken Cream crToken address.
     /// @param _amount amount of tokens to redeem.
     /// @dev Redeem amount worth of crtokens back.
-    function redeemCream(address _crtoken, uint _amount) public returns (uint) {
+    function redeemCream(address _crtoken, uint _amount) internal returns (uint) {
         
         return CreamExecution.redeemUnderlying(_crtoken, _amount);
     }
@@ -206,7 +185,7 @@ library HighLevelSystem {
     /// @param _stablecoins refer StableCoin struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Main entry function to borrow and enter a given position.
-    function enterPosition(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position, uint _type) public returns (Position memory) {
+    function enterPosition(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position, uint _type) external returns (Position memory) {
         
         if (_type == 1) {
             // Supply position
@@ -240,7 +219,7 @@ library HighLevelSystem {
     /// @param _stablecoins refer StableCoin struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Main exit function to exit and repay a given position.
-    function exitPosition(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position, uint _type) public returns (Position memory) {
+    function exitPosition(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position, uint _type) external returns (Position memory) {
         
         if (_type == 1 || _type == 2 || _type == 3) {
             // Exiting position
@@ -277,7 +256,7 @@ library HighLevelSystem {
     /// @param _stablecoins refer StableCoin struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Repay the tokens borrowed from cream.
-    function returnBorrow(CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public {
+    function returnBorrow(CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) internal {
         uint borrowed_a = CreamExecution.getBorrowAmount(_position.borrowed_crtoken_a, _crtokens.crWBNB);
         uint borrowed_b = CreamExecution.getBorrowAmount(_position.borrowed_crtoken_b, _crtokens.crWBNB);
 
@@ -315,7 +294,7 @@ library HighLevelSystem {
 
     /// @param _position refer Position struct on the top.
     /// @dev Borrow the required tokens for a given position on CREAM.
-    function borrowPosition(Position memory _position) public {
+    function borrowPosition(Position memory _position) internal {
         CreamExecution.borrow(_position.borrowed_crtoken_a, _position.token_a_amount);
         CreamExecution.borrow(_position.borrowed_crtoken_b, _position.token_b_amount);
     }
@@ -324,7 +303,7 @@ library HighLevelSystem {
     /// @param _token_a BEP20 token address.
     /// @param _token_b BEP20 token address.
     /// @dev Checks if either token address is WBNB.
-    function isWBNB(StableCoin memory _stablecoins, address _token_a, address _token_b) public pure returns (uint) {
+    function isWBNB(StableCoin memory _stablecoins, address _token_a, address _token_b) internal pure returns (uint) {
         if (_token_a == _stablecoins.WBNB && _token_b == _stablecoins.WBNB) {
             return 2;
         } else if (_token_a == _stablecoins.WBNB) {
@@ -342,7 +321,7 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @param self refer HLSConfig struct on the top.
     /// @dev Gets the total borrow limit for all positions on cream.
-    function checkCurrentBorrowLimit(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public returns (uint) {
+    function checkCurrentBorrowLimit(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) external returns (uint) {
         uint crtoken_a_supply_amount = CreamExecution.getUserTotalSupply(_position.borrowed_crtoken_a);
         uint crtoken_a_borrow_amount = CreamExecution.getBorrowAmount(_position.borrowed_crtoken_a, _crtokens.crWBNB);
         uint crtoken_a_limit = CreamExecution.getBorrowLimit(self.CreamConfig, _position.borrowed_crtoken_a, _crtokens.crUSDC, _stablecoins.USDC, crtoken_a_supply_amount, crtoken_a_borrow_amount);
@@ -355,7 +334,7 @@ library HighLevelSystem {
 
     /// @param _crtoken Cream crToken address.
     /// @dev Gets the total supply amount on cream.
-    function getCreamUserTotalSupply(address _crtoken) public view returns (uint) {
+    function getCreamUserTotalSupply(address _crtoken) external view returns (uint) {
 
         return CreamExecution.getUserTotalSupply(_crtoken);
     }
@@ -365,7 +344,7 @@ library HighLevelSystem {
     /// @param _stablecoins refer StableCoin struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Adds liquidity to a given pool.
-    function addLiquidity(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public returns (uint) {
+    function addLiquidity(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) internal returns (uint) {
         uint max_available_staking_a;
         uint max_available_staking_b;
 
@@ -393,7 +372,7 @@ library HighLevelSystem {
     /// @param _stablecoins refer StableCoin struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Removes liquidity from a given pool.
-    function removeLiquidity(HLSConfig memory self, StableCoin memory _stablecoins, Position memory _position) public returns (bool) {
+    function removeLiquidity(HLSConfig memory self, StableCoin memory _stablecoins, Position memory _position) internal returns (bool) {
         // check how much (token0 and token1) we have in the current farm
         //this function already sorts the token orders according to the contract
         uint lp_balance = PancakeSwapExecution.getLPBalance(_position.lp_token);
@@ -418,7 +397,7 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Stakes LP tokens into a farm.
-    function stakeLP(HLSConfig memory self, Position memory _position) public returns (bool) {
+    function stakeLP(HLSConfig memory self, Position memory _position) internal returns (bool) {
         uint lp_balance = PancakeSwapExecution.getLPBalance(_position.lp_token);
         return PancakeSwapExecution.stakeLP(self.PancakeSwapConfig, _position.pool_id, lp_balance);
     }
@@ -426,7 +405,7 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Removes liquidity from a given farm.
-    function unstakeLP(HLSConfig memory self, Position memory _position) public returns (bool) {
+    function unstakeLP(HLSConfig memory self, Position memory _position) internal returns (bool) {
         uint lp_balance = PancakeSwapExecution.getStakedLP(self.PancakeSwapConfig, _position.pool_id);
         return PancakeSwapExecution.unstakeLP(self.PancakeSwapConfig, _position.pool_id, lp_balance);
     }
@@ -434,7 +413,7 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Return staked tokens.
-    function getStakedTokens(HLSConfig memory self, Position memory _position) public view returns (uint, uint) {
+    function getStakedTokens(HLSConfig memory self, Position memory _position) external view returns (uint, uint) {
         uint lp_balance = PancakeSwapExecution.getStakedLP(self.PancakeSwapConfig, _position.pool_id);
         (uint token_a_amnt, uint token_b_amnt) = PancakeSwapExecution.getLPConstituients(lp_balance, _position.lp_token);
         return (token_a_amnt, token_b_amnt);
