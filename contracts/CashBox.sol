@@ -21,10 +21,10 @@ contract CashBox is BasicContract {
     string public constant symbol = "pUSDC";
     uint8 public constant decimals = 18;
     uint256 private totalSupply_;
-    
+
+    uint private deposit_limit;
     bool public activable;
     address private dofin;
-    uint private deposit_limit;
     
     event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
     event Transfer(address indexed from, address indexed to, uint tokens);
@@ -62,7 +62,7 @@ contract CashBox is BasicContract {
         _;
     }
     
-    function setConfig(address[] memory _config) public onlyOwner {
+    function setConfig(address[] memory _config) external onlyOwner {
         HLSConfig.LinkConfig.token_oracle = _config[0];
         HLSConfig.LinkConfig.token_a_oracle = _config[1];
         HLSConfig.LinkConfig.token_b_oracle = _config[2];
@@ -73,13 +73,13 @@ contract CashBox is BasicContract {
         HLSConfig.PancakeSwapConfig.masterchef = _config[7];
     }
     
-    function setCreamTokens(address[] memory _creamtokens) public onlyOwner {
+    function setCreamTokens(address[] memory _creamtokens) external onlyOwner {
         CreamToken.crWBNB = _creamtokens[0];
         CreamToken.crBNB = _creamtokens[1];
         CreamToken.crUSDC = _creamtokens[2];
     }
     
-    function setStableCoins(address[] memory _stablecoins) public onlyOwner {
+    function setStableCoins(address[] memory _stablecoins) external onlyOwner {
         StableCoin.WBNB = _stablecoins[0];
         StableCoin.CAKE = _stablecoins[1];
         StableCoin.USDT = _stablecoins[2];
@@ -88,32 +88,32 @@ contract CashBox is BasicContract {
         StableCoin.USDC = _stablecoins[5];
     }
 
-    function setActivable(bool _activable) public onlyOwner {
+    function setActivable(bool _activable) external onlyOwner {
         
         activable = _activable;
     }
     
-    function getPosition() public onlyOwner view returns(HighLevelSystem.Position memory) {
+    function getPosition() external onlyOwner view returns(HighLevelSystem.Position memory) {
         
         return position;
     }
     
-    function rebalanceWithRepay() public onlyOwner checkActivable {
+    function rebalanceWithRepay() external onlyOwner checkActivable {
         position = HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 3);
         position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 3);
     }
     
-    function rebalanceWithoutRepay() public onlyOwner checkActivable {
+    function rebalanceWithoutRepay() external onlyOwner checkActivable {
         position = HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 2);
         position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 2);
     }
     
-    function rebalance() public onlyOwner checkActivable  {
+    function rebalance() external onlyOwner checkActivable  {
         position = HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 1);
         position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 1);
     }
     
-    function checkAddNewFunds() onlyOwner checkActivable public view returns (uint) {
+    function checkAddNewFunds() onlyOwner checkActivable external view returns (uint) {
         uint free_funds = IBEP20(position.token).balanceOf(address(this));
         uint token_balance = getTotalAssets();
         token_balance = SafeMath.div(SafeMath.mul(token_balance, 100), position.supply_funds_percentage);
@@ -130,17 +130,17 @@ contract CashBox is BasicContract {
         return 0;
     }
     
-    function enter(uint _type) public onlyOwner checkActivable {
+    function enter(uint _type) external onlyOwner checkActivable {
         
         position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, _type);
     }
 
-    function exit(uint _type) public onlyOwner checkActivable {
+    function exit(uint _type) external onlyOwner checkActivable {
         
         position = HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, _type);
     }
     
-    function checkCurrentBorrowLimit() onlyOwner public returns (uint) {
+    function checkCurrentBorrowLimit() onlyOwner external returns (uint) {
         
         return HighLevelSystem.checkCurrentBorrowLimit(HLSConfig, CreamToken, StableCoin, position);
     }
@@ -244,7 +244,7 @@ contract CashBox is BasicContract {
         return shares;
     }
     
-    function deposit(address _token, uint _deposit_amount) public checkActivable returns (bool) {
+    function deposit(address _token, uint _deposit_amount) external checkActivable returns (bool) {
         require(_deposit_amount <= SafeMath.mul(deposit_limit, 10**IBEP20(position.token).decimals()), "Deposit too much!");
         require(_token == position.token, "Wrong token to deposit.");
         require(_deposit_amount > 0, "Deposit amount must bigger than 0.");
@@ -267,7 +267,7 @@ contract CashBox is BasicContract {
         return user_value;
     }
     
-    function withdraw(uint _withdraw_amount) public checkActivable returns (bool) {
+    function withdraw(uint _withdraw_amount) external checkActivable returns (bool) {
         require(_withdraw_amount <= balanceOf(msg.sender), "Wrong amount to withdraw.");
         
         uint freeFunds = IBEP20(position.token).balanceOf(address(this));
