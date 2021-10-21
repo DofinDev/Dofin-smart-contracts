@@ -7,44 +7,6 @@ import "../contracts/libs/CreamExecution.sol";
 
 contract TestCreamExecution {
 
-  function testGetAvailableBorrow() public {
-    address FakeCErc20DelegatorAddress = DeployedAddresses.FakeCErc20Delegator();
-
-    // Parms
-    address crtoken_address = FakeCErc20DelegatorAddress;
-    // Testing
-    uint result = CreamExecution.getAvailableBorrow(crtoken_address);
-    uint expected = 10;
-
-    Assert.equal(result, expected, "It should get the value 10 of available borrow.");
-  }
-
-  function testGetBorrowRate() public {
-    address FakeCErc20DelegatorAddress = DeployedAddresses.FakeCErc20Delegator();
-    address FakeInterestRateModelAddress = DeployedAddresses.FakeInterestRateModel();
-
-    // Parms
-    address crtoken_address = FakeCErc20DelegatorAddress;
-    // Testing
-    uint result = CreamExecution.getBorrowRate(crtoken_address);
-    uint expected = 10;
-
-    Assert.equal(result, expected, "It should get the value 10 of borrow rate.");
-  }
-
-  function testGetSupplyRate() public {
-    address FakeCErc20DelegatorAddress = DeployedAddresses.FakeCErc20Delegator();
-    address FakeInterestRateModelAddress = DeployedAddresses.FakeInterestRateModel();
-    
-    // Parms
-    address crtoken_address = FakeCErc20DelegatorAddress;
-    // Testing
-    uint result = CreamExecution.getSupplyRate(crtoken_address);
-    uint expected = 10;
-
-    Assert.equal(result, expected, "It should get the value 10 of supply rate.");
-  }
-
   function testGetBorrowAmount() public {
     address FakeCErc20DelegatorAddress = DeployedAddresses.FakeCErc20Delegator();
 
@@ -70,35 +32,7 @@ contract TestCreamExecution {
     Assert.equal(result, expected, "It should get the value 100000000000000 of user total supply.");
   }
 
-  function testGetUSDCBNBPrice() public {
-    address FakeCErc20DelegatorAddress = DeployedAddresses.FakeCErc20Delegator();
-    address FakePriceOracleProxyAddress = DeployedAddresses.FakePriceOracleProxy();
-
-    // Parms
-    address crtoken_address = FakeCErc20DelegatorAddress;
-    CreamExecution.CreamConfig memory creamConfig = CreamExecution.CreamConfig({oracle: FakePriceOracleProxyAddress});
-    // Testing
-    uint result = CreamExecution.getUSDCBNBPrice(creamConfig, crtoken_address);
-    uint expected = 10;
-
-    Assert.equal(result, expected, "It should get the value 10 of USDC BNB Price.");
-  }
-
   function testGetTokenPrice() public {
-    address FakeCErc20DelegatorAddress = DeployedAddresses.FakeCErc20Delegator();
-    address FakePriceOracleProxyAddress = DeployedAddresses.FakePriceOracleProxy();
-
-    // Parms
-    address crtoken_address = FakeCErc20DelegatorAddress;
-    CreamExecution.CreamConfig memory creamConfig = CreamExecution.CreamConfig({oracle: FakePriceOracleProxyAddress});
-    // Testing
-    uint result = CreamExecution.getCrTokenBalance(creamConfig, crtoken_address);
-    uint expected = 10;
-
-    Assert.equal(result, expected, "It should get the value 10 of CrToken Balance.");
-  }
-
-  function testGetCrTokenBalance() public {
     address FakeCErc20DelegatorAddress = DeployedAddresses.FakeCErc20Delegator();
     address FakePriceOracleProxyAddress = DeployedAddresses.FakePriceOracleProxy();
 
@@ -143,18 +77,6 @@ contract TestCreamExecution {
     Assert.equal(result, expected, "It should get the value 10 of borrow limit.");
   }
 
-  function testGetWalletAmount() public {
-    address FakeCErc20DelegatorAddress = DeployedAddresses.FakeCErc20Delegator();
-
-    // Parms
-    address crtoken_address = FakeCErc20DelegatorAddress;
-    // Testing
-    uint result = CreamExecution.getWalletAmount(crtoken_address);
-    uint expected = 1000000000000000000000;
-
-    Assert.equal(result, expected, "It should get the value 1000000000000000000000 of wallet amount.");
-  }
-
   function testBorrow() public {
     address FakeCErc20DelegatorAddress = DeployedAddresses.FakeCErc20Delegator();
 
@@ -179,23 +101,6 @@ contract TestCreamExecution {
     address expected = FakeIBEP20Address;
 
     Assert.equal(result, expected, "It should get the address msg sender of Underlying token.");
-  }
-
-  function testGetUSDPrice() public {
-    address FakeCErc20DelegatorAddress = DeployedAddresses.FakeCErc20Delegator();
-    address FakePriceOracleProxyAddress = DeployedAddresses.FakePriceOracleProxy();
-    address FakeIBEP20Address = DeployedAddresses.FakeIBEP20();
-
-    // Parms
-    address crtoken_address = FakeCErc20DelegatorAddress;
-    address crUSDC_address = FakeCErc20DelegatorAddress;
-    address USDC_address = FakeIBEP20Address;
-    CreamExecution.CreamConfig memory creamConfig = CreamExecution.CreamConfig({oracle: FakePriceOracleProxyAddress});
-    // Testing
-    uint result = CreamExecution.getUSDPrice(creamConfig, crtoken_address, crUSDC_address, USDC_address);
-    uint expected = 10**10;
-
-    Assert.equal(result, expected, "It should get the value 10 power of 10 of USD Price.");
   }
 
   function testRepay() public {
@@ -223,21 +128,6 @@ contract TestCreamExecution {
     uint expected = 10;
 
     Assert.equal(result, expected, "It should get the value 10 of repayETH amount.");
-  }
-
-  function testRepayAll() public {
-    address FakeCErc20DelegatorAddress = DeployedAddresses.FakeCErc20Delegator();
-    address FakeIBEP20Address = DeployedAddresses.FakeIBEP20();
-
-    // Parms
-    address token_addr = FakeIBEP20Address;
-    address crtoken_address = FakeCErc20DelegatorAddress;
-    address crWBNB_address = address(0);
-    // Testing
-    bool result = CreamExecution.repayAll(token_addr, crtoken_address, crWBNB_address);
-    bool expected = true;
-
-    Assert.equal(result, expected, "It should get the bool true of repayALL.");
   }
 
   function testSupply() public {
