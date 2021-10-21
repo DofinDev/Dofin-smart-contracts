@@ -48,8 +48,7 @@ contract CashBox is BasicContract {
             supply_crtoken: _addrs[4],
             borrowed_crtoken_a: _addrs[5],
             borrowed_crtoken_b: _addrs[6],
-            max_amount_per_position: _uints[1],
-            supply_funds_percentage: _uints[2]
+            supply_funds_percentage: _uints[1]
         });
         
         activable = true;
@@ -75,17 +74,13 @@ contract CashBox is BasicContract {
     
     function setCreamTokens(address[] memory _creamtokens) external onlyOwner {
         CreamToken.crWBNB = _creamtokens[0];
-        CreamToken.crBNB = _creamtokens[1];
-        CreamToken.crUSDC = _creamtokens[2];
+        CreamToken.crUSDC = _creamtokens[1];
     }
     
     function setStableCoins(address[] memory _stablecoins) external onlyOwner {
         StableCoin.WBNB = _stablecoins[0];
         StableCoin.CAKE = _stablecoins[1];
-        StableCoin.USDT = _stablecoins[2];
-        StableCoin.TUSD = _stablecoins[3];
-        StableCoin.BUSD = _stablecoins[4];
-        StableCoin.USDC = _stablecoins[5];
+        StableCoin.USDC = _stablecoins[2];
     }
 
     function setActivable(bool _activable) external onlyOwner {

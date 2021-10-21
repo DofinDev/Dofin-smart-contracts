@@ -13,7 +13,7 @@ import "../interfaces/chainlink/AggregatorInterface.sol";
 library HighLevelSystem {    
 
     // Addresss of ChainLink.
-    struct LinkConfig {
+    struct LinkAddressConfig {
         address token_oracle; // Address of Link oracle contract.
         address token_a_oracle; // Address of Link oracle contract.
         address token_b_oracle; // Address of Link oracle contract.
@@ -22,7 +22,7 @@ library HighLevelSystem {
 
     // HighLevelSystem config
     struct HLSConfig {
-        LinkConfig LinkConfig;
+        LinkAddressConfig LinkConfig;
         CreamExecution.CreamConfig CreamConfig;
         PancakeSwapExecution.PancakeSwapConfig PancakeSwapConfig;
     }
@@ -30,7 +30,6 @@ library HighLevelSystem {
     // Cream token required
     struct CreamToken {
         address crWBNB;
-        address crBNB;
         address crUSDC;
     }
     
@@ -38,9 +37,6 @@ library HighLevelSystem {
     struct StableCoin {
         address WBNB;
         address CAKE;
-        address USDT;
-        address TUSD;
-        address BUSD;
         address USDC;
     }
     
@@ -60,7 +56,6 @@ library HighLevelSystem {
         address supply_crtoken;
         address borrowed_crtoken_a;
         address borrowed_crtoken_b;
-        uint max_amount_per_position;
         uint supply_funds_percentage;
     }
     

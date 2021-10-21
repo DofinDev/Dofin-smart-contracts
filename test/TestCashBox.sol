@@ -32,19 +32,15 @@ contract TestCashBox {
 		_config[7] = FakeMasterChefAddress;
 		cashBox.setConfig(_config);
 
-		address[] memory _creamtokens = new address[] (3);
+		address[] memory _creamtokens = new address[] (2);
 		_creamtokens[0] = address(0);
 		_creamtokens[1] = FakeCErc20DelegatorAddress;
-		_creamtokens[2] = FakeCErc20DelegatorAddress;
 		cashBox.setCreamTokens(_creamtokens);
 
-		address[] memory _stablecoins = new address[] (6);
+		address[] memory _stablecoins = new address[] (3);
 		_stablecoins[0] = FakeIBEP20Address;
 		_stablecoins[1] = FakeIBEP20Address;
 		_stablecoins[2] = FakeIBEP20Address;
-		_stablecoins[3] = FakeIBEP20Address;
-		_stablecoins[4] = FakeIBEP20Address;
-		_stablecoins[5] = FakeIBEP20Address;
 		cashBox.setStableCoins(_stablecoins);
 	}
 
@@ -66,7 +62,6 @@ contract TestCashBox {
 		  supply_crtoken: FakeCErc20DelegatorAddress,
 		  borrowed_crtoken_a: FakeCErc20DelegatorAddress,
 		  borrowed_crtoken_b: FakeCErc20DelegatorAddress,
-		  max_amount_per_position: 10,
 		  supply_funds_percentage: 10
 		});
 
@@ -84,7 +79,6 @@ contract TestCashBox {
 		Assert.equal(result.supply_crtoken, expected.supply_crtoken, "It should get the position data of supply_crtoken.");
 		Assert.equal(result.borrowed_crtoken_a, expected.borrowed_crtoken_a, "It should get the position data of borrowed_crtoken_a.");
 		Assert.equal(result.borrowed_crtoken_b, expected.borrowed_crtoken_b, "It should get the position data of borrowed_crtoken_b.");
-		Assert.equal(result.max_amount_per_position, expected.max_amount_per_position, "It should get the position data of max_amount_per_position.");
 		Assert.equal(result.supply_funds_percentage, expected.supply_funds_percentage, "It should get the position data of supply_funds_percentage.");
 	}
 
