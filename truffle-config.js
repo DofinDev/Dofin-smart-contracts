@@ -15,7 +15,7 @@ module.exports = {
       settings: {
         optimizer: {
           enabled: true,
-          runs: 1   // Optimize for how many times you intend to run the code
+          runs: 500   // Optimize for how many times you intend to run the code
         },
         evmVersion: "istanbul" // Default: "istanbul"
       },
@@ -40,16 +40,19 @@ module.exports = {
     BSCTestnet: {
       provider: () => new HDWalletProvider(env.BSCTestnet_mnemonic, `https://data-seed-prebsc-1-s1.binance.org:8545`),
       network_id: 97,
-      confirmations: 10,
+      confirmations: 5,
       timeoutBlocks: 200,
       skipDryRun: true
     },
     BSCMainnet: {
       provider: () => new HDWalletProvider(env.BSCMainnet_mnemonic, `https://bsc-dataseed1.binance.org`),
       network_id: 56,
-      confirmations: 10,
+      confirmations: 5,
       timeoutBlocks: 200,
       skipDryRun: true
     }
+  },
+  mocha: {
+    reporter: 'eth-gas-reporter'
   }
 };
