@@ -351,4 +351,12 @@ contract TestHighLevelSystem {
     Assert.equal(result_2, expected_2, "It should get the value 10 of staked token 2.");
   }
 
+  function testGetTotalDebts() public {
+    // Testing
+    uint result = HighLevelSystem.getTotalDebts(HLSConfig, CreamToken, StableCoin, Position);
+    uint expected = 100000000000030;
+
+    Assert.equal(result, expected, "It should get the value 100000000000030 of total debts.");
+  }
+
 }

@@ -78,7 +78,7 @@ library HighLevelSystem {
     /// @param token_a_amount amountIn of token a.
     /// @param token_b_amount amountIn of token b.
     /// @dev Get the price for two tokens, from LINK if possible, else => straight from router.
-    function getChainLinkValues(HLSConfig memory self, uint token_a_amount, uint token_b_amount) external view returns (uint, uint) {
+    function getChainLinkValues(HLSConfig memory self, uint token_a_amount, uint token_b_amount) internal view returns (uint, uint) {
         
         // check if we can get data from chainlink
         uint token_price;
@@ -102,7 +102,7 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param cake_amount amountIn of CAKE.
     /// @dev Get the price for two tokens, from LINK if possible, else => straight from router.
-    function getCakeChainLinkValue(HLSConfig memory self, uint cake_amount) external view returns (uint) {
+    function getCakeChainLinkValue(HLSConfig memory self, uint cake_amount) internal view returns (uint) {
         
         // check if we can get data from chainlink
         uint token_price;
@@ -124,7 +124,7 @@ library HighLevelSystem {
     /// @param _token_b BEP20 token address.
     /// @param _amountIn amount of token a.
     /// @dev Get the amount out from PancakeSwap.
-    function getPancakeSwapAmountOut(HLSConfig memory self, address _token_a, address _token_b, uint _amountIn) external view returns (uint) {
+    function getPancakeSwapAmountOut(HLSConfig memory self, address _token_a, address _token_b, uint _amountIn) internal view returns (uint) {
         
         return PancakeSwapExecution.getAmountsOut(self.PancakeSwapConfig, _token_a, _token_b, _amountIn);
     }
@@ -145,7 +145,7 @@ library HighLevelSystem {
 
     /// @param _crtokens refer CreamToken struct on the top.
     /// @dev Returns a map of <crtoken_address, borrow_amount> of all the borrowed coins.
-    function getTotalBorrowAmount(CreamToken memory _crtokens, address _crtoken_a, address _crtoken_b) external view returns (uint, uint) {
+    function getTotalBorrowAmount(CreamToken memory _crtokens, address _crtoken_a, address _crtoken_b) internal view returns (uint, uint) {
         uint crtoken_a_borrow_amount = CreamExecution.getBorrowAmount(_crtoken_a, _crtokens.crWBNB);
         uint crtoken_b_borrow_amount = CreamExecution.getBorrowAmount(_crtoken_b, _crtokens.crWBNB);
         return (crtoken_a_borrow_amount, crtoken_b_borrow_amount);
@@ -153,7 +153,7 @@ library HighLevelSystem {
 
     /// @param self refer HLSConfig struct on the top.
     /// @dev Returns pending cake rewards for all the positions we are in.
-    function getTotalCakePendingRewards(HLSConfig memory self, uint _pool_id) external view returns (uint) {
+    function getTotalCakePendingRewards(HLSConfig memory self, uint _pool_id) internal view returns (uint) {
         uint cake_amnt = PancakeSwapExecution.getPendingFarmRewards(self.PancakeSwapConfig, _pool_id);
         return cake_amnt;
     }
@@ -329,7 +329,7 @@ library HighLevelSystem {
 
     /// @param _crtoken Cream crToken address.
     /// @dev Gets the total supply amount on cream.
-    function getCreamUserTotalSupply(address _crtoken) external view returns (uint) {
+    function getCreamUserTotalSupply(address _crtoken) internal view returns (uint) {
 
         return CreamExecution.getUserTotalSupply(_crtoken);
     }
@@ -408,10 +408,39 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Return staked tokens.
-    function getStakedTokens(HLSConfig memory self, Position memory _position) external view returns (uint, uint) {
+    function getStakedTokens(HLSConfig memory self, Position memory _position) internal view returns (uint, uint) {
         uint lp_balance = PancakeSwapExecution.getStakedLP(self.PancakeSwapConfig, _position.pool_id);
         (uint token_a_amnt, uint token_b_amnt) = PancakeSwapExecution.getLPConstituients(lp_balance, _position.lp_token);
         return (token_a_amnt, token_b_amnt);
+    }
+
+    /// @param self refer HLSConfig struct on the top.
+    /// @param _crtokens refer CreamToken struct on the top.
+    /// @param _stablecoins refer StableCoin struct on the top.
+    /// @param _position refer Position struct on the top.
+    /// @dev Return total debts.
+    function getTotalDebts(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) external view returns (uint) {
+        // Free funds amount
+        uint freeFunds = IBEP20(_position.token).balanceOf(address(this));
+        // Cream borrowed amount
+        (uint crtoken_a_debt, uint crtoken_b_debt) = getTotalBorrowAmount(_crtokens, _position.borrowed_crtoken_a, _position.borrowed_crtoken_b);
+        // PancakeSwap pending cake amount
+        uint pending_cake_amount = getTotalCakePendingRewards(self, _position.pool_id);
+        // PancakeSwap staked amount
+        (uint token_a_amount, uint token_b_amount) = getStakedTokens(self, _position);
+
+        uint cream_total_supply = getCreamUserTotalSupply(_position.supply_crtoken);
+        (uint token_a_value, uint token_b_value) = getChainLinkValues(self, SafeMath.sub(token_a_amount, crtoken_a_debt), SafeMath.sub(token_b_amount, crtoken_b_debt));
+        uint pending_cake_value = getCakeChainLinkValue(self, pending_cake_amount);
+        if (token_a_value == 0 && token_b_value == 0) {
+            token_a_value = getPancakeSwapAmountOut(self, _position.token_a, _position.token, SafeMath.sub(token_a_amount, crtoken_a_debt));
+            token_b_value = getPancakeSwapAmountOut(self, _position.token_b, _position.token, SafeMath.sub(token_b_amount, crtoken_b_debt));
+        }
+        if (pending_cake_value ==0) {
+            pending_cake_value = getPancakeSwapAmountOut(self, _stablecoins.CAKE, _position.token, pending_cake_amount);
+        }
+        
+        return SafeMath.add(SafeMath.add(cream_total_supply, pending_cake_value), SafeMath.add(token_a_value, token_b_value));
     }
 
 }
