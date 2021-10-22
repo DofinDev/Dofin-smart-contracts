@@ -48,7 +48,8 @@ contract CashBox is BasicContract {
             supply_crtoken: _addrs[4],
             borrowed_crtoken_a: _addrs[5],
             borrowed_crtoken_b: _addrs[6],
-            supply_funds_percentage: _uints[1]
+            supply_funds_percentage: _uints[1],
+            total_depts: 0
         });
         
         activable = true;
@@ -180,7 +181,7 @@ contract CashBox is BasicContract {
         return true;
     }
     
-    function mint(address account, uint256 amount) internal returns (bool) {
+    function mint(address account, uint256 amount) private returns (bool) {
         require(account != address(0), "ERC20: mint to the zero address");
 
         totalSupply_ += amount;
@@ -190,7 +191,7 @@ contract CashBox is BasicContract {
         return true;
     }
     
-    function burn(address account, uint256 amount) internal returns (bool) {
+    function burn(address account, uint256 amount) private returns (bool) {
         require(account != address(0), "ERC20: burn from the zero address");
 
         uint256 accountBalance = balances[account];
@@ -214,7 +215,7 @@ contract CashBox is BasicContract {
     }
 
     function getDepositAmountOut(uint _deposit_amount) public view returns (uint) {
-        uint totalAssets = getTotalAssets();
+        uint totalAssets = SafeMath.add(IBEP20(position.token).balanceOf(address(this)), position.total_depts);
         uint shares;
         if (totalSupply_ > 0) {
             shares = SafeMath.div(SafeMath.mul(_deposit_amount, totalSupply_), totalAssets);
@@ -240,7 +241,7 @@ contract CashBox is BasicContract {
     }
     
     function getWithdrawAmount(uint _ptoken_amount) public view returns (uint) {
-        uint totalAssets = getTotalAssets();
+        uint totalAssets = SafeMath.add(IBEP20(position.token).balanceOf(address(this)), position.total_depts);
         uint value = SafeMath.div(SafeMath.mul(_ptoken_amount, totalAssets), totalSupply_);
         uint user_value = SafeMath.div(SafeMath.mul(80, value), 100);
         

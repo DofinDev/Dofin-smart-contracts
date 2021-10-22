@@ -58,7 +58,8 @@ contract TestHighLevelSystem {
       supply_crtoken: FakeCErc20DelegatorAddress,
       borrowed_crtoken_a: FakeCErc20DelegatorAddress,
       borrowed_crtoken_b: FakeCErc20DelegatorAddress,
-      supply_funds_percentage: 95
+      supply_funds_percentage: 95,
+      total_depts: 0
     });
   }
 
@@ -177,7 +178,8 @@ contract TestHighLevelSystem {
       supply_crtoken: FakeCErc20DelegatorAddress,
       borrowed_crtoken_a: FakeCErc20DelegatorAddress,
       borrowed_crtoken_b: FakeCErc20DelegatorAddress,
-      supply_funds_percentage: 95
+      supply_funds_percentage: 95,
+      total_depts: 100000000000030
     });
     HighLevelSystem.Position memory expected_2 = HighLevelSystem.Position({
       pool_id: 10,
@@ -194,7 +196,8 @@ contract TestHighLevelSystem {
       supply_crtoken: FakeCErc20DelegatorAddress,
       borrowed_crtoken_a: FakeCErc20DelegatorAddress,
       borrowed_crtoken_b: FakeCErc20DelegatorAddress,
-      supply_funds_percentage: 95
+      supply_funds_percentage: 95,
+      total_depts: 100000000000030
     });
     HighLevelSystem.Position memory expected_3 = HighLevelSystem.Position({
       pool_id: 10,
@@ -211,7 +214,8 @@ contract TestHighLevelSystem {
       supply_crtoken: FakeCErc20DelegatorAddress,
       borrowed_crtoken_a: FakeCErc20DelegatorAddress,
       borrowed_crtoken_b: FakeCErc20DelegatorAddress,
-      supply_funds_percentage: 95
+      supply_funds_percentage: 95,
+      total_depts: 100000000000030
     });
 
     Assert.equal(result_1.pool_id, expected_1.pool_id, "It should get the type1 of position data pool_id.");
@@ -229,6 +233,7 @@ contract TestHighLevelSystem {
     Assert.equal(result_1.borrowed_crtoken_a, expected_1.borrowed_crtoken_a, "It should get the type1 of position data borrowed_crtoken_a.");
     Assert.equal(result_1.borrowed_crtoken_b, expected_1.borrowed_crtoken_b, "It should get the type1 of position data borrowed_crtoken_b.");
     Assert.equal(result_1.supply_funds_percentage, expected_1.supply_funds_percentage, "It should get the type1 of position data supply_funds_percentage.");
+    Assert.equal(result_1.total_depts, expected_1.total_depts, "It should get the type1 of position data total_depts.");
 
     Assert.equal(result_2.pool_id, expected_2.pool_id, "It should get the type2 of position data pool_id.");
     Assert.equal(result_2.token_amount, expected_2.token_amount, "It should get the type2 of position data token_amount.");
@@ -245,6 +250,7 @@ contract TestHighLevelSystem {
     Assert.equal(result_2.borrowed_crtoken_a, expected_2.borrowed_crtoken_a, "It should get the type2 of position data borrowed_crtoken_a.");
     Assert.equal(result_2.borrowed_crtoken_b, expected_2.borrowed_crtoken_b, "It should get the type2 of position data borrowed_crtoken_b.");
     Assert.equal(result_2.supply_funds_percentage, expected_2.supply_funds_percentage, "It should get the type2 of position data supply_funds_percentage.");
+    Assert.equal(result_2.total_depts, expected_2.total_depts, "It should get the type2 of position data total_depts.");
 
     Assert.equal(result_3.pool_id, expected_3.pool_id, "It should get the type3 of position data pool_id.");
     Assert.equal(result_3.token_amount, expected_3.token_amount, "It should get the type3 of position data token_amount.");
@@ -261,6 +267,7 @@ contract TestHighLevelSystem {
     Assert.equal(result_3.borrowed_crtoken_a, expected_3.borrowed_crtoken_a, "It should get the type3 of position data borrowed_crtoken_a.");
     Assert.equal(result_3.borrowed_crtoken_b, expected_3.borrowed_crtoken_b, "It should get the type3 of position data borrowed_crtoken_b.");
     Assert.equal(result_3.supply_funds_percentage, expected_3.supply_funds_percentage, "It should get the type3 of position data supply_funds_percentage.");
+    Assert.equal(result_3.total_depts, expected_3.total_depts, "It should get the type3 of position data total_depts.");
   }
 
   function testExitPosition() public {

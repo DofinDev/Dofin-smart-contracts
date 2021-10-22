@@ -57,6 +57,7 @@ library HighLevelSystem {
         address borrowed_crtoken_a;
         address borrowed_crtoken_b;
         uint supply_funds_percentage;
+        uint total_depts;
     }
     
     /// @param self refer HLSConfig struct on the top.
@@ -206,6 +207,8 @@ library HighLevelSystem {
             _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
         }
         
+        _position.total_depts = getTotalDebts(self, _crtokens, _stablecoins, _position);
+
         return _position;
     }
 
@@ -243,6 +246,8 @@ library HighLevelSystem {
             _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
             _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
         }
+
+        _position.total_depts = getTotalDebts(self, _crtokens, _stablecoins, _position);
 
         return _position;
     }
@@ -419,7 +424,7 @@ library HighLevelSystem {
     /// @param _stablecoins refer StableCoin struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Return total debts.
-    function getTotalDebts(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) external view returns (uint) {
+    function getTotalDebts(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) public view returns (uint) {
         // Cream borrowed amount
         (uint crtoken_a_debt, uint crtoken_b_debt) = getTotalBorrowAmount(_crtokens, _position.borrowed_crtoken_a, _position.borrowed_crtoken_b);
         // PancakeSwap pending cake amount

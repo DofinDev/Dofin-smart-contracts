@@ -62,7 +62,8 @@ contract TestCashBox {
 		  supply_crtoken: FakeCErc20DelegatorAddress,
 		  borrowed_crtoken_a: FakeCErc20DelegatorAddress,
 		  borrowed_crtoken_b: FakeCErc20DelegatorAddress,
-		  supply_funds_percentage: 10
+		  supply_funds_percentage: 10,
+		  total_depts: 0
 		});
 
 		Assert.equal(result.pool_id, expected.pool_id, "It should get the position data of pool_id.");
@@ -80,6 +81,7 @@ contract TestCashBox {
 		Assert.equal(result.borrowed_crtoken_a, expected.borrowed_crtoken_a, "It should get the position data of borrowed_crtoken_a.");
 		Assert.equal(result.borrowed_crtoken_b, expected.borrowed_crtoken_b, "It should get the position data of borrowed_crtoken_b.");
 		Assert.equal(result.supply_funds_percentage, expected.supply_funds_percentage, "It should get the position data of supply_funds_percentage.");
+		Assert.equal(result.total_depts, expected.total_depts, "It should get the position data of total_depts.");
 	}
 
 	function testRebalanceWithRepay() public {
