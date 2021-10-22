@@ -420,8 +420,6 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Return total debts.
     function getTotalDebts(HLSConfig memory self, CreamToken memory _crtokens, StableCoin memory _stablecoins, Position memory _position) external view returns (uint) {
-        // Free funds amount
-        uint freeFunds = IBEP20(_position.token).balanceOf(address(this));
         // Cream borrowed amount
         (uint crtoken_a_debt, uint crtoken_b_debt) = getTotalBorrowAmount(_crtokens, _position.borrowed_crtoken_a, _position.borrowed_crtoken_b);
         // PancakeSwap pending cake amount
