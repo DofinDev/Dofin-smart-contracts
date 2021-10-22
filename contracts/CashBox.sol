@@ -203,30 +203,6 @@ contract CashBox is BasicContract {
 
         return true;
     }
-    
-    // function getTotalAssets() public view returns (uint) {
-    //     // Free funds amount
-    //     uint freeFunds = IBEP20(position.token).balanceOf(address(this));
-    //     // Cream borrowed amount
-    //     (uint crtoken_a_debt, uint crtoken_b_debt) = HighLevelSystem.getTotalBorrowAmount(CreamToken, position.borrowed_crtoken_a, position.borrowed_crtoken_b);
-    //     // PancakeSwap pending cake amount
-    //     uint pending_cake_amount = HighLevelSystem.getTotalCakePendingRewards(HLSConfig, position.pool_id);
-    //     // PancakeSwap staked amount
-    //     (uint token_a_amount, uint token_b_amount) = HighLevelSystem.getStakedTokens(HLSConfig, position);
-
-    //     uint cream_total_supply = HighLevelSystem.getCreamUserTotalSupply(position.supply_crtoken);
-    //     (uint token_a_value, uint token_b_value) = HighLevelSystem.getChainLinkValues(HLSConfig, SafeMath.sub(token_a_amount, crtoken_a_debt), SafeMath.sub(token_b_amount, crtoken_b_debt));
-    //     uint pending_cake_value = HighLevelSystem.getCakeChainLinkValue(HLSConfig, pending_cake_amount);
-    //     if (token_a_value == 0 && token_b_value == 0) {
-    //         token_a_value = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, position.token_a, position.token, SafeMath.sub(token_a_amount, crtoken_a_debt));
-    //         token_b_value = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, position.token_b, position.token, SafeMath.sub(token_b_amount, crtoken_b_debt));
-    //     }
-    //     if (pending_cake_value ==0) {
-    //         pending_cake_value = HighLevelSystem.getPancakeSwapAmountOut(HLSConfig, StableCoin.CAKE, position.token, pending_cake_amount);
-    //     }
-        
-    //     return SafeMath.add(SafeMath.add(SafeMath.add(cream_total_supply, pending_cake_value), freeFunds), SafeMath.add(token_a_value, token_b_value));
-    // }
 
     function getTotalAssets() public view returns (uint) {
         // Free funds amount
