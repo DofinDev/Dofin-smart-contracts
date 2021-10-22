@@ -38,16 +38,16 @@ module.exports = {
       network_id: "*",
     },
     BSCTestnet: {
-      provider: () => new HDWalletProvider(env.BSCTestnet_mnemonic, `https://data-seed-prebsc-1-s1.binance.org:8545`),
+      provider: () => new HDWalletProvider(env.BSCTestnet_mnemonic, 'https://data-seed-prebsc-1-s1.binance.org:8545'),
       network_id: 97,
-      confirmations: 5,
+      confirmations: 10,
       timeoutBlocks: 200,
       skipDryRun: true
     },
     BSCMainnet: {
-      provider: () => new HDWalletProvider(env.BSCMainnet_mnemonic, `https://bsc-dataseed1.binance.org`),
+      provider: () => new HDWalletProvider(env.BSCMainnet_mnemonic, 'https://bsc-dataseed.binance.org/'),
       network_id: 56,
-      confirmations: 5,
+      confirmations: 10,
       timeoutBlocks: 200,
       skipDryRun: true
     }
