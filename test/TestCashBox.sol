@@ -13,7 +13,6 @@ contract TestCashBox {
 	address private FakePancakePairAddress = DeployedAddresses.FakePancakePair();
 
 	address private FakeLinkBSCOracleAddress = DeployedAddresses.FakeLinkBSCOracle();
-	address private FakePriceOracleProxyAddress = DeployedAddresses.FakePriceOracleProxy();
 	address private FakePancakeFactoryAddress = DeployedAddresses.FakePancakeFactory();
 	address private FakeMasterChefAddress = DeployedAddresses.FakeMasterChef();
 	address private FakePancakeRouterAddress = DeployedAddresses.FakePancakeRouter();
@@ -26,22 +25,11 @@ contract TestCashBox {
 		_config[1] = FakeLinkBSCOracleAddress;
 		_config[2] = FakeLinkBSCOracleAddress;
 		_config[3] = FakeLinkBSCOracleAddress;
-		_config[4] = FakePriceOracleProxyAddress;
-		_config[5] = FakePancakeRouterAddress;
-		_config[6] = FakePancakeFactoryAddress;
-		_config[7] = FakeMasterChefAddress;
+		_config[4] = FakePancakeRouterAddress;
+		_config[5] = FakePancakeFactoryAddress;
+		_config[6] = FakeMasterChefAddress;
+		_config[7] = FakeIBEP20Address;
 		cashBox.setConfig(_config);
-
-		address[] memory _creamtokens = new address[] (2);
-		_creamtokens[0] = address(0);
-		_creamtokens[1] = FakeCErc20DelegatorAddress;
-		cashBox.setCreamTokens(_creamtokens);
-
-		address[] memory _stablecoins = new address[] (3);
-		_stablecoins[0] = FakeIBEP20Address;
-		_stablecoins[1] = FakeIBEP20Address;
-		_stablecoins[2] = FakeIBEP20Address;
-		cashBox.setStableCoins(_stablecoins);
 	}
 
 	function testGetPosition() public {
@@ -101,29 +89,40 @@ contract TestCashBox {
 
 	function testCheckAddNewFunds() public {
 		// Testing
-		cashBox.checkAddNewFunds();
+		uint result = cashBox.checkAddNewFunds();
+		uint expected = 0;
+
+		Assert.equal(result, expected, "It should get the value 0 of CheckAddNewFunds signal.");
 	}
 
-	function testExit() public {
+	function testExit1() public {
 		// Testing
 		cashBox.exit(1);
+	}
+
+	function testExit2() public {
+		// Testing
 		cashBox.exit(2);
+	}
+
+	function testExit3() public {
+		// Testing
 		cashBox.exit(3);
 	}
 
-	function testEnter() public {
+	function testEnter1() public {
 		// Testing
 		cashBox.enter(1);
-		cashBox.enter(2);
-		cashBox.enter(3);
 	}
 
-	function testCheckCurrentBorrowLimit() public {
+	function testEnter2() public {
 		// Testing
-		uint result = cashBox.checkCurrentBorrowLimit();
-		uint expected = 0;
+		cashBox.enter(2);
+	}
 
-		Assert.equal(result, expected, "It should get the value 0 of Current Borrow Limit.");
+	function testEnter3() public {
+		// Testing
+		cashBox.enter(3);
 	}
 
 	function testTotalSupply() public {
@@ -192,9 +191,9 @@ contract TestCashBox {
 	function testGetTotalAssets() public {
 		// Testing
 		uint result = cashBox.getTotalAssets();
-		uint expected = 100000000000040;
+		uint expected = 100000000000020;
 
-		Assert.equal(result, expected, "It should get the value 100000000000040 of total assets.");
+		Assert.equal(result, expected, "It should get the value 100000000000020 of total assets.");
 	}
 
 	function testGetDepositAmountOut() public {
@@ -223,9 +222,9 @@ contract TestCashBox {
 		uint _ptoken_amount = 10;
 		// Testing
 		uint result = cashBox.getWithdrawAmount(_ptoken_amount);
-		uint expected = 80000000000032;
+		uint expected = 80000000000016;
 
-		Assert.equal(result, expected, "It should get the value 80000000000032 of withdraw amount.");
+		Assert.equal(result, expected, "It should get the value 80000000000016 of withdraw amount.");
 	}
 
 	function testWithdraw() public {
