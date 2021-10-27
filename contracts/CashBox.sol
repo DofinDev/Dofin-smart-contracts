@@ -22,6 +22,7 @@ contract CashBox is BasicContract {
     uint256 constant private MAX_INT_EXPONENTIATION = 2**256 - 1;
 
     uint256 private deposit_limit;
+    uint256 private temp_free_funds;
     bool public activable;
     address private dofin;
     
@@ -101,24 +102,24 @@ contract CashBox is BasicContract {
     function rebalanceWithRepay() external onlyOwner checkActivable {
         position = HighLevelSystem.exitPosition(HLSConfig, position, 3);
         position = HighLevelSystem.enterPosition(HLSConfig, position, 3);
+        temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
     
     function rebalanceWithoutRepay() external onlyOwner checkActivable {
         position = HighLevelSystem.exitPosition(HLSConfig, position, 2);
         position = HighLevelSystem.enterPosition(HLSConfig, position, 2);
+        temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
     
     function rebalance() external onlyOwner checkActivable  {
         position = HighLevelSystem.exitPosition(HLSConfig, position, 1);
         position = HighLevelSystem.enterPosition(HLSConfig, position, 1);
+        temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
     
     function checkAddNewFunds() onlyOwner checkActivable external view returns (uint256) {
         uint256 free_funds = IBEP20(position.token).balanceOf(address(this));
-        uint256 token_balance = getTotalAssets();
-        token_balance = SafeMath.div(SafeMath.mul(token_balance, 100), position.supply_funds_percentage);
-        uint256 condition = SafeMath.div(SafeMath.mul(token_balance, SafeMath.sub(100, position.supply_funds_percentage)), 100);
-        if (free_funds >= condition) {
+        if (free_funds > temp_free_funds) {
             if (position.token_a_amount == 0 && position.token_b_amount == 0) {
                 // Need to enter
                 return 1;
@@ -133,6 +134,7 @@ contract CashBox is BasicContract {
     function enter(uint256 _type) external onlyOwner checkActivable {
         
         position = HighLevelSystem.enterPosition(HLSConfig, position, _type);
+        temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
 
     function exit(uint256 _type) external onlyOwner checkActivable {
@@ -210,14 +212,14 @@ contract CashBox is BasicContract {
         // Total Debts amount from Cream, PancakeSwap
         uint256 totalDebts = HighLevelSystem.getTotalDebts(HLSConfig, position);
         
-        return SafeMath.add(freeFunds, totalDebts);
+        return freeFunds.add(totalDebts);
     }
 
     function getDepositAmountOut(uint256 _deposit_amount) public view returns (uint256) {
-        uint256 totalAssets = SafeMath.add(IBEP20(position.token).balanceOf(address(this)), position.total_depts);
+        uint256 totalAssets = IBEP20(position.token).balanceOf(address(this)).add(position.total_depts);
         uint256 shares;
         if (totalSupply_ > 0) {
-            shares = SafeMath.div(SafeMath.mul(_deposit_amount, totalSupply_), totalAssets);
+            shares = _deposit_amount.mul(totalSupply_).div(totalAssets);
         } else {
             shares = _deposit_amount;
         }
@@ -225,7 +227,7 @@ contract CashBox is BasicContract {
     }
     
     function deposit(address _token, uint256 _deposit_amount) external checkActivable returns (bool) {
-        require(_deposit_amount <= SafeMath.mul(deposit_limit, 10**IBEP20(position.token).decimals()), "Deposit too much!");
+        require(_deposit_amount <= deposit_limit.mul(10**IBEP20(position.token).decimals()), "Deposit too much!");
         require(_token == position.token, "Wrong token to deposit.");
         require(_deposit_amount > 0, "Deposit amount must bigger than 0.");
         
@@ -240,9 +242,9 @@ contract CashBox is BasicContract {
     }
     
     function getWithdrawAmount(uint256 _ptoken_amount) public view returns (uint256) {
-        uint256 totalAssets = SafeMath.add(IBEP20(position.token).balanceOf(address(this)), position.total_depts);
-        uint256 value = SafeMath.div(SafeMath.mul(_ptoken_amount, totalAssets), totalSupply_);
-        uint256 user_value = SafeMath.div(SafeMath.mul(80, value), 100);
+        uint256 totalAssets = IBEP20(position.token).balanceOf(address(this)).add(position.total_depts);
+        uint256 value = _ptoken_amount.mul(totalAssets).div(totalSupply_);
+        uint256 user_value = value.mul(80).div(100);
         
         return user_value;
     }
@@ -252,7 +254,7 @@ contract CashBox is BasicContract {
         
         uint256 freeFunds = IBEP20(position.token).balanceOf(address(this));
         uint256 totalAssets = getTotalAssets();
-        uint256 value = SafeMath.div(SafeMath.mul(_withdraw_amount, totalAssets), totalSupply_);
+        uint256 value = _withdraw_amount.mul(totalAssets).div(totalSupply_);
         bool need_rebalance = false;
         // If no enough amount of free funds can transfer will trigger exit position
         if (value > freeFunds) {
@@ -262,8 +264,8 @@ contract CashBox is BasicContract {
         
         // Will charge 20% fees
         burn(msg.sender, _withdraw_amount);
-        uint256 dofin_value = SafeMath.div(SafeMath.mul(20, value), 100);
-        uint256 user_value = SafeMath.div(SafeMath.mul(80, value), 100);
+        uint256 dofin_value = value.mul(20).div(100);
+        uint256 user_value = value.mul(80).div(100);
         IBEP20(position.token).transferFrom(address(this), dofin, dofin_value);
         IBEP20(position.token).transferFrom(address(this), msg.sender, user_value);
         
