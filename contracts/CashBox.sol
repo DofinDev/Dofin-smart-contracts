@@ -12,8 +12,6 @@ import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
 contract CashBox is BasicContract {
     
     HighLevelSystem.HLSConfig private HLSConfig;
-    HighLevelSystem.CreamToken private CreamToken;
-    HighLevelSystem.StableCoin private StableCoin;
     HighLevelSystem.Position private position;
     
     using SafeMath for uint256;
@@ -21,6 +19,7 @@ contract CashBox is BasicContract {
     string public constant symbol = "pUSDC";
     uint8 public constant decimals = 18;
     uint256 private totalSupply_;
+    uint256 constant private MAX_INT_EXPONENTIATION = 2**256 - 1;
 
     uint private deposit_limit;
     bool public activable;
@@ -63,25 +62,30 @@ contract CashBox is BasicContract {
     }
     
     function setConfig(address[] memory _config) external onlyOwner {
-        HLSConfig.LinkConfig.token_oracle = _config[0];
-        HLSConfig.LinkConfig.token_a_oracle = _config[1];
-        HLSConfig.LinkConfig.token_b_oracle = _config[2];
-        HLSConfig.LinkConfig.cake_oracle = _config[3];
-        HLSConfig.CreamConfig.oracle = _config[4];
-        HLSConfig.PancakeSwapConfig.router = _config[5];
-        HLSConfig.PancakeSwapConfig.factory = _config[6];
-        HLSConfig.PancakeSwapConfig.masterchef = _config[7];
-    }
-    
-    function setCreamTokens(address[] memory _creamtokens) external onlyOwner {
-        CreamToken.crWBNB = _creamtokens[0];
-        CreamToken.crUSDC = _creamtokens[1];
-    }
-    
-    function setStableCoins(address[] memory _stablecoins) external onlyOwner {
-        StableCoin.WBNB = _stablecoins[0];
-        StableCoin.CAKE = _stablecoins[1];
-        StableCoin.USDC = _stablecoins[2];
+        HLSConfig.token_oracle = _config[0];
+        HLSConfig.token_a_oracle = _config[1];
+        HLSConfig.token_b_oracle = _config[2];
+        HLSConfig.cake_oracle = _config[3];
+        HLSConfig.router = _config[4];
+        HLSConfig.factory = _config[5];
+        HLSConfig.masterchef = _config[6];
+        HLSConfig.CAKE = _config[7];
+
+        // Approve for Cream borrow 
+        IBEP20(position.token).approve(position.supply_crtoken, MAX_INT_EXPONENTIATION);
+        // Approve for PancakeSwap addliquidity
+        IBEP20(position.token_a).approve(HLSConfig.router, MAX_INT_EXPONENTIATION);
+        IBEP20(position.token_b).approve(HLSConfig.router, MAX_INT_EXPONENTIATION);
+        // Approve for PancakeSwap stake
+        IBEP20(position.lp_token).approve(HLSConfig.masterchef, MAX_INT_EXPONENTIATION);
+
+        // Approve for PancakeSwap removeliquidity
+        IBEP20(position.lp_token).approve(HLSConfig.router, MAX_INT_EXPONENTIATION);
+        // Approve for Cream repay
+        IBEP20(position.token_a).approve(position.borrowed_crtoken_a, MAX_INT_EXPONENTIATION);
+        IBEP20(position.token_b).approve(position.borrowed_crtoken_b, MAX_INT_EXPONENTIATION);
+        // Approve for Cream redeem
+        IBEP20(position.supply_crtoken).approve(position.supply_crtoken, MAX_INT_EXPONENTIATION);
     }
 
     function setActivable(bool _activable) external onlyOwner {
@@ -95,18 +99,18 @@ contract CashBox is BasicContract {
     }
     
     function rebalanceWithRepay() external onlyOwner checkActivable {
-        position = HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 3);
-        position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 3);
+        position = HighLevelSystem.exitPosition(HLSConfig, position, 3);
+        position = HighLevelSystem.enterPosition(HLSConfig, position, 3);
     }
     
     function rebalanceWithoutRepay() external onlyOwner checkActivable {
-        position = HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 2);
-        position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 2);
+        position = HighLevelSystem.exitPosition(HLSConfig, position, 2);
+        position = HighLevelSystem.enterPosition(HLSConfig, position, 2);
     }
     
     function rebalance() external onlyOwner checkActivable  {
-        position = HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 1);
-        position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 1);
+        position = HighLevelSystem.exitPosition(HLSConfig, position, 1);
+        position = HighLevelSystem.enterPosition(HLSConfig, position, 1);
     }
     
     function checkAddNewFunds() onlyOwner checkActivable external view returns (uint) {
@@ -128,17 +132,12 @@ contract CashBox is BasicContract {
     
     function enter(uint _type) external onlyOwner checkActivable {
         
-        position = HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, _type);
+        position = HighLevelSystem.enterPosition(HLSConfig, position, _type);
     }
 
     function exit(uint _type) external onlyOwner checkActivable {
         
-        position = HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, _type);
-    }
-    
-    function checkCurrentBorrowLimit() onlyOwner external returns (uint) {
-        
-        return HighLevelSystem.checkCurrentBorrowLimit(HLSConfig, CreamToken, StableCoin, position);
+        position = HighLevelSystem.exitPosition(HLSConfig, position, _type);
     }
     
     function totalSupply() public view returns (uint256) {
@@ -209,7 +208,7 @@ contract CashBox is BasicContract {
         // Free funds amount
         uint freeFunds = IBEP20(position.token).balanceOf(address(this));
         // Total Debts amount from Cream, PancakeSwap
-        uint totalDebts = HighLevelSystem.getTotalDebts(HLSConfig, CreamToken, StableCoin, position);
+        uint totalDebts = HighLevelSystem.getTotalDebts(HLSConfig, position);
         
         return SafeMath.add(freeFunds, totalDebts);
     }
@@ -257,7 +256,7 @@ contract CashBox is BasicContract {
         bool need_rebalance = false;
         // If no enough amount of free funds can transfer will trigger exit position
         if (value > freeFunds) {
-            HighLevelSystem.exitPosition(HLSConfig, CreamToken, StableCoin, position, 1);
+            HighLevelSystem.exitPosition(HLSConfig, position, 1);
             need_rebalance = true;
         }
         
@@ -269,7 +268,7 @@ contract CashBox is BasicContract {
         IBEP20(position.token).transferFrom(address(this), msg.sender, user_value);
         
         if (need_rebalance == true) {
-            HighLevelSystem.enterPosition(HLSConfig, CreamToken, StableCoin, position, 1);
+            HighLevelSystem.enterPosition(HLSConfig, position, 1);
         }
         
         return true;
