@@ -3,11 +3,9 @@ pragma solidity >=0.8;
 
 contract FakeCErc20Delegator {
 
-  address public interestRateModel;
   address public underlying;
 
-  constructor(address _interestRateModel, address _underlying) public {
-      interestRateModel = _interestRateModel;
+  constructor(address _underlying) public {
       underlying = _underlying;
   }
 
@@ -84,11 +82,6 @@ contract FakeCErc20Delegator {
   function setUnderlying(address _underlying) public {
 
     underlying = _underlying;
-  }
-
-  function setInterestRateModel(address _InterestRateModel) public {
-
-    interestRateModel = _InterestRateModel;
   }
 
   function redeemUnderlying(uint256 redeemAmount) public returns (uint256) {
