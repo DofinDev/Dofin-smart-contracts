@@ -15,7 +15,7 @@ import "../interfaces/pancakeswap/IPancakeRouter02.sol";
 /// @dev All functions haven't finished unit test
 library HighLevelSystem {    
 
-    // using SafeMath for uint256;
+    using SafeMath for uint256;
 
     // HighLevelSystem config
     struct HLSConfig {
@@ -52,16 +52,16 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Supplies 'amount' worth of tokens to cream.
     function _supplyCream(Position memory _position) private returns(Position memory) {
-        uint256 enter_amount = SafeMath.div(SafeMath.mul(IBEP20(_position.token).balanceOf(address(this)), _position.supply_funds_percentage), 100);
+        uint256 supply_amount = IBEP20(_position.token).balanceOf(address(this)).mul(_position.supply_funds_percentage).div(100);
         uint256 exchange_rate = CErc20Delegator(_position.supply_crtoken).exchangeRateStored();
-        uint256 crtoken_amount = SafeMath.div(enter_amount, exchange_rate);
+        supply_amount = supply_amount.div(exchange_rate);
         
-        CErc20Delegator(_position.supply_crtoken).mint(crtoken_amount);
+        CErc20Delegator(_position.supply_crtoken).mint(supply_amount);
 
         // Update posititon amount data
         _position.token_amount = IBEP20(_position.token).balanceOf(address(this));
         _position.crtoken_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
-        _position.supply_crtoken_amount = crtoken_amount;
+        _position.supply_crtoken_amount = supply_amount;
 
         return _position;
     }
@@ -70,16 +70,18 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Borrow the required tokens for a given position on CREAM.
     function _borrow(HLSConfig memory self, Position memory _position) private returns(Position memory) {
-        uint256 token_value = SafeMath.div(SafeMath.mul(_position.supply_crtoken_amount, 100), 75);
-        token_value = SafeMath.div(SafeMath.mul(token_value, 1000), 375);
+        uint256 token_value = _position.supply_crtoken_amount.mul(100).div(75);
+        token_value = token_value.mul(1000).div(375);
         
         uint256 token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer());
+        uint256 token_a_price = uint256(AggregatorInterface(self.token_a_oracle).latestAnswer()).mul(10**8);
+        uint256 token_b_price = uint256(AggregatorInterface(self.token_b_oracle).latestAnswer()).mul(10**8);
         // Borrow token_a
-        uint256 token_a_rate = SafeMath.div(uint256(AggregatorInterface(self.token_a_oracle).latestAnswer()), token_price);
-        uint256 token_a_borrow_amount = SafeMath.div(token_value, token_a_rate);
+        uint256 token_a_rate = token_a_price.div(token_price);
+        uint256 token_a_borrow_amount = token_value.div(token_a_rate).mul(10**8);
         // Borrow token_b
-        uint256 token_b_rate = SafeMath.div(uint256(AggregatorInterface(self.token_b_oracle).latestAnswer()), token_price);
-        uint256 token_b_borrow_amount = SafeMath.div(token_value, token_b_rate);
+        uint256 token_b_rate = token_b_price.div(token_price);
+        uint256 token_b_borrow_amount = token_value.div(token_b_rate).mul(10**8);
         
         CErc20Delegator(_position.borrowed_crtoken_a).borrow(token_a_borrow_amount);
         CErc20Delegator(_position.borrowed_crtoken_b).borrow(token_b_borrow_amount);
@@ -92,7 +94,7 @@ library HighLevelSystem {
     }
 
     /// @param self refer HLSConfig struct on the top.
-    /// @param _position refer Position struct on the top.
+    /// @param _position refer Position struct on t he top.
     /// @dev Adds liquidity to a given pool.
     function _addLiquidity(HLSConfig memory self, Position memory _position) private returns (Position memory) {
         uint256 max_available_staking_a = IBEP20(_position.token_a).balanceOf(address(this));
@@ -186,8 +188,8 @@ library HighLevelSystem {
     function _removeLiquidity(HLSConfig memory self, Position memory _position) private returns (Position memory) {
         (uint256 reserve0, uint256 reserve1, uint256 blockTimestampLast) = IPancakePair(_position.lp_token).getReserves();
         uint256 total_supply = IPancakePair(_position.lp_token).totalSupply();
-        uint256 token_a_amnt = SafeMath.div(SafeMath.mul(reserve0, _position.lp_token_amount), total_supply);
-        uint256 token_b_amnt = SafeMath.div(SafeMath.mul(reserve1, _position.lp_token_amount), total_supply);
+        uint256 token_a_amnt = reserve0.mul(_position.lp_token_amount).div(total_supply);
+        uint256 token_b_amnt = reserve1.mul(_position.lp_token_amount).div(total_supply);
 
         IPancakeRouter02(self.router).removeLiquidity(_position.token_a, _position.token_b, _position.lp_token_amount, token_a_amnt, token_b_amnt, address(this), block.timestamp);
 
@@ -246,15 +248,15 @@ library HighLevelSystem {
     function getCreamUserTotalSupply(address _crtoken) private view returns (uint256) {
 
         uint256 exch_rate = CErc20Delegator(_crtoken).exchangeRateStored();
-        exch_rate = SafeMath.div(exch_rate, 10**18);
+        exch_rate = exch_rate.div(10**18);
         uint256 crtoken_decimals = CErc20Delegator(_crtoken).decimals();
         uint256 token_decimals = IBEP20(CErc20Delegator(_crtoken).underlying()).decimals();
         uint256 balance = CErc20Delegator(_crtoken).balanceOf(address(this));
-        balance = SafeMath.div(balance, 10**crtoken_decimals);
-        uint256 total_supply = SafeMath.mul(balance, exch_rate);
-        total_supply = SafeMath.div(total_supply, 10**SafeMath.sub(18, crtoken_decimals));
+        balance = balance.div(10**crtoken_decimals);
+        uint256 total_supply = balance.mul(exch_rate);
+        total_supply = total_supply.div(10**SafeMath.sub(18, crtoken_decimals));
 
-        return SafeMath.mul(total_supply, 10**token_decimals);
+        return total_supply.mul(10**token_decimals);
     }
 
     /// @param self refer HLSConfig struct on the top.
@@ -268,9 +270,7 @@ library HighLevelSystem {
         uint256 token_a_price = uint256(AggregatorInterface(self.token_a_oracle).latestAnswer());
         uint256 token_b_price = uint256(AggregatorInterface(self.token_b_oracle).latestAnswer());
 
-        uint256 token_a_rate = SafeMath.div(token_a_price, token_price);
-        uint256 token_b_rate = SafeMath.div(token_b_price, token_price);
-        return (SafeMath.mul(token_a_amount, token_a_rate), SafeMath.mul(token_b_amount, token_b_rate));
+        return (token_a_amount.mul(token_a_price).div(token_price), token_b_amount.mul(token_b_price).div(token_price));
     }
 
     /// @param self refer HLSConfig struct on the top.
@@ -281,13 +281,11 @@ library HighLevelSystem {
         // check if we can get data from chainlink
         uint256 token_price;
         uint256 cake_price;
-        uint256 cake_rate;
         if (self.token_oracle != address(0)  && self.cake_oracle != address(0)) {
             token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer());
             cake_price = uint256(AggregatorInterface(self.cake_oracle).latestAnswer());
 
-            cake_rate = SafeMath.div(cake_price, token_price);
-            return SafeMath.mul(cake_amount, cake_rate);
+            return cake_amount.mul(cake_price).div(token_price);
         }
 
         return 0;
@@ -308,8 +306,8 @@ library HighLevelSystem {
     function getStakedTokens(Position memory _position) private view returns (uint256, uint256) {
         (uint256 reserve0, uint256 reserve1, uint256 blockTimestampLast) = IPancakePair(_position.lp_token).getReserves();
         uint256 total_supply = IPancakePair(_position.lp_token).totalSupply();
-        uint256 token_a_amnt = SafeMath.div(SafeMath.mul(reserve0, _position.lp_token_amount), total_supply);
-        uint256 token_b_amnt = SafeMath.div(SafeMath.mul(reserve1, _position.lp_token_amount), total_supply);
+        uint256 token_a_amnt = reserve0.mul(_position.lp_token_amount).div(total_supply);
+        uint256 token_b_amnt = reserve1.mul(_position.lp_token_amount).div(total_supply);
         return (token_a_amnt, token_b_amnt);
     }
 
@@ -325,10 +323,10 @@ library HighLevelSystem {
         (uint256 token_a_amount, uint256 token_b_amount) = getStakedTokens(_position);
 
         uint256 cream_total_supply = getCreamUserTotalSupply(_position.supply_crtoken);
-        (uint256 token_a_value, uint256 token_b_value) = getChainLinkValues(self, SafeMath.sub(token_a_amount, crtoken_a_debt), SafeMath.sub(token_b_amount, crtoken_b_debt));
+        (uint256 token_a_value, uint256 token_b_value) = getChainLinkValues(self, token_a_amount.sub(crtoken_a_debt), token_b_amount.sub(crtoken_b_debt));
         uint256 pending_cake_value = getCakeChainLinkValue(self, pending_cake_amount);
         
-        return SafeMath.add(SafeMath.add(cream_total_supply, pending_cake_value), SafeMath.add(token_a_value, token_b_value));
+        return cream_total_supply.add(pending_cake_value).add(token_a_value).add(token_b_value);
     }
 
 }
