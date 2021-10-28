@@ -15,7 +15,7 @@ contract FakeIBEP20 {
 
   function balanceOf(address account) public returns(uint256) {
 
-    return 10;
+    return 100000000000000000000;
   }
 
   function symbol() public returns(string memory) {

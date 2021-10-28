@@ -53,7 +53,8 @@ library HighLevelSystem {
     /// @dev Supplies 'amount' worth of tokens to cream.
     function _supplyCream(Position memory _position) private returns(Position memory) {
         uint256 supply_amount = IBEP20(_position.token).balanceOf(address(this)).mul(_position.supply_funds_percentage).div(100);
-        uint256 exchange_rate = CErc20Delegator(_position.supply_crtoken).exchangeRateStored();
+        uint256 exchange_rate = CErc20Delegator(_position.supply_crtoken).exchangeRateStored().div(10**18);
+        require(supply_amount > exchange_rate, "No enough money to supply on cream");
         supply_amount = supply_amount.div(exchange_rate);
         
         CErc20Delegator(_position.supply_crtoken).mint(supply_amount);
