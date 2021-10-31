@@ -88,14 +88,6 @@ contract TestHighLevelSystemWithOutAssert {
   //   HighLevelSystem.Position memory result_1 = HighLevelSystem._unstake(HLSConfig, Position);
   // }
 
-  // function testGetCreamUserTotalSupply() public {
-
-  //   // Params
-  //   address _crtoken = FakeCErc20DelegatorAddress;
-  //   // Testing
-  //   uint result_1 = HighLevelSystem.getCreamUserTotalSupply(_crtoken);
-  // }
-
   // function testGetChainLinkValues() public {
 
   //   // Params

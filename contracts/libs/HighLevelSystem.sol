@@ -53,9 +53,6 @@ library HighLevelSystem {
     /// @dev Supplies 'amount' worth of tokens to cream.
     function _supplyCream(Position memory _position) private returns(Position memory) {
         uint256 supply_amount = IBEP20(_position.token).balanceOf(address(this)).mul(_position.supply_funds_percentage).div(100);
-        uint256 exchange_rate = CErc20Delegator(_position.supply_crtoken).exchangeRateStored().div(10**18);
-        require(supply_amount > exchange_rate, "No enough money to supply on cream");
-        supply_amount = supply_amount.div(exchange_rate);
         
         CErc20Delegator(_position.supply_crtoken).mint(supply_amount);
 
@@ -244,22 +241,6 @@ library HighLevelSystem {
         return _position;
     }
 
-    /// @param _crtoken Cream crToken address.
-    /// @dev Gets the total supply amount on cream.
-    function getCreamUserTotalSupply(address _crtoken) private view returns (uint256) {
-
-        uint256 exch_rate = CErc20Delegator(_crtoken).exchangeRateStored();
-        exch_rate = exch_rate.div(10**18);
-        uint256 crtoken_decimals = CErc20Delegator(_crtoken).decimals();
-        uint256 token_decimals = IBEP20(CErc20Delegator(_crtoken).underlying()).decimals();
-        uint256 balance = CErc20Delegator(_crtoken).balanceOf(address(this));
-        balance = balance.div(10**crtoken_decimals);
-        uint256 total_supply = balance.mul(exch_rate);
-        total_supply = total_supply.div(10**SafeMath.sub(18, crtoken_decimals));
-
-        return total_supply.mul(10**token_decimals);
-    }
-
     /// @param self refer HLSConfig struct on the top.
     /// @param token_a_amount amountIn of token a.
     /// @param token_b_amount amountIn of token b.
@@ -323,7 +304,7 @@ library HighLevelSystem {
         // PancakeSwap staked amount
         (uint256 token_a_amount, uint256 token_b_amount) = getStakedTokens(_position);
 
-        uint256 cream_total_supply = getCreamUserTotalSupply(_position.supply_crtoken);
+        uint256 cream_total_supply = _position.supply_crtoken_amount;
         (uint256 token_a_value, uint256 token_b_value) = getChainLinkValues(self, token_a_amount.sub(crtoken_a_debt), token_b_amount.sub(crtoken_b_debt));
         uint256 pending_cake_value = getCakeChainLinkValue(self, pending_cake_amount);
         

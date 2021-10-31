@@ -50,7 +50,12 @@ module.exports = {
       confirmations: 2,
       timeoutBlocks: 200,
       skipDryRun: true
-    }
+    },
+    BSCForkMainnet: {
+      provider: () => new HDWalletProvider(env.BSCForkMainnet_mnemonic, 'http://192.168.1.7:7545'),
+      network_id: 56,
+      skipDryRun: true
+    },
   },
   mocha: {
     reporter: 'eth-gas-reporter'

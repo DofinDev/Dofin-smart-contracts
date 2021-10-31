@@ -78,5 +78,26 @@ module.exports = async function(deployer, network, accounts) {
     var _dofin = '0x503cF1B6253b02575bAf33E83000ff9209243784';
     var _deposit_limit = 500;
     await deployer.deploy(CashBox, _uints, _addrs, _dofin, _deposit_limit);
+    
+  } else if (network == "BSCForkMainnet") {
+    // high level system library
+    await deployer.deploy(HighLevelSystem);
+
+    // CashBox contract
+    await deployer.link(HighLevelSystem, CashBox);
+    // _uints = [pool_id, supply_funds_percentage]
+    var _uints = [362, 90];
+    // _addrs = [token, token_a, token_b, lp_token, supply_crtoken, borrowed_crtoken_a, borrowed_crtoken_b]
+    // _addrs = [USDC, ALPHA, BUSD, ALPHA-BUSD, crUSDC, crALPHA, crBUSD]
+    var _addrs = ['0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
+      '0x8F0528cE5eF7B51152A59745bEfDD91D97091d2F',
+      '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',
+      '0x7752e1FA9F3a2e860856458517008558DEb989e3',
+      '0xD83C88DB3A6cA4a32FFf1603b0f7DDce01F5f727',
+      '0x264Bc4Ea2F45cF6331AD6C3aC8d7257Cf487FcbC',
+      '0x2Bc4eb013DDee29D37920938B96d353171289B7C'];
+    var _dofin = '0x503cF1B6253b02575bAf33E83000ff9209243784';
+    var _deposit_limit = 500;
+    await deployer.deploy(CashBox, _uints, _addrs, _dofin, _deposit_limit);
   }
 };

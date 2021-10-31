@@ -369,17 +369,6 @@ contract TestHighLevelSystem {
   //   Assert.equal(result_1.total_depts, expected_1.total_depts, "It should get the type1 of position data total_depts.");
   // }
 
-  // function testGetCreamUserTotalSupply() public {
-
-  //   // Params
-  //   address _crtoken = FakeCErc20DelegatorAddress;
-  //   // Testing
-  //   uint result_1 = HighLevelSystem.getCreamUserTotalSupply(_crtoken);
-  //   uint expected_1 = 100000000000000;
-
-  //   Assert.equal(result_1, expected_1, "It should get the value 100000000000000.");
-  // }
-
   // function testGetChainLinkValues() public {
 
   //   // Params
