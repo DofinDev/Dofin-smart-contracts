@@ -14,6 +14,7 @@ contract TestHighLevelSystemWithOutAssert {
   address public FakePancakeFactoryAddress = DeployedAddresses.FakePancakeFactory();
   address public FakeMasterChefAddress = DeployedAddresses.FakeMasterChef();
   address public FakePancakeRouterAddress = DeployedAddresses.FakePancakeRouter();
+  address public FakeComptrollerAddress = DeployedAddresses.FakeComptroller();
 
   HighLevelSystem.HLSConfig private HLSConfig;
   HighLevelSystem.Position private Position;
@@ -27,6 +28,7 @@ contract TestHighLevelSystemWithOutAssert {
     HLSConfig.factory = FakePancakeFactoryAddress;
     HLSConfig.masterchef = FakeMasterChefAddress;
     HLSConfig.CAKE = FakeIBEP20Address;
+    HLSConfig.comptroller = FakeComptrollerAddress;
 
     Position = HighLevelSystem.Position({
       pool_id: 10,
@@ -47,78 +49,6 @@ contract TestHighLevelSystemWithOutAssert {
       total_depts: 0
     });
   }
-
-  // function testSupplyCream() public {
-
-  //   HighLevelSystem.Position memory result_1 = HighLevelSystem._supplyCream(Position);
-  // }
-
-  // function testBorrow() public {
-
-  //   HighLevelSystem.Position memory result_1 = HighLevelSystem._borrow(HLSConfig, Position);
-  // }
-
-  // function testAddLiquidity() public {
-
-  //   HighLevelSystem.Position memory result_1 = HighLevelSystem._addLiquidity(HLSConfig, Position);
-  // }
-
-  // function testStake() public {
-
-  //   HighLevelSystem.Position memory result_1 = HighLevelSystem._stake(HLSConfig, Position);
-  // }
-
-  // function testRedeemCream() public {
-
-  //   HighLevelSystem.Position memory result_1 = HighLevelSystem._redeemCream(Position);
-  // }
-
-  // function testRepay() public {
-
-  //   HighLevelSystem.Position memory result_1 = HighLevelSystem._repay(Position);
-  // }
-
-  // function testRemoveLiquidity() public {
-
-  //   HighLevelSystem.Position memory result_1 = HighLevelSystem._removeLiquidity(HLSConfig, Position);
-  // }
-
-  // function testUnstake() public {
-
-  //   HighLevelSystem.Position memory result_1 = HighLevelSystem._unstake(HLSConfig, Position);
-  // }
-
-  // function testGetChainLinkValues() public {
-
-  //   // Params
-  //   uint token_a_amount = 10;
-  //   uint token_b_amount = 10;
-  //   // Testing
-  //   (uint result_1, uint result_2) = HighLevelSystem.getChainLinkValues(HLSConfig, token_a_amount, token_b_amount);
-  // }
-
-  // function testGetCakeChainLinkValue() public {
-
-  //   // Params
-  //   uint cake_amount = 10;
-  //   // Testing
-  //   uint result_1 = HighLevelSystem.getCakeChainLinkValue(HLSConfig, cake_amount);
-  // }
-
-  // function testGetTotalBorrowAmount() public {
-
-  //   // Params
-  //   address _crtoken_a = FakeCErc20DelegatorAddress;
-  //   address _crtoken_b = FakeCErc20DelegatorAddress;
-  //   // Testing
-  //   (uint result_1, uint result_2) = HighLevelSystem.getTotalBorrowAmount(_crtoken_a, _crtoken_b);
-  // }
-
-  // function testgetStakedTokens() public {
-
-  //   // Testing
-  //   (uint result_1, uint result_2) = HighLevelSystem.getStakedTokens(Position);
-  // }
 
   function testGetTotalDebts() public {
 
