@@ -5,6 +5,7 @@ import "../token/BEP20/IBEP20.sol";
 import "../math/SafeMath.sol";
 import "../interfaces/chainlink/AggregatorInterface.sol";
 import "../interfaces/cream/CErc20Delegator.sol";
+import "../interfaces/cream/ComptrollerInterface.sol";
 import "../interfaces/pancakeswap/IPancakePair.sol";
 import "../interfaces/pancakeswap/IPancakeFactory.sol";
 import "../interfaces/pancakeswap/MasterChef.sol";
@@ -27,6 +28,7 @@ library HighLevelSystem {
         address factory; // Address of PancakeSwap factory contract.
         address masterchef; // Address of PancakeSwap masterchef contract.
         address CAKE; // Address of ERC20 CAKE contract.
+        address comptroller; // Address of cream comptroller contract.
     }
     
     // Position
@@ -54,7 +56,7 @@ library HighLevelSystem {
     function _supplyCream(Position memory _position) private returns(Position memory) {
         uint256 supply_amount = IBEP20(_position.token).balanceOf(address(this)).mul(_position.supply_funds_percentage).div(100);
         
-        CErc20Delegator(_position.supply_crtoken).mint(supply_amount);
+        require(CErc20Delegator(_position.supply_crtoken).mint(supply_amount) == 0, "Supply not work");
 
         // Update posititon amount data
         _position.token_amount = IBEP20(_position.token).balanceOf(address(this));
@@ -67,22 +69,21 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Borrow the required tokens for a given position on CREAM.
-    function _borrow(HLSConfig memory self, Position memory _position) private returns(Position memory) {
-        uint256 token_value = _position.supply_crtoken_amount.mul(100).div(75);
-        token_value = token_value.mul(1000).div(375);
-        
+    function _borrowCream(HLSConfig memory self, Position memory _position) private returns(Position memory) {
+        uint256 token_value = _position.supply_crtoken_amount.mul(75).div(100);
+        token_value = token_value.mul(375).div(1000);
         uint256 token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer());
         uint256 token_a_price = uint256(AggregatorInterface(self.token_a_oracle).latestAnswer()).mul(10**8);
         uint256 token_b_price = uint256(AggregatorInterface(self.token_b_oracle).latestAnswer()).mul(10**8);
-        // Borrow token_a
+        // Borrow token_a amount
         uint256 token_a_rate = token_a_price.div(token_price);
         uint256 token_a_borrow_amount = token_value.div(token_a_rate).mul(10**8);
-        // Borrow token_b
+        // Borrow token_b amount
         uint256 token_b_rate = token_b_price.div(token_price);
         uint256 token_b_borrow_amount = token_value.div(token_b_rate).mul(10**8);
         
-        CErc20Delegator(_position.borrowed_crtoken_a).borrow(token_a_borrow_amount);
-        CErc20Delegator(_position.borrowed_crtoken_b).borrow(token_b_borrow_amount);
+        require(CErc20Delegator(_position.borrowed_crtoken_a).borrow(token_a_borrow_amount) == 0, "Borrow token a not work");
+        require(CErc20Delegator(_position.borrowed_crtoken_b).borrow(token_b_borrow_amount) == 0, "Borrow token b not work");
 
         // Update posititon amount data
         _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
@@ -97,9 +98,16 @@ library HighLevelSystem {
     function _addLiquidity(HLSConfig memory self, Position memory _position) private returns (Position memory) {
         uint256 max_available_staking_a = IBEP20(_position.token_a).balanceOf(address(this));
         uint256 max_available_staking_b = IBEP20(_position.token_b).balanceOf(address(this));
-        (uint256 reserves0, uint256 reserves1, uint256 blockTimestampLast) = IPancakePair(_position.lp_token).getReserves();
-        uint256 min_a_amnt = IPancakeRouter02(self.router).quote(max_available_staking_a, reserves0, reserves1);
-        uint256 min_b_amnt = IPancakeRouter02(self.router).quote(max_available_staking_b, reserves1, reserves0);
+        
+        uint256 max_available_staking_a_slippage = max_available_staking_a.mul(98).div(100);
+        uint256 max_available_staking_b_slippage = max_available_staking_b.mul(98).div(100);
+
+        (uint256 reserves0, uint256 reserves1, ) = IPancakePair(_position.lp_token).getReserves();
+        uint256 min_a_amnt = IPancakeRouter02(self.router).quote(max_available_staking_b_slippage, reserves1, reserves0);
+        uint256 min_b_amnt = IPancakeRouter02(self.router).quote(max_available_staking_a_slippage, reserves0, reserves1);
+
+        min_a_amnt = max_available_staking_a_slippage.min(min_a_amnt);
+        min_b_amnt = max_available_staking_b_slippage.min(min_b_amnt);
 
         IPancakeRouter02(self.router).addLiquidity(_position.token_a, _position.token_b, max_available_staking_a, max_available_staking_b, min_a_amnt, min_b_amnt, address(this), block.timestamp);
         
@@ -136,7 +144,7 @@ library HighLevelSystem {
         
         if (_type == 1 || _type == 2) {
             // Borrow
-            _position = _borrow(self, _position);
+            _position = _borrowCream(self, _position);
         }
         
         if (_type == 1 || _type == 2 || _type == 3) {
@@ -155,7 +163,9 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Redeem amount worth of crtokens back.
     function _redeemCream(Position memory _position) private returns (Position memory) {
-        CErc20Delegator(_position.supply_crtoken).redeemUnderlying(IBEP20(_position.supply_crtoken).balanceOf(address(this)));
+        uint256 redeem_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
+        redeem_amount = redeem_amount.mul(999999).div(1000000);
+        require(CErc20Delegator(_position.supply_crtoken).redeem(redeem_amount) == 0, "Redeem not work");
 
         // Update posititon amount data
         _position.crtoken_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
@@ -167,8 +177,10 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Repay the tokens borrowed from cream.
     function _repay(Position memory _position) private returns (Position memory) {
-        uint256 a_repay_amount = CErc20Delegator(_position.borrowed_crtoken_a).borrowBalanceStored(address(this));
-        uint256 b_repay_amount = CErc20Delegator(_position.borrowed_crtoken_b).borrowBalanceStored(address(this));
+        // uint256 a_repay_amount = CErc20Delegator(_position.borrowed_crtoken_a).borrowBalanceStored(address(this));
+        // uint256 b_repay_amount = CErc20Delegator(_position.borrowed_crtoken_b).borrowBalanceStored(address(this));
+        uint256 a_repay_amount = IBEP20(_position.token_a).balanceOf(address(this));
+        uint256 b_repay_amount = IBEP20(_position.token_b).balanceOf(address(this));
 
         CErc20Delegator(_position.borrowed_crtoken_a).repayBorrow(a_repay_amount);
         CErc20Delegator(_position.borrowed_crtoken_b).repayBorrow(b_repay_amount);
@@ -305,10 +317,34 @@ library HighLevelSystem {
         (uint256 token_a_amount, uint256 token_b_amount) = getStakedTokens(_position);
 
         uint256 cream_total_supply = _position.supply_crtoken_amount;
-        (uint256 token_a_value, uint256 token_b_value) = getChainLinkValues(self, token_a_amount.sub(crtoken_a_debt), token_b_amount.sub(crtoken_b_debt));
+        uint256 token_a_value;
+        uint256 token_b_value;
+        if (token_a_amount < crtoken_a_debt) {
+            token_a_value = 0;
+        }
+        if (token_b_amount < crtoken_b_debt) {
+            token_b_value = 0;
+        }
+        if (token_a_value != 0 && token_b_value != 0) {
+            (token_a_value, token_b_value) = getChainLinkValues(self, token_a_amount.sub(crtoken_a_debt), token_b_amount.sub(crtoken_b_debt));
+        }
         uint256 pending_cake_value = getCakeChainLinkValue(self, pending_cake_amount);
         
         return cream_total_supply.add(pending_cake_value).add(token_a_value).add(token_b_value);
+    }
+
+    /// @param _comptroller Cream comptroller.
+    /// @param _crtokens Cream token.
+    function enterMarkets(address _comptroller, address[] memory _crtokens) external {
+        
+        ComptrollerInterface(_comptroller).enterMarkets(_crtokens);
+    }
+
+    /// @param _comptroller Cream comptroller.
+    /// @param _crtoken Cream token.
+    function exitMarket(address _comptroller, address _crtoken) external {
+        
+        ComptrollerInterface(_comptroller).exitMarket(_crtoken);
     }
 
 }
