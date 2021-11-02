@@ -23,7 +23,7 @@ contract CashBox is BasicContract {
 
     uint256 private deposit_limit;
     uint256 private temp_free_funds;
-    bool public activable;
+    bool public activable = false;
     address private dofin;
     
     event Approval(address indexed tokenOwner, address indexed spender, uint256 tokens);
@@ -52,7 +52,6 @@ contract CashBox is BasicContract {
             total_depts: 0
         });
         
-        activable = true;
         dofin = _dofin;
         deposit_limit = _deposit_limit;
     }
@@ -71,6 +70,7 @@ contract CashBox is BasicContract {
         HLSConfig.factory = _config[5];
         HLSConfig.masterchef = _config[6];
         HLSConfig.CAKE = _config[7];
+        HLSConfig.comptroller = _config[8];
 
         // Approve for Cream borrow 
         IBEP20(position.token).approve(position.supply_crtoken, MAX_INT_EXPONENTIATION);
@@ -87,11 +87,23 @@ contract CashBox is BasicContract {
         IBEP20(position.token_b).approve(position.borrowed_crtoken_b, MAX_INT_EXPONENTIATION);
         // Approve for Cream redeem
         IBEP20(position.supply_crtoken).approve(position.supply_crtoken, MAX_INT_EXPONENTIATION);
+
+        // Set Cream collateral
+        setActivable(true);
     }
 
-    function setActivable(bool _activable) external onlyOwner {
+    function setActivable(bool _activable) public onlyOwner {
         
         activable = _activable;
+        if (_activable == true) {
+            address[] memory crtokens = new address[] (3);
+            crtokens[0] = address(0x0000000000000000000000000000000000000020);
+            crtokens[1] = address(0x0000000000000000000000000000000000000001);
+            crtokens[2] = position.supply_crtoken;
+            HighLevelSystem.enterMarkets(HLSConfig.comptroller, crtokens);
+        } else {
+            HighLevelSystem.exitMarket(HLSConfig.comptroller, position.supply_crtoken);
+        }
     }
     
     function getPosition() external onlyOwner view returns(HighLevelSystem.Position memory) {
