@@ -103,7 +103,7 @@ module.exports = async function(deployer, network, accounts) {
       '0xEF6d459FE81C3Ed53d292c936b2df5a8084975De',
       '0x2Bc4eb013DDee29D37920938B96d353171289B7C'
     ];
-    var _dofin = '0x3A7fE75F2b42Ead96D604fC8c9919e5592F7Fa86';
+    var _dofin = '0x503cF1B6253b02575bAf33E83000ff9209243784';
     var _deposit_limit = 1000;
     await deployer.deploy(CashBox, _uints, _addrs, _dofin, _deposit_limit);
   }
