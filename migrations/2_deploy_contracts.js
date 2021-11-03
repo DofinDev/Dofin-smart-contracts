@@ -10,7 +10,7 @@ var FakePancakeRouter = artifacts.require("./fake/pancakeswap/FakePancakeRouter.
 // Library
 var HighLevelSystem = artifacts.require("./libs/HighLevelSystem.sol");
 // Contract
-var CashBox = artifacts.require("./CashBox.sol");
+var CashBox = artifacts.require("./ChargedBunker.sol");
 
 module.exports = async function(deployer, network, accounts) {
   if (network == "develop" || network == "test") {
@@ -68,20 +68,20 @@ module.exports = async function(deployer, network, accounts) {
     // CashBox contract
     await deployer.link(HighLevelSystem, CashBox);
     // _uints = [pool_id, supply_funds_percentage]
-    var _uints = [258, 90];
+    var _uints = [389, 90];
     // _addrs = [token, token_a, token_b, lp_token, supply_crtoken, borrowed_crtoken_a, borrowed_crtoken_b]
-    // _addrs = [USDC, USDT, BUSD, USDT-BUSD, crUSDC, crUSDT, crBUSD]
+    // _addrs = [USDC, CAKE, BUSD, CAKE-BUSD, crUSDC, crCAKE, crBUSD]
     var _addrs = [
       '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
-      '0x55d398326f99059fF775485246999027B3197955',
+      '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82',
       '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',
-      '0x7EFaEf62fDdCCa950418312c6C91Aef321375A00',
+      '0x804678fa97d91B974ec2af3c843270886528a9E6',
       '0xD83C88DB3A6cA4a32FFf1603b0f7DDce01F5f727',
-      '0xEF6d459FE81C3Ed53d292c936b2df5a8084975De',
+      '0xBf9B95b78bc42F6CF53FF2A0ce19D607cFe1ff82',
       '0x2Bc4eb013DDee29D37920938B96d353171289B7C'
     ];
     var _dofin = '0x503cF1B6253b02575bAf33E83000ff9209243784';
-    var _deposit_limit = 1000;
+    var _deposit_limit = 5000;
     await deployer.deploy(CashBox, _uints, _addrs, _dofin, _deposit_limit);
 
   } else if (network == "BSCForkMainnet") {

@@ -55,9 +55,9 @@ contract TestHighLevelSystem {
 
     // Testing
     uint result_1 = HighLevelSystem.getTotalDebts(HLSConfig, Position);
-    uint expected_1 = 100000000000010;
+    uint expected_1 = 20;
 
-    Assert.equal(result_1, expected_1, "It should get the value 100000000000010.");
+    Assert.equal(result_1, expected_1, "It should get the value 20.");
   }
 
   function testEnterPosition() public {
@@ -72,7 +72,7 @@ contract TestHighLevelSystem {
       token_b_amount: 100000000000000000000,
       lp_token_amount: 10,
       crtoken_amount: 1000000000000000000000,
-      supply_crtoken_amount: 9500000000000000000,
+      supply_crtoken_amount: 95000000000000000000,
       token: FakeIBEP20Address,
       token_a: FakeIBEP20Address,
       token_b: FakeIBEP20Address,
@@ -81,7 +81,7 @@ contract TestHighLevelSystem {
       borrowed_crtoken_a: FakeCErc20DelegatorAddress,
       borrowed_crtoken_b: FakeCErc20DelegatorAddress,
       supply_funds_percentage: 95,
-      total_depts: 100000000000010
+      total_depts: 95000000000000000010
     });
     HighLevelSystem.Position memory expected_2 = HighLevelSystem.Position({
       pool_id: 10,
@@ -99,7 +99,7 @@ contract TestHighLevelSystem {
       borrowed_crtoken_a: FakeCErc20DelegatorAddress,
       borrowed_crtoken_b: FakeCErc20DelegatorAddress,
       supply_funds_percentage: 95,
-      total_depts: 100000000000010
+      total_depts: 20
     });
     HighLevelSystem.Position memory expected_3 = HighLevelSystem.Position({
       pool_id: 10,
@@ -117,7 +117,7 @@ contract TestHighLevelSystem {
       borrowed_crtoken_a: FakeCErc20DelegatorAddress,
       borrowed_crtoken_b: FakeCErc20DelegatorAddress,
       supply_funds_percentage: 95,
-      total_depts: 100000000000010
+      total_depts: 20
     });
 
     Assert.equal(result_1.pool_id, expected_1.pool_id, "It should get the type1 of position data pool_id.");
@@ -193,7 +193,7 @@ contract TestHighLevelSystem {
       borrowed_crtoken_a: FakeCErc20DelegatorAddress,
       borrowed_crtoken_b: FakeCErc20DelegatorAddress,
       supply_funds_percentage: 95,
-      total_depts: 100000000000010
+      total_depts: 10
     });
     HighLevelSystem.Position memory expected_2 = HighLevelSystem.Position({
       pool_id: 10,
@@ -211,7 +211,7 @@ contract TestHighLevelSystem {
       borrowed_crtoken_a: FakeCErc20DelegatorAddress,
       borrowed_crtoken_b: FakeCErc20DelegatorAddress,
       supply_funds_percentage: 95,
-      total_depts: 100000000000010
+      total_depts: 20
     });
     HighLevelSystem.Position memory expected_3 = HighLevelSystem.Position({
       pool_id: 10,
@@ -229,7 +229,7 @@ contract TestHighLevelSystem {
       borrowed_crtoken_a: FakeCErc20DelegatorAddress,
       borrowed_crtoken_b: FakeCErc20DelegatorAddress,
       supply_funds_percentage: 95,
-      total_depts: 100000000000010
+      total_depts: 20
     });
 
     Assert.equal(result_1.pool_id, expected_1.pool_id, "It should get the type1 of position data pool_id.");

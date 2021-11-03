@@ -9,9 +9,9 @@ contract FakeCErc20Delegator {
       underlying = _underlying;
   }
 
-  function borrow() public returns(uint256) {
+  function borrow(uint256 borrowAmount) public returns(uint256) {
 
-    return 10;
+    return 0;
   }
 
   function approve(address spender, uint256 amount) public returns(bool) {
@@ -64,19 +64,14 @@ contract FakeCErc20Delegator {
     return 1000000000000000000000;
   }
 
-  function borrow(uint256 borrowAmount) public returns(uint256) {
-
-    return 10;
-  }
-
   function repayBorrow(uint256 repayAmount) public returns(uint256) {
 
-    return 10;
+    return 0;
   }
 
   function mint(uint256 mintAmount) public returns(uint256) {
 
-    return 10;
+    return 0;
   }
 
   function setUnderlying(address _underlying) public {
@@ -84,9 +79,9 @@ contract FakeCErc20Delegator {
     underlying = _underlying;
   }
 
-  function redeemUnderlying(uint256 redeemAmount) public returns (uint256) {
+  function redeem(uint256 redeemAmount) public returns (uint256) {
 
-    return 10;
+    return 0;
   }
 
 }
