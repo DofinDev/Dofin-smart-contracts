@@ -219,20 +219,16 @@ contract TestChargedBunker {
 	}
 
 	function testGetWithdrawAmount() public {
-		// Params
-		uint _ptoken_amount = 10;
 		// Testing
-		uint result = chargedbunker.getWithdrawAmount(_ptoken_amount);
-		uint expected = 88000000000000000008;
+		uint result = chargedbunker.getWithdrawAmount();
+		uint expected = 88000000000000000010;
 
-		Assert.equal(result, expected, "It should get the value 88000000000000000008 of withdraw amount.");
+		Assert.equal(result, expected, "It should get the value 88000000000000000010 of withdraw amount.");
 	}
 
 	function testWithdraw() public {
-		// Params
-		uint _withdraw_amount = 10;
 		// Testing
-		bool result = chargedbunker.withdraw(_withdraw_amount);
+		bool result = chargedbunker.withdraw();
 		bool expected = true;
 
 		Assert.equal(result, expected, "It should get the bool of true.");

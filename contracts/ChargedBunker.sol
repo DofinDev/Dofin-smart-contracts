@@ -10,7 +10,7 @@ import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
 /// @author Andrew FU
 /// @dev All functions haven't finished unit test
 contract ChargedBunker is BasicContract {
-    
+
     HighLevelSystem.HLSConfig private HLSConfig;
     HighLevelSystem.Position private position;
     
@@ -31,6 +31,7 @@ contract ChargedBunker is BasicContract {
     
     mapping(address => uint256) private balances;
     mapping(address => mapping (address => uint256)) private allowed;
+    mapping (address => uint256) private usersDepositAmounts;
 
     constructor(uint256[] memory _uints, address[] memory _addrs, address _dofin, uint256 _deposit_limit) {
         position = HighLevelSystem.Position({
@@ -245,6 +246,9 @@ contract ChargedBunker is BasicContract {
         // Calculation of pToken amount need to mint
         uint256 shares = getDepositAmountOut(_deposit_amount);
         
+        // Record user deposit amount
+        usersDepositAmounts[msg.sender] = _deposit_amount;
+
         // Mint pToken and transfer Token to cashbox
         mint(msg.sender, shares);
         IBEP20(position.token).transferFrom(msg.sender, address(this), _deposit_amount);
@@ -252,36 +256,52 @@ contract ChargedBunker is BasicContract {
         return true;
     }
     
-    function getWithdrawAmount(uint256 _ptoken_amount) public view returns (uint256) {
+    function getWithdrawAmount() external view returns (uint256) {
         uint256 totalAssets = IBEP20(position.token).balanceOf(address(this)).add(position.total_depts);
-        uint256 value = _ptoken_amount.mul(totalAssets).div(totalSupply_);
-        uint256 user_value = value.mul(80).div(100);
+        uint256 ptoken_amount = balanceOf(msg.sender);
+        uint256 value = ptoken_amount.mul(totalAssets).div(totalSupply_);
+        uint256 user_deposit_amount = usersDepositAmounts[msg.sender];
+
+        uint256 dofin_value;
+        uint256 user_value;
+        if (value > user_deposit_amount) {
+            dofin_value = value.sub(user_deposit_amount).mul(20).div(100);
+            user_value = value.sub(dofin_value);
+        } else {
+            user_value = value;
+        }
         
         return user_value;
     }
     
-    function withdraw(uint256 _withdraw_amount) external checkActivable returns (bool) {
-        require(_withdraw_amount <= balanceOf(msg.sender), "Wrong amount to withdraw.");
-        
-        uint256 freeFunds = IBEP20(position.token).balanceOf(address(this));
+    function withdraw() external checkActivable returns (bool) {
+        uint256 withdraw_amount = balanceOf(msg.sender);
         uint256 totalAssets = getTotalAssets();
-        uint256 value = _withdraw_amount.mul(totalAssets).div(totalSupply_);
+        uint256 value = withdraw_amount.mul(totalAssets).div(totalSupply_);
+        uint256 user_deposit_amount = usersDepositAmounts[msg.sender];
         bool need_rebalance = false;
         // If no enough amount of free funds can transfer will trigger exit position
-        if (value > freeFunds) {
+        if (value > IBEP20(position.token).balanceOf(address(this))) {
             HighLevelSystem.exitPosition(HLSConfig, position, 1);
             totalAssets = IBEP20(position.token).balanceOf(address(this));
-            value = _withdraw_amount.mul(totalAssets).div(totalSupply_);
+            value = withdraw_amount.mul(totalAssets).div(totalSupply_);
             need_rebalance = true;
         }
-        
         // Will charge 20% fees
-        burn(msg.sender, _withdraw_amount);
-        uint256 dofin_value = value.mul(20).div(100);
-        uint256 user_value = value.sub(dofin_value);
+        burn(msg.sender, withdraw_amount);
+        uint256 dofin_value;
+        uint256 user_value;
+        if (value > user_deposit_amount) {
+            dofin_value = value.sub(user_deposit_amount).mul(20).div(100);
+            user_value = value.sub(dofin_value);
+        } else {
+            user_value = value;
+        }
+        // Modify usersDepositAmounts
+        usersDepositAmounts[msg.sender] = 0;
         IBEP20(position.token).transferFrom(address(this), dofin, dofin_value);
         IBEP20(position.token).transferFrom(address(this), msg.sender, user_value);
-        
+        // Enter position again
         if (need_rebalance == true) {
             HighLevelSystem.enterPosition(HLSConfig, position, 1);
             temp_free_funds = IBEP20(position.token).balanceOf(address(this));
