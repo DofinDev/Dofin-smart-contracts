@@ -9,7 +9,7 @@ import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
 /// @title CashBox
 /// @author Andrew FU
 /// @dev All functions haven't finished unit test
-contract CashBox is BasicContract {
+contract ChargedBunker is BasicContract {
     
     HighLevelSystem.HLSConfig private HLSConfig;
     HighLevelSystem.Position private position;
@@ -238,9 +238,8 @@ contract CashBox is BasicContract {
         return shares;
     }
     
-    function deposit(address _token, uint256 _deposit_amount) external checkActivable returns (bool) {
+    function deposit(uint256 _deposit_amount) external checkActivable returns (bool) {
         require(_deposit_amount <= deposit_limit.mul(10**IBEP20(position.token).decimals()), "Deposit too much!");
-        require(_token == position.token, "Wrong token to deposit.");
         require(_deposit_amount > 0, "Deposit amount must bigger than 0.");
         
         // Calculation of pToken amount need to mint
@@ -271,18 +270,21 @@ contract CashBox is BasicContract {
         // If no enough amount of free funds can transfer will trigger exit position
         if (value > freeFunds) {
             HighLevelSystem.exitPosition(HLSConfig, position, 1);
+            totalAssets = IBEP20(position.token).balanceOf(address(this));
+            value = _withdraw_amount.mul(totalAssets).div(totalSupply_);
             need_rebalance = true;
         }
         
         // Will charge 20% fees
         burn(msg.sender, _withdraw_amount);
         uint256 dofin_value = value.mul(20).div(100);
-        uint256 user_value = value.mul(80).div(100);
+        uint256 user_value = value.sub(dofin_value);
         IBEP20(position.token).transferFrom(address(this), dofin, dofin_value);
         IBEP20(position.token).transferFrom(address(this), msg.sender, user_value);
         
         if (need_rebalance == true) {
             HighLevelSystem.enterPosition(HLSConfig, position, 1);
+            temp_free_funds = IBEP20(position.token).balanceOf(address(this));
         }
         
         return true;

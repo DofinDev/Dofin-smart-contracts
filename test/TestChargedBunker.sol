@@ -3,10 +3,10 @@ pragma solidity >=0.4.15 <0.9.0;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
-import "../contracts/CashBox.sol";
+import "../contracts/ChargedBunker.sol";
 import { HighLevelSystem } from "../contracts/libs/HighLevelSystem.sol";
 
-contract TestCashBox {
+contract TestChargedBunker {
 
 	address private FakeIBEP20Address = DeployedAddresses.FakeIBEP20();
 	address private FakeCErc20DelegatorAddress = DeployedAddresses.FakeCErc20Delegator();
@@ -16,11 +16,12 @@ contract TestCashBox {
 	address private FakePancakeFactoryAddress = DeployedAddresses.FakePancakeFactory();
 	address private FakeMasterChefAddress = DeployedAddresses.FakeMasterChef();
 	address private FakePancakeRouterAddress = DeployedAddresses.FakePancakeRouter();
+	address public FakeComptrollerAddress = DeployedAddresses.FakeComptroller();
 
-	CashBox public cashBox = CashBox(DeployedAddresses.CashBox());
+	ChargedBunker public chargedbunker = ChargedBunker(DeployedAddresses.ChargedBunker());
 
 	function beforeAll() public {
-		address[] memory _config = new address[] (8);
+		address[] memory _config = new address[] (9);
 		_config[0] = FakeLinkBSCOracleAddress;
 		_config[1] = FakeLinkBSCOracleAddress;
 		_config[2] = FakeLinkBSCOracleAddress;
@@ -29,12 +30,13 @@ contract TestCashBox {
 		_config[5] = FakePancakeFactoryAddress;
 		_config[6] = FakeMasterChefAddress;
 		_config[7] = FakeIBEP20Address;
-		cashBox.setConfig(_config);
+		_config[8] = FakeComptrollerAddress;
+		chargedbunker.setConfig(_config);
 	}
 
 	function testGetPosition() public {
 		// Testing
-		HighLevelSystem.Position memory result = cashBox.getPosition();
+		HighLevelSystem.Position memory result = chargedbunker.getPosition();
 		HighLevelSystem.Position memory expected = HighLevelSystem.Position({
 		  pool_id: 10,
 		  token_amount: 0,
@@ -74,22 +76,22 @@ contract TestCashBox {
 
 	function testRebalanceWithRepay() public {
 		// Testing
-		cashBox.rebalanceWithRepay();
+		chargedbunker.rebalanceWithRepay();
 	}
 
 	function testRebalanceWithoutRepay() public {
 		// Testing
-		cashBox.rebalanceWithoutRepay();
+		chargedbunker.rebalanceWithoutRepay();
 	}
 
 	function testRebalance() public {
 		// Testing
-		cashBox.rebalance();
+		chargedbunker.rebalance();
 	}
 
 	function testCheckAddNewFunds() public {
 		// Testing
-		uint result = cashBox.checkAddNewFunds();
+		uint result = chargedbunker.checkAddNewFunds();
 		uint expected = 0;
 
 		Assert.equal(result, expected, "It should get the value 0 of CheckAddNewFunds signal.");
@@ -97,37 +99,37 @@ contract TestCashBox {
 
 	function testExit1() public {
 		// Testing
-		cashBox.exit(1);
+		chargedbunker.exit(1);
 	}
 
 	function testExit2() public {
 		// Testing
-		cashBox.exit(2);
+		chargedbunker.exit(2);
 	}
 
 	function testExit3() public {
 		// Testing
-		cashBox.exit(3);
+		chargedbunker.exit(3);
 	}
 
 	function testEnter1() public {
 		// Testing
-		cashBox.enter(1);
+		chargedbunker.enter(1);
 	}
 
 	function testEnter2() public {
 		// Testing
-		cashBox.enter(2);
+		chargedbunker.enter(2);
 	}
 
 	function testEnter3() public {
 		// Testing
-		cashBox.enter(3);
+		chargedbunker.enter(3);
 	}
 
 	function testTotalSupply() public {
 		// Testing
-		uint result = cashBox.totalSupply();
+		uint result = chargedbunker.totalSupply();
 		uint expected = 0;
 
 		Assert.equal(result, expected, "It should get the value 0 of Total Supply.");
@@ -137,7 +139,7 @@ contract TestCashBox {
 		// Params
 		address account = address(this);
 		// Testing
-		uint result = cashBox.balanceOf(account);
+		uint result = chargedbunker.balanceOf(account);
 		uint expected = 0;
 
 		Assert.equal(result, expected, "It should get the value 0 of proof token balance.");
@@ -148,7 +150,7 @@ contract TestCashBox {
 		address recipient = address(this);
 		uint amount = 0;
 		// Testing
-		bool result = cashBox.transfer(recipient, amount);
+		bool result = chargedbunker.transfer(recipient, amount);
 		bool expected = true;
 
 		Assert.equal(result, expected, "It should get the bool of true.");
@@ -159,7 +161,7 @@ contract TestCashBox {
 		address spender = address(this);
 		uint amount = 0;
 		// Testing
-		bool result = cashBox.approve(spender, amount);
+		bool result = chargedbunker.approve(spender, amount);
 		bool expected = true;
 
 		Assert.equal(result, expected, "It should get the bool of true.");
@@ -170,7 +172,7 @@ contract TestCashBox {
 		address owner = address(this);
 		address spender = address(this);
 		// Testing
-		uint result = cashBox.allowance(owner, spender);
+		uint result = chargedbunker.allowance(owner, spender);
 		uint expected = 0;
 
 		Assert.equal(result, expected, "It should get the value 0 of allowance  amount.");
@@ -182,7 +184,7 @@ contract TestCashBox {
 		address buyer = address(this);
 		uint numTokens = 0;
 		// Testing
-		bool result = cashBox.transferFrom(owner, buyer, numTokens);
+		bool result = chargedbunker.transferFrom(owner, buyer, numTokens);
 		bool expected = true;
 
 		Assert.equal(result, expected, "It should get the bool of true.");
@@ -190,17 +192,17 @@ contract TestCashBox {
 
 	function testGetTotalAssets() public {
 		// Testing
-		uint result = cashBox.getTotalAssets();
-		uint expected = 100000100000000000010;
+		uint result = chargedbunker.getTotalAssets();
+		uint expected = 110000000000000000010;
 
-		Assert.equal(result, expected, "It should get the value 100000100000000000010 of total assets.");
+		Assert.equal(result, expected, "It should get the value 110000000000000000010 of total assets.");
 	}
 
 	function testGetDepositAmountOut() public {
 		// Params
 		uint _deposit_amount = 10;
 		// Testing
-		uint result = cashBox.getDepositAmountOut(_deposit_amount);
+		uint result = chargedbunker.getDepositAmountOut(_deposit_amount);
 		uint expected = 10;
 
 		Assert.equal(result, expected, "It should get the value 10 of Deposit Amount Out.");
@@ -208,10 +210,9 @@ contract TestCashBox {
 
 	function testDeposit() public {
 		// Params
-		address _token = FakeIBEP20Address;
 		uint _deposit_amount = 10;
 		// Testing
-		bool result = cashBox.deposit(_token, _deposit_amount);
+		bool result = chargedbunker.deposit(_deposit_amount);
 		bool expected = true;
 
 		Assert.equal(result, expected, "It should get the bool of true.");
@@ -221,17 +222,17 @@ contract TestCashBox {
 		// Params
 		uint _ptoken_amount = 10;
 		// Testing
-		uint result = cashBox.getWithdrawAmount(_ptoken_amount);
-		uint expected = 80000080000000000008;
+		uint result = chargedbunker.getWithdrawAmount(_ptoken_amount);
+		uint expected = 88000000000000000008;
 
-		Assert.equal(result, expected, "It should get the value 80000080000000000008 of withdraw amount.");
+		Assert.equal(result, expected, "It should get the value 88000000000000000008 of withdraw amount.");
 	}
 
 	function testWithdraw() public {
 		// Params
 		uint _withdraw_amount = 10;
 		// Testing
-		bool result = cashBox.withdraw(_withdraw_amount);
+		bool result = chargedbunker.withdraw(_withdraw_amount);
 		bool expected = true;
 
 		Assert.equal(result, expected, "It should get the bool of true.");
