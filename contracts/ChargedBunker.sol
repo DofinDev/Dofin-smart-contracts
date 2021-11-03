@@ -257,7 +257,7 @@ contract ChargedBunker is BasicContract {
     }
     
     function getWithdrawAmount() external view returns (uint256) {
-        uint256 totalAssets = IBEP20(position.token).balanceOf(address(this)).add(position.total_depts);
+        uint256 totalAssets = getTotalAssets();
         uint256 ptoken_amount = balanceOf(msg.sender);
         uint256 value = ptoken_amount.mul(totalAssets).div(totalSupply_);
         uint256 user_deposit_amount = usersDepositAmounts[msg.sender];
