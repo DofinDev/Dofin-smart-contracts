@@ -347,6 +347,16 @@ library HighLevelSystem {
         ComptrollerInterface(_comptroller).exitMarket(_crtoken);
     }
 
+    /// @param self refer HLSConfig struct on the top.
+    /// @param _path swap path.
+    function autoCompound(HLSConfig memory self, address[] calldata _path) external {
+        uint256 amountIn = IBEP20(self.CAKE).balanceOf(address(this));
+        uint256 amountInSlippage = amountIn.mul(98).div(100);
+        uint256[] memory amountOutMinArray = IPancakeRouter02(self.router).getAmountsOut(amountInSlippage, _path);
+        uint256 amountOutMin = amountOutMinArray[amountOutMinArray.length];
+        IPancakeRouter02(self.router).swapExactTokensForTokens(amountIn, amountOutMin, _path, address(this), block.timestamp);
+    }
+
 }
 
 

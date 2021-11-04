@@ -58,7 +58,7 @@ module.exports = async function(deployer, network, accounts) {
     var _uints = [10, 10];
     var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakePancakePair.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address];
     var _dofin = '0x0000000000000000000000000000000000000000';
-    var _deposit_limit = 100000;
+    var _deposit_limit = 100000000;
     await deployer.deploy(CashBox, _uints, _addrs, _dofin, _deposit_limit);
   
   } else if (network == "BSCMainnet") {
@@ -104,7 +104,7 @@ module.exports = async function(deployer, network, accounts) {
       '0x2Bc4eb013DDee29D37920938B96d353171289B7C'
     ];
     var _dofin = '0x503cF1B6253b02575bAf33E83000ff9209243784';
-    var _deposit_limit = 1000;
+    var _deposit_limit = 5000;
     await deployer.deploy(CashBox, _uints, _addrs, _dofin, _deposit_limit);
   }
 };

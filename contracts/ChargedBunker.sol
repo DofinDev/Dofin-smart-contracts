@@ -14,14 +14,14 @@ contract ChargedBunker is BasicContract {
     struct User {
         uint256 depositPtokenAmount;
         uint256 depositTokenAmount;
-        uint256 depositBlockTimestamp
+        uint256 depositBlockTimestamp;
     }
 
     HighLevelSystem.HLSConfig private HLSConfig;
     HighLevelSystem.Position private position;
     
     using SafeMath for uint256;
-    string public constant name = "Proof token of USDC";
+    string public constant name = "Proof Token";
     string public constant symbol = "pUSDC";
     uint8 public constant decimals = 18;
     uint256 private totalSupply_;
@@ -29,7 +29,7 @@ contract ChargedBunker is BasicContract {
 
     uint256 private deposit_limit;
     uint256 private temp_free_funds;
-    bool public activable = false;
+    bool public TAG = false;
     address private dofin;
     
     event Approval(address indexed tokenOwner, address indexed spender, uint256 tokens);
@@ -63,8 +63,8 @@ contract ChargedBunker is BasicContract {
         deposit_limit = _deposit_limit;
     }
 
-    modifier checkActivable() {
-        require(activable == true, 'CashBox is not activable.');
+    modifier checkTag() {
+        require(TAG == true, 'TAG ERROR.');
         _;
     }
     
@@ -96,13 +96,13 @@ contract ChargedBunker is BasicContract {
         IBEP20(position.supply_crtoken).approve(position.supply_crtoken, MAX_INT_EXPONENTIATION);
 
         // Set Cream collateral
-        setActivable(true);
+        setTag(true);
     }
 
-    function setActivable(bool _activable) public onlyOwner {
+    function setTag(bool _tag) public onlyOwner {
         
-        activable = _activable;
-        if (_activable == true) {
+        TAG = _tag;
+        if (_tag == true) {
             address[] memory crtokens = new address[] (3);
             crtokens[0] = address(0x0000000000000000000000000000000000000020);
             crtokens[1] = address(0x0000000000000000000000000000000000000001);
@@ -117,26 +117,31 @@ contract ChargedBunker is BasicContract {
         
         return position;
     }
+
+    function getUser(address _account) external view returns (User memory) {
+        
+        return users[_account];
+    }
     
-    function rebalanceWithRepay() external onlyOwner checkActivable {
+    function rebalanceWithRepay() external onlyOwner checkTag {
         position = HighLevelSystem.exitPosition(HLSConfig, position, 3);
         position = HighLevelSystem.enterPosition(HLSConfig, position, 3);
         temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
     
-    function rebalanceWithoutRepay() external onlyOwner checkActivable {
+    function rebalanceWithoutRepay() external onlyOwner checkTag {
         position = HighLevelSystem.exitPosition(HLSConfig, position, 2);
         position = HighLevelSystem.enterPosition(HLSConfig, position, 2);
         temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
     
-    function rebalance() external onlyOwner checkActivable  {
+    function rebalance() external onlyOwner checkTag  {
         position = HighLevelSystem.exitPosition(HLSConfig, position, 1);
         position = HighLevelSystem.enterPosition(HLSConfig, position, 1);
         temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
     
-    function checkAddNewFunds() onlyOwner checkActivable external view returns (uint256) {
+    function checkAddNewFunds() external onlyOwner checkTag view returns (uint256) {
         uint256 free_funds = IBEP20(position.token).balanceOf(address(this));
         if (free_funds > temp_free_funds) {
             if (position.token_a_amount == 0 && position.token_b_amount == 0) {
@@ -149,14 +154,19 @@ contract ChargedBunker is BasicContract {
         }
         return 0;
     }
+
+    function autoCompound(address[] calldata _path) external onlyOwner checkTag {
+        
+        HighLevelSystem.autoCompound(HLSConfig, _path);
+    }
     
-    function enter(uint256 _type) external onlyOwner checkActivable {
+    function enter(uint256 _type) external onlyOwner checkTag {
         
         position = HighLevelSystem.enterPosition(HLSConfig, position, _type);
         temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
 
-    function exit(uint256 _type) external onlyOwner checkActivable {
+    function exit(uint256 _type) external onlyOwner checkTag {
         
         position = HighLevelSystem.exitPosition(HLSConfig, position, _type);
     }
@@ -245,7 +255,7 @@ contract ChargedBunker is BasicContract {
         return shares;
     }
     
-    function deposit(uint256 _deposit_amount) external checkActivable returns (bool) {
+    function deposit(uint256 _deposit_amount) external checkTag returns (bool) {
         require(_deposit_amount <= deposit_limit.mul(10**IBEP20(position.token).decimals()), "Deposit too much!");
         require(_deposit_amount > 0, "Deposit amount must bigger than 0.");
         
@@ -268,14 +278,16 @@ contract ChargedBunker is BasicContract {
     
     function getWithdrawAmount() external view returns (uint256) {
         uint256 totalAssets = getTotalAssets();
-        uint256 ptoken_amount = balanceOf(msg.sender);
-        uint256 value = ptoken_amount.mul(totalAssets).div(totalSupply_);
-        uint256 user_deposit_amount = usersDepositAmounts[msg.sender];
-
+        uint256 withdraw_amount = balanceOf(msg.sender);
+        uint256 value = withdraw_amount.mul(totalAssets).div(totalSupply_);
+        User memory user = users[msg.sender];
+        if (withdraw_amount > user.depositPtokenAmount) {
+            return 0;
+        }
         uint256 dofin_value;
         uint256 user_value;
-        if (value > user_deposit_amount) {
-            dofin_value = value.sub(user_deposit_amount).mul(20).div(100);
+        if (value > user.depositTokenAmount) {
+            dofin_value = value.sub(user.depositTokenAmount).mul(20).div(100);
             user_value = value.sub(dofin_value);
         } else {
             user_value = value;
@@ -284,14 +296,14 @@ contract ChargedBunker is BasicContract {
         return user_value;
     }
     
-    function withdraw() external checkActivable returns (bool) {
+    function withdraw() external checkTag returns (bool) {
         uint256 withdraw_amount = balanceOf(msg.sender);
         uint256 totalAssets = getTotalAssets();
         uint256 value = withdraw_amount.mul(totalAssets).div(totalSupply_);
         User memory user = users[msg.sender];
         bool need_rebalance = false;
-        require(withdraw_amount > user.depositPtokenAmount, "Proof token amount incorrect.")
-        require(block.timestamp > user.depositBlockTimestamp, "Deposit and withdraw in same block.")
+        require(withdraw_amount > user.depositPtokenAmount, "Proof token amount incorrect.");
+        require(block.timestamp > user.depositBlockTimestamp, "Deposit and withdraw in same block.");
         // If no enough amount of free funds can transfer will trigger exit position
         if (value > IBEP20(position.token).balanceOf(address(this))) {
             HighLevelSystem.exitPosition(HLSConfig, position, 1);
