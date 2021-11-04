@@ -14,17 +14,8 @@ contract BasicContract is Ownable {
         return IBEP20(_token).balanceOf(_address);
     }
     
-    function approveForContract(address _token, address _spender, uint _amount) private onlyOwner {
-        IBEP20(_token).approve(_spender, _amount);
-    }
-    
     function checkAllowance(address _token, address _owner, address _spender) external view returns (uint) {
         return IBEP20(_token).allowance(_owner, _spender);
-    }
-    
-    function transferBack(address _token, uint _amount) external onlyOwner {
-        IBEP20(_token).approve(address(this), _amount);
-        IBEP20(_token).transferFrom(address(this), msg.sender, _amount);
     }
 
 }
