@@ -11,6 +11,12 @@ import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
 /// @dev All functions haven't finished unit test
 contract ChargedBunker is BasicContract {
 
+    struct User {
+        uint256 depositPtokenAmount;
+        uint256 depositTokenAmount;
+        uint256 depositBlockTimestamp
+    }
+
     HighLevelSystem.HLSConfig private HLSConfig;
     HighLevelSystem.Position private position;
     
@@ -31,7 +37,7 @@ contract ChargedBunker is BasicContract {
     
     mapping(address => uint256) private balances;
     mapping(address => mapping (address => uint256)) private allowed;
-    mapping (address => uint256) private usersDepositAmounts;
+    mapping (address => User) private users;
 
     constructor(uint256[] memory _uints, address[] memory _addrs, address _dofin, uint256 _deposit_limit) {
         position = HighLevelSystem.Position({
@@ -247,7 +253,11 @@ contract ChargedBunker is BasicContract {
         uint256 shares = getDepositAmountOut(_deposit_amount);
         
         // Record user deposit amount
-        usersDepositAmounts[msg.sender] = _deposit_amount;
+        users[msg.sender] = User({
+            depositPtokenAmount: shares,
+            depositTokenAmount: _deposit_amount,
+            depositBlockTimestamp: block.timestamp
+        });
 
         // Mint pToken and transfer Token to cashbox
         mint(msg.sender, shares);
@@ -278,8 +288,10 @@ contract ChargedBunker is BasicContract {
         uint256 withdraw_amount = balanceOf(msg.sender);
         uint256 totalAssets = getTotalAssets();
         uint256 value = withdraw_amount.mul(totalAssets).div(totalSupply_);
-        uint256 user_deposit_amount = usersDepositAmounts[msg.sender];
+        User memory user = users[msg.sender];
         bool need_rebalance = false;
+        require(withdraw_amount > user.depositPtokenAmount, "Proof token amount incorrect.")
+        require(block.timestamp > user.depositBlockTimestamp, "Deposit and withdraw in same block.")
         // If no enough amount of free funds can transfer will trigger exit position
         if (value > IBEP20(position.token).balanceOf(address(this))) {
             HighLevelSystem.exitPosition(HLSConfig, position, 1);
@@ -289,16 +301,19 @@ contract ChargedBunker is BasicContract {
         }
         // Will charge 20% fees
         burn(msg.sender, withdraw_amount);
-        uint256 dofin_value;
+        uint256 dofin_value; //dofin_value = 0
         uint256 user_value;
-        if (value > user_deposit_amount) {
-            dofin_value = value.sub(user_deposit_amount).mul(20).div(100);
+        if (value > user.depositTokenAmount) {
+            dofin_value = value.sub(user.depositTokenAmount).mul(20).div(100);
             user_value = value.sub(dofin_value);
         } else {
             user_value = value;
         }
-        // Modify usersDepositAmounts
-        usersDepositAmounts[msg.sender] = 0;
+        // Modify user state data
+        user.depositPtokenAmount = 0;
+        user.depositTokenAmount = 0;
+        user.depositBlockTimestamp = 0;
+        users[msg.sender] = user;
         IBEP20(position.token).transferFrom(address(this), dofin, dofin_value);
         IBEP20(position.token).transferFrom(address(this), msg.sender, user_value);
         // Enter position again
