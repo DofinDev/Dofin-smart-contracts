@@ -299,7 +299,7 @@ library HighLevelSystem {
         // Unstake
         _position = _removeLiquidity(self, _position);
 
-        _position.total_depts = getTotalDebts(self, _position);
+        _position.total_depts = getTotalDebtsBoosted(self, _position);
 
         return _position;
     }

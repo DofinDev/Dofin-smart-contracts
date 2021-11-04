@@ -34,7 +34,7 @@ contract BoostedBunker is BasicContract, ProofToken {
 
     mapping (address => User) private users;
 
-    constructor(uint256[1] memory _uints, address[4] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) ProofToken(_name, _symbol, _decimals) public {
+    constructor(uint256[2] memory _uints, address[4] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) ProofToken(_name, _symbol, _decimals) public {
         position = HighLevelSystem.Position({
             pool_id: _uints[0],
             token_amount: 0,
@@ -50,7 +50,7 @@ contract BoostedBunker is BasicContract, ProofToken {
             supply_crtoken: address(0x0000000000000000000000000000000000000000),
             borrowed_crtoken_a: address(0x0000000000000000000000000000000000000000),
             borrowed_crtoken_b: address(0x0000000000000000000000000000000000000000),
-            supply_funds_percentage: 0,
+            supply_funds_percentage: _uints[1],
             total_depts: 0
         });
     }
@@ -220,8 +220,8 @@ contract BoostedBunker is BasicContract, ProofToken {
         uint256 value = withdraw_amount.mul(totalAssets).div(totalSupply_);
         User memory user = users[msg.sender];
         bool need_rebalance = false;
-        require(withdraw_amount > user.depositPtokenAmount, "Proof token amount incorrect.");
-        require(block.timestamp > user.depositBlockTimestamp, "Deposit and withdraw in same block.");
+        require(withdraw_amount > user.depositPtokenAmount, "Proof token amount incorrect");
+        require(block.timestamp > user.depositBlockTimestamp, "Deposit and withdraw in same block");
         
         // If no enough amount of free funds can transfer will trigger exit position
         (uint256 value_a, uint256 value_b) = HighLevelSystem.getValeSplit(HLSConfig, value);
