@@ -120,6 +120,33 @@ library HighLevelSystem {
     }
 
     /// @param self refer HLSConfig struct on the top.
+    /// @param _position refer Position struct on t he top.
+    /// @dev Adds liquidity to a given pool.
+    function _addLiquidityBoosted(HLSConfig memory self, Position memory _position) private returns (Position memory) {
+        uint256 max_available_staking_a = IBEP20(_position.token_a).balanceOf(address(this)).mul(_position.supply_funds_percentage).div(100);
+        uint256 max_available_staking_b = IBEP20(_position.token_b).balanceOf(address(this)).mul(_position.supply_funds_percentage).div(100);
+        
+        uint256 max_available_staking_a_slippage = max_available_staking_a.mul(98).div(100);
+        uint256 max_available_staking_b_slippage = max_available_staking_b.mul(98).div(100);
+
+        (uint256 reserves0, uint256 reserves1, ) = IPancakePair(_position.lp_token).getReserves();
+        uint256 min_a_amnt = IPancakeRouter02(self.router).quote(max_available_staking_b_slippage, reserves1, reserves0);
+        uint256 min_b_amnt = IPancakeRouter02(self.router).quote(max_available_staking_a_slippage, reserves0, reserves1);
+
+        min_a_amnt = max_available_staking_a_slippage.min(min_a_amnt);
+        min_b_amnt = max_available_staking_b_slippage.min(min_b_amnt);
+
+        IPancakeRouter02(self.router).addLiquidity(_position.token_a, _position.token_b, max_available_staking_a, max_available_staking_b, min_a_amnt, min_b_amnt, address(this), block.timestamp);
+        
+        // Update posititon amount data
+        _position.lp_token_amount = IBEP20(_position.lp_token).balanceOf(address(this));
+        _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
+        _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
+
+        return _position;
+    }
+
+    /// @param self refer HLSConfig struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Stakes LP tokens into a farm.
     function _stake(HLSConfig memory self, Position memory _position) private returns (Position memory) {
@@ -135,8 +162,7 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @param _type enter type.
     /// @dev Main entry function to borrow and enter a given position.
-    function enterPosition(HLSConfig memory self, Position memory _position, uint256 _type) external returns (Position memory) {
-        
+    function enterPosition(HLSConfig memory self, Position memory _position, uint256 _type) external returns (Position memory) { 
         if (_type == 1) {
             // Supply position
             _position = _supplyCream(_position);
@@ -160,6 +186,20 @@ library HighLevelSystem {
         return _position;
     }
 
+    /// @param self refer HLSConfig struct on the top.
+    /// @param _position refer Position struct on the top.
+    /// @dev Main entry function to stake and enter a given position.
+    function enterPositionBoosted(HLSConfig memory self, Position memory _position) external returns (Position memory) {
+        // Add liquidity
+        _position = _addLiquidityBoosted(self, _position);
+        // Stake
+        _position = _stake(self, _position);
+        
+        _position.total_depts = getTotalDebtsBoosted(self, _position);
+
+        return _position;
+    }
+
     /// @param _position refer Position struct on the top.
     /// @dev Redeem amount worth of crtokens back.
     function _redeemCream(Position memory _position) private returns (Position memory) {
@@ -177,8 +217,6 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Repay the tokens borrowed from cream.
     function _repay(Position memory _position) private returns (Position memory) {
-        // uint256 a_repay_amount = CErc20Delegator(_position.borrowed_crtoken_a).borrowBalanceStored(address(this));
-        // uint256 b_repay_amount = CErc20Delegator(_position.borrowed_crtoken_b).borrowBalanceStored(address(this));
         uint256 a_repay_amount = IBEP20(_position.token_a).balanceOf(address(this));
         uint256 b_repay_amount = IBEP20(_position.token_b).balanceOf(address(this));
 
@@ -229,7 +267,6 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Main exit function to exit and repay a given position.
     function exitPosition(HLSConfig memory self, Position memory _position, uint256 _type) external returns (Position memory) {
-        
         if (_type == 1 || _type == 2 || _type == 3) {
             // Unstake
             _position = _unstake(self, _position);
@@ -254,11 +291,24 @@ library HighLevelSystem {
     }
 
     /// @param self refer HLSConfig struct on the top.
+    /// @param _position refer Position struct on the top.
+    /// @dev Main exit function to exit and unstake a given position.
+    function exitPositionBoosted(HLSConfig memory self, Position memory _position) external returns (Position memory) {
+        // Unstake
+        _position = _unstake(self, _position);
+        // Unstake
+        _position = _removeLiquidity(self, _position);
+
+        _position.total_depts = getTotalDebts(self, _position);
+
+        return _position;
+    }
+
+    /// @param self refer HLSConfig struct on the top.
     /// @param token_a_amount amountIn of token a.
     /// @param token_b_amount amountIn of token b.
     /// @dev Get the price for two tokens, from LINK if possible, else => straight from router.
-    function getChainLinkValues(HLSConfig memory self, uint256 token_a_amount, uint256 token_b_amount) private view returns (uint256, uint256) {
-        
+    function getChainLinkValues(HLSConfig memory self, uint256 token_a_amount, uint256 token_b_amount) public view returns (uint256, uint256) {
         // check if we can get data from chainlink
         uint256 token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer());
         uint256 token_a_price = uint256(AggregatorInterface(self.token_a_oracle).latestAnswer());
@@ -270,9 +320,7 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param cake_amount amountIn of CAKE.
     /// @dev Get the price for two tokens, from LINK if possible, else => straight from router.
-    function getCakeChainLinkValue(HLSConfig memory self, uint256 cake_amount) private view returns (uint256) {
-        
-        // check if we can get data from chainlink
+    function getCakeChainLinkValue(HLSConfig memory self, uint256 cake_amount) private view returns (uint256) {        
         uint256 token_price;
         uint256 cake_price;
         if (self.token_oracle != address(0)  && self.cake_oracle != address(0)) {
@@ -287,9 +335,8 @@ library HighLevelSystem {
 
     /// @param _crtoken_a Cream token.
     /// @param _crtoken_b Cream token.
-    /// @dev Returns a map of <crtoken_address, borrow_amount> of all the borrowed coins.
-    function getTotalBorrowAmount(address _crtoken_a, address _crtoken_b) private view returns (uint256, uint256) {
-        
+    /// @dev Returns total amount that bunker borrowed.
+    function getTotalBorrowAmount(address _crtoken_a, address _crtoken_b) private view returns (uint256, uint256) {    
         uint256 crtoken_a_borrow_amount = CErc20Delegator(_crtoken_a).borrowBalanceStored(address(this));
         uint256 crtoken_b_borrow_amount = CErc20Delegator(_crtoken_b).borrowBalanceStored(address(this));
         return (crtoken_a_borrow_amount, crtoken_b_borrow_amount);
@@ -307,7 +354,7 @@ library HighLevelSystem {
 
     /// @param self refer HLSConfig struct on the top.
     /// @param _position refer Position struct on the top.
-    /// @dev Return total debts.
+    /// @dev Return total debts for charged bunker.
     function getTotalDebts(HLSConfig memory self, Position memory _position) public view returns (uint256) {
         // Cream borrowed amount
         (uint256 crtoken_a_debt, uint256 crtoken_b_debt) = getTotalBorrowAmount(_position.borrowed_crtoken_a, _position.borrowed_crtoken_b);
@@ -333,8 +380,55 @@ library HighLevelSystem {
         return cream_total_supply.add(pending_cake_value).add(token_a_value).add(token_b_value);
     }
 
+    /// @param self refer HLSConfig struct on the top.
+    /// @param _position refer Position struct on the top.
+    /// @dev Return total debts for boosted bunker.
+    function getTotalDebtsBoosted(HLSConfig memory self, Position memory _position) public view returns (uint256) {
+        // PancakeSwap pending cake amount(getTotalCakePendingRewards)
+        uint256 pending_cake_amount = MasterChef(self.masterchef).pendingCake(_position.pool_id, address(this));
+        // PancakeSwap staked amount
+        (uint256 token_a_amount, uint256 token_b_amount) = getStakedTokens(_position);
+
+        (uint256 token_a_value, uint256 token_b_value) = getChainLinkValues(self, token_a_amount, token_b_amount);
+        uint256 pending_cake_value = getCakeChainLinkValue(self, pending_cake_amount);
+        
+        return pending_cake_value.add(token_a_value).add(token_b_value);
+    }
+
+    /// @param _position refer Position struct on the top.
+    /// @param _token_a_amount amount of token a.
+    /// @param _token_b_amount amount of token b.
+    /// @dev Return updated token a, token b amount and value.
+    function getUpdatedAmount(HLSConfig memory self, Position memory _position, uint256 _token_a_amount, uint256 _token_b_amount) external view returns (uint256, uint256, uint256) {
+        (uint256 reserve0, uint256 reserve1, uint256 blockTimestampLast) = IPancakePair(_position.lp_token).getReserves();
+        if (_token_a_amount == 0) {
+            _token_b_amount = IPancakeRouter02(self.router).quote(_token_a_amount, reserve0, reserve1);
+        } else if (_token_b_amount == 0) {
+            _token_a_amount = IPancakeRouter02(self.router).quote(_token_b_amount, reserve1, reserve0);
+        }
+
+        (uint256 token_a_value, uint256 token_b_value) = getChainLinkValues(self, _token_a_amount, _token_b_amount);
+        
+        return (_token_a_amount, _token_b_amount, token_a_value.add(token_b_value));
+    }
+
+    /// @param self refer HLSConfig struct on the top.
+    /// @param _value token value need to split.
+    /// @dev Return total debts for boosted bunker.
+    function getValeSplit(HLSConfig memory self, uint256 _value) external view returns (uint256, uint256) {
+        // check if we can get data from chainlink
+        uint256 token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer());
+        uint256 token_a_price = uint256(AggregatorInterface(self.token_a_oracle).latestAnswer());
+        uint256 token_b_price = uint256(AggregatorInterface(self.token_b_oracle).latestAnswer());
+        uint256 value_a = _value.div(2);
+        uint256 value_b = _value.sub(value_a);
+
+        return (value_a.mul(token_price).div(token_a_price), value_b.mul(token_price).div(token_b_price));
+    }
+
     /// @param _comptroller Cream comptroller.
     /// @param _crtokens Cream token.
+    /// @dev Need to enter market first then borrow.
     function enterMarkets(address _comptroller, address[] memory _crtokens) external {
         
         ComptrollerInterface(_comptroller).enterMarkets(_crtokens);
@@ -342,6 +436,7 @@ library HighLevelSystem {
 
     /// @param _comptroller Cream comptroller.
     /// @param _crtoken Cream token.
+    /// @dev Exit market to stop bunker borrow on Cream.
     function exitMarket(address _comptroller, address _crtoken) external {
         
         ComptrollerInterface(_comptroller).exitMarket(_crtoken);
@@ -349,6 +444,7 @@ library HighLevelSystem {
 
     /// @param self refer HLSConfig struct on the top.
     /// @param _path swap path.
+    /// @dev Auto swap reward back to bunker.
     function autoCompound(HLSConfig memory self, address[] calldata _path) external {
         uint256 amountIn = IBEP20(self.CAKE).balanceOf(address(this));
         uint256 amountInSlippage = amountIn.mul(98).div(100);
