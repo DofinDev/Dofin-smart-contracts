@@ -230,8 +230,8 @@ contract ChargedBunker is BasicContract, ProofToken {
         uint256 value = withdraw_amount.mul(totalAssets).div(totalSupply_);
         User memory user = users[msg.sender];
         bool need_rebalance = false;
-        require(withdraw_amount > user.depositPtokenAmount, "Proof token amount incorrect.");
-        require(block.timestamp > user.depositBlockTimestamp, "Deposit and withdraw in same block.");
+        require(withdraw_amount > user.depositPtokenAmount, "Proof token amount incorrect");
+        require(block.timestamp > user.depositBlockTimestamp, "Deposit and withdraw in same block");
         // If no enough amount of free funds can transfer will trigger exit position
         if (value > IBEP20(position.token).balanceOf(address(this))) {
             HighLevelSystem.exitPosition(HLSConfig, position, 1);

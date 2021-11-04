@@ -21,7 +21,7 @@ contract TestChargedBunker {
 	ChargedBunker public chargedbunker = ChargedBunker(DeployedAddresses.ChargedBunker());
 
 	function beforeAll() public {
-		address[] memory _config = new address[] (9);
+		address[9] memory _config;
 		_config[0] = FakeLinkBSCOracleAddress;
 		_config[1] = FakeLinkBSCOracleAddress;
 		_config[2] = FakeLinkBSCOracleAddress;
