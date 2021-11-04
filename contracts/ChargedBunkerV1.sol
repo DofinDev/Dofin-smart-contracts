@@ -4,13 +4,12 @@ pragma solidity >=0.8;
 import "./token/BEP20/IBEP20.sol";
 import "./math/SafeMath.sol";
 import "./utils/BasicContract.sol";
-import "./utils/ProofToken.sol";
 import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
 
 /// @title ChargedBunker
 /// @author Andrew FU
 /// @dev All functions haven't finished unit test
-contract ChargedBunker is BasicContract, ProofToken {
+contract ChargedBunkerV1 is BasicContract {
 
     struct User {
         uint256 depositPtokenAmount;
@@ -22,16 +21,25 @@ contract ChargedBunker is BasicContract, ProofToken {
     HighLevelSystem.Position private position;
     
     using SafeMath for uint256;
+    string public constant name = "Proof Token";
+    string public constant symbol = "pUSDC";
+    uint8 public constant decimals = 18;
+    uint256 private totalSupply_;
     uint256 constant private MAX_INT_EXPONENTIATION = 2**256 - 1;
 
     uint256 private deposit_limit;
     uint256 private temp_free_funds;
     bool public TAG = false;
     address private dofin;
-
+    
+    event Approval(address indexed tokenOwner, address indexed spender, uint256 tokens);
+    event Transfer(address indexed from, address indexed to, uint256 tokens);
+    
+    mapping(address => uint256) private balances;
+    mapping(address => mapping (address => uint256)) private allowed;
     mapping (address => User) private users;
 
-    constructor(uint256[] memory _uints, address[] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) ProofToken(_name, _symbol, _decimals) public {
+    constructor(uint256[] memory _uints, address[] memory _addrs, address _dofin, uint256 _deposit_limit) {
         position = HighLevelSystem.Position({
             pool_id: _uints[0],
             token_amount: 0,
@@ -50,6 +58,9 @@ contract ChargedBunker is BasicContract, ProofToken {
             supply_funds_percentage: _uints[1],
             total_depts: 0
         });
+        
+        dofin = _dofin;
+        deposit_limit = _deposit_limit;
     }
 
     modifier checkTag() {
@@ -57,7 +68,7 @@ contract ChargedBunker is BasicContract, ProofToken {
         _;
     }
     
-    function setConfig(address[] memory _config, address _dofin, uint256 _deposit_limit) external onlyOwner {
+    function setConfig(address[] memory _config) external onlyOwner {
         HLSConfig.token_oracle = _config[0];
         HLSConfig.token_a_oracle = _config[1];
         HLSConfig.token_b_oracle = _config[2];
@@ -67,9 +78,6 @@ contract ChargedBunker is BasicContract, ProofToken {
         HLSConfig.masterchef = _config[6];
         HLSConfig.CAKE = _config[7];
         HLSConfig.comptroller = _config[8];
-
-        dofin = _dofin;
-        deposit_limit = _deposit_limit;
 
         // Approve for Cream borrow 
         IBEP20(position.token).approve(position.supply_crtoken, MAX_INT_EXPONENTIATION);
@@ -161,6 +169,70 @@ contract ChargedBunker is BasicContract, ProofToken {
     function exit(uint256 _type) external onlyOwner checkTag {
         
         position = HighLevelSystem.exitPosition(HLSConfig, position, _type);
+    }
+    
+    function totalSupply() public view returns (uint256) {
+        
+        return totalSupply_;
+    }
+    
+    function balanceOf(address account) public view returns (uint256) {
+        
+        return balances[account];
+    }
+
+    function transfer(address recipient, uint256 amount) public returns (bool) {
+        require(amount <= balances[msg.sender]);
+        balances[msg.sender] = balances[msg.sender].sub(amount);
+        balances[recipient] = balances[recipient].add(amount);
+        emit Transfer(msg.sender, recipient, amount);
+        return true;
+    }
+
+    function approve(address spender, uint256 amount) public returns (bool) {
+        allowed[msg.sender][spender] = amount;
+        emit Approval(msg.sender, spender, amount);
+        return true;
+    }
+
+    function allowance(address owner, address spender) public view returns (uint256) {
+        
+        return allowed[owner][spender];
+    }
+
+    function transferFrom(address owner, address buyer, uint256 numTokens) public returns (bool) {
+        require(numTokens <= balances[owner]);    
+        require(numTokens <= allowed[owner][msg.sender]);
+    
+        balances[owner] = balances[owner].sub(numTokens);
+        allowed[owner][msg.sender] = allowed[owner][msg.sender].sub(numTokens);
+        balances[buyer] = balances[buyer].add(numTokens);
+        emit Transfer(owner, buyer, numTokens);
+        return true;
+    }
+    
+    function mint(address account, uint256 amount) private returns (bool) {
+        require(account != address(0), "ERC20: mint to the zero address");
+
+        totalSupply_ += amount;
+        balances[account] += amount;
+        emit Transfer(address(0), account, amount);
+
+        return true;
+    }
+    
+    function burn(address account, uint256 amount) private returns (bool) {
+        require(account != address(0), "ERC20: burn from the zero address");
+
+        uint256 accountBalance = balances[account];
+        require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
+        unchecked {
+            balances[account] = accountBalance - amount;
+        }
+        totalSupply_ -= amount;
+        emit Transfer(account, address(0), amount);
+
+        return true;
     }
 
     function getTotalAssets() public view returns (uint256) {

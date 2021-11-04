@@ -10,7 +10,7 @@ var FakePancakeRouter = artifacts.require("./fake/pancakeswap/FakePancakeRouter.
 // Library
 var HighLevelSystem = artifacts.require("./libs/HighLevelSystem.sol");
 // Contract
-var CashBox = artifacts.require("./ChargedBunker.sol");
+var ChargedBunker = artifacts.require("./ChargedBunker.sol");
 
 module.exports = async function(deployer, network, accounts) {
   if (network == "develop" || network == "test") {
@@ -29,13 +29,14 @@ module.exports = async function(deployer, network, accounts) {
     // testing high level system library
     await deployer.deploy(HighLevelSystem);
 
-    // testing CashBox contract
-    await deployer.link(HighLevelSystem, CashBox);
+    // testing ChargedBunker contract
+    await deployer.link(HighLevelSystem, ChargedBunker);
     var _uints = [10, 10];
     var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakePancakePair.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address];
-    var _dofin = '0x0000000000000000000000000000000000000000';
-    var _deposit_limit = 100000;
-    await deployer.deploy(CashBox, _uints, _addrs, _dofin, _deposit_limit);
+    var _name = 'Proof Token';
+    var _symbol = 'pFakeToken';
+    var _decimals = 10;
+    await deployer.deploy(ChargedBunker, _uints, _addrs, _name, _symbol, _decimals);
   
   } else if (network == "BSCTestnet") {
     await deployer.deploy(FakeIBEP20);
@@ -53,20 +54,21 @@ module.exports = async function(deployer, network, accounts) {
     // testing high level system library
     await deployer.deploy(HighLevelSystem);
 
-    // testing CashBox contract
-    await deployer.link(HighLevelSystem, CashBox);
+    // testing ChargedBunker contract
+    await deployer.link(HighLevelSystem, ChargedBunker);
     var _uints = [10, 10];
     var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakePancakePair.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address];
-    var _dofin = '0x0000000000000000000000000000000000000000';
-    var _deposit_limit = 100000000;
-    await deployer.deploy(CashBox, _uints, _addrs, _dofin, _deposit_limit);
+    var _name = 'Proof Token';
+    var _symbol = 'pFakeToken';
+    var _decimals = 10;
+    await deployer.deploy(ChargedBunker, _uints, _addrs, _name, _symbol, _decimals);
   
   } else if (network == "BSCMainnet") {
     // high level system library
     await deployer.deploy(HighLevelSystem);
 
-    // CashBox contract
-    await deployer.link(HighLevelSystem, CashBox);
+    // ChargedBunker contract
+    await deployer.link(HighLevelSystem, ChargedBunker);
     // _uints = [pool_id, supply_funds_percentage]
     var _uints = [389, 90];
     // _addrs = [token, token_a, token_b, lp_token, supply_crtoken, borrowed_crtoken_a, borrowed_crtoken_b]
@@ -80,16 +82,17 @@ module.exports = async function(deployer, network, accounts) {
       '0xBf9B95b78bc42F6CF53FF2A0ce19D607cFe1ff82',
       '0x2Bc4eb013DDee29D37920938B96d353171289B7C'
     ];
-    var _dofin = '0x503cF1B6253b02575bAf33E83000ff9209243784';
-    var _deposit_limit = 5000;
-    await deployer.deploy(CashBox, _uints, _addrs, _dofin, _deposit_limit);
+    var _name = 'Proof Token';
+    var _symbol = 'pUSDC';
+    var _decimals = 18;
+    await deployer.deploy(ChargedBunker, _uints, _addrs, _name, _symbol, _decimals);
 
   } else if (network == "BSCForkMainnet") {
     // high level system library
     await deployer.deploy(HighLevelSystem);
 
-    // CashBox contract
-    await deployer.link(HighLevelSystem, CashBox);
+    // ChargedBunker contract
+    await deployer.link(HighLevelSystem, ChargedBunker);
     // _uints = [pool_id, supply_funds_percentage]
     var _uints = [258, 90];
     // _addrs = [token, token_a, token_b, lp_token, supply_crtoken, borrowed_crtoken_a, borrowed_crtoken_b]
@@ -103,8 +106,9 @@ module.exports = async function(deployer, network, accounts) {
       '0xEF6d459FE81C3Ed53d292c936b2df5a8084975De',
       '0x2Bc4eb013DDee29D37920938B96d353171289B7C'
     ];
-    var _dofin = '0x503cF1B6253b02575bAf33E83000ff9209243784';
-    var _deposit_limit = 5000;
-    await deployer.deploy(CashBox, _uints, _addrs, _dofin, _deposit_limit);
+    var _name = 'Proof Token';
+    var _symbol = 'pUSDC';
+    var _decimals = 18;
+    await deployer.deploy(ChargedBunker, _uints, _addrs, _name, _symbol, _decimals);
   }
 };

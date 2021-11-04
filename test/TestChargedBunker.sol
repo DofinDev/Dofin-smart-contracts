@@ -31,7 +31,9 @@ contract TestChargedBunker {
 		_config[6] = FakeMasterChefAddress;
 		_config[7] = FakeIBEP20Address;
 		_config[8] = FakeComptrollerAddress;
-		chargedbunker.setConfig(_config);
+		address dofin = address(0x0000000000000000000000000000000000000000);
+		uint256 deposit_limit = 1000000;
+		chargedbunker.setConfig(_config, dofin, deposit_limit);
 	}
 
 	function testGetPosition() public {
