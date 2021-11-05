@@ -123,9 +123,9 @@ contract BoostedBunker is BasicContract, ProofToken {
         return 0;
     }
 
-    function autoCompound(address[] calldata _path) external onlyOwner checkTag {
+    function autoCompound(address[] calldata _token_a_path, address[] calldata _token_b_path) external onlyOwner checkTag {
         
-        HighLevelSystem.autoCompound(HLSConfig, _path);
+        HighLevelSystem.autoCompoundBoosted(HLSConfig, _token_a_path, _token_b_path);
     }
     
     function enter() external onlyOwner checkTag {

@@ -99,6 +99,15 @@ contract TestChargedBunker {
 		Assert.equal(result, expected, "It should get the value 0 of CheckAddNewFunds signal.");
 	}
 
+	function testAutoCompound() public {
+		// Params
+		address[] memory _path = new address[] (2);
+		_path[0] = address(0);
+		_path[1] = address(0);
+		// Testing
+		chargedbunker.autoCompound(_path);
+	}
+
 	function testExit1() public {
 		// Testing
 		chargedbunker.exit(1);

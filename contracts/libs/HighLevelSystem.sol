@@ -415,7 +415,7 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param _value token value need to split.
     /// @dev Return total debts for boosted bunker.
-    function getValeSplit(HLSConfig memory self, uint256 _value) external view returns (uint256, uint256) {
+    function getValeSplit(HLSConfig memory self, uint256 _value) public view returns (uint256, uint256) {
         // check if we can get data from chainlink
         uint256 token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer());
         uint256 token_a_price = uint256(AggregatorInterface(self.token_a_oracle).latestAnswer());
@@ -451,6 +451,27 @@ library HighLevelSystem {
         uint256[] memory amountOutMinArray = IPancakeRouter02(self.router).getAmountsOut(amountInSlippage, _path);
         uint256 amountOutMin = amountOutMinArray[amountOutMinArray.length - 1];
         IPancakeRouter02(self.router).swapExactTokensForTokens(amountIn, amountOutMin, _path, address(this), block.timestamp);
+    }
+
+    /// @param self refer HLSConfig struct on the top.
+    /// @param _token_a_path swap path.
+    /// @param _token_b_path swap path.
+    /// @dev Auto swap reward back to bunker.
+    function autoCompoundBoosted(HLSConfig memory self, address[] calldata _token_a_path, address[] calldata _token_b_path) external {
+        uint256 cake_value = getCakeChainLinkValue(self, IBEP20(self.CAKE).balanceOf(address(this)));
+        (uint256 token_a_value, uint256 token_b_value) = getValeSplit(self, cake_value);
+
+        uint256 amountIn = token_a_value;
+        uint256 amountInSlippage = amountIn.mul(98).div(100);
+        uint256[] memory amountOutMinAArray = IPancakeRouter02(self.router).getAmountsOut(amountInSlippage, _token_a_path);
+        uint256 amountOutMin = amountOutMinAArray[amountOutMinAArray.length - 1];
+        IPancakeRouter02(self.router).swapExactTokensForTokens(amountIn, amountOutMin, _token_a_path, address(this), block.timestamp);
+
+        amountIn = token_b_value;
+        amountInSlippage = amountIn.mul(98).div(100);
+        uint256[] memory amountOutMinBArray = IPancakeRouter02(self.router).getAmountsOut(amountInSlippage, _token_b_path);
+        amountOutMin = amountOutMinBArray[amountOutMinBArray.length - 1];
+        IPancakeRouter02(self.router).swapExactTokensForTokens(amountIn, amountOutMin, _token_b_path, address(this), block.timestamp);
     }
 
 }

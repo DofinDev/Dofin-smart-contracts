@@ -86,6 +86,18 @@ contract TestBoostedBunker {
 		Assert.equal(result, expected, "It should get the value 1 of CheckAddNewFunds signal.");
 	}
 
+	function testAutoCompound() public {
+		// Params
+		address[] memory _token_a_path = new address[] (2);
+		_token_a_path[0] = address(0);
+		_token_a_path[1] = address(0);
+		address[] memory _token_b_path = new address[] (2);
+		_token_b_path[0] = address(0);
+		_token_b_path[1] = address(0);
+		// Testing
+		boostedbunker.autoCompound(_token_a_path, _token_b_path);
+	}
+
 	function testExit() public {
 		// Testing
 		boostedbunker.exit();
