@@ -41,20 +41,20 @@ module.exports = {
     BSCTestnet: {
       provider: () => new HDWalletProvider(env.BSCTestnet_mnemonic, 'https://data-seed-prebsc-1-s1.binance.org:8545'),
       network_id: 97,
-      confirmations: 2,
-      timeoutBlocks: 200,
+      confirmations: 1,
+      timeoutBlocks: 2000,
       skipDryRun: true
     },
     BSCMainnet: {
-      provider: () => new HDWalletProvider(env.BSCMainnet_mnemonic, 'https://bsc-dataseed1.defibit.io/'),
+      provider: () => new HDWalletProvider(env.BSCMainnet_mnemonic, 'https://bsc-dataseed.binance.org/'),
       network_id: 56,
-      confirmations: 2,
-      timeoutBlocks: 200,
+      confirmations: 1,
+      timeoutBlocks: 2000,
       skipDryRun: true
     },
     BSCForkMainnet: {
       provider: () => new HDWalletProvider(env.BSCForkMainnet_mnemonic, 'http://127.0.0.1:7545'),
-      network_id: 56,
+      network_id: 80,
       skipDryRun: true
     },
   },

@@ -9,10 +9,14 @@ var FakeMasterChef = artifacts.require("./fake/pancakeswap/FakeMasterChef.sol");
 var FakePancakeRouter = artifacts.require("./fake/pancakeswap/FakePancakeRouter.sol");
 // Library
 var HighLevelSystem = artifacts.require("./libs/HighLevelSystem.sol");
-// Contract
+// Bunker
 var FixedBunker = artifacts.require("./FixedBunker.sol");
 var ChargedBunker = artifacts.require("./ChargedBunker.sol");
 var BoostedBunker = artifacts.require("./BoostedBunker.sol");
+// Bunker Factory
+var FixedBunkersFactory = artifacts.require("./FixedBunkersFactory.sol");
+var ChargedBunkersFactory = artifacts.require("./ChargedBunkersFactory.sol");
+var BoostedBunkersFactory = artifacts.require("./BoostedBunkersFactory.sol");
 
 module.exports = async function(deployer, network, accounts) {
   if (network == "develop" || network == "test") {
@@ -59,38 +63,59 @@ module.exports = async function(deployer, network, accounts) {
     await deployer.deploy(FixedBunker, _uints, _addrs, _name, _symbol, _decimals);
   
   } else if (network == "BSCTestnet") {
-    await deployer.deploy(FakeIBEP20);
-    // chainlink fake contracts
-    await deployer.deploy(FakeLinkBSCOracle);
-    // cream fake contracts
-    await deployer.deploy(FakeCErc20Delegator, FakeIBEP20.address);
-    await deployer.deploy(FakeComptroller);
-    // pancakeswap fake contracts
-    await deployer.deploy(FakePancakePair, FakeIBEP20.address, FakeIBEP20.address);
-    await deployer.deploy(FakePancakeFactory, FakePancakePair.address);
-    await deployer.deploy(FakeMasterChef);
-    await deployer.deploy(FakePancakeRouter);
-
-    // testing high level system library
+    // testing HighLevelSystem library
     await deployer.deploy(HighLevelSystem);
 
+    // testing FixedBunkersFactory contract
+    await deployer.link(HighLevelSystem, FixedBunkersFactory);
+    await deployer.deploy(FixedBunkersFactory);
+
+    // testing ChargedBunkersFactory contract
+    // await deployer.link(HighLevelSystem, ChargedBunkersFactory);
+    // await deployer.deploy(ChargedBunkersFactory);
+
+    // testing BoostedBunkersFactory contract
+    // await deployer.link(HighLevelSystem, BoostedBunkersFactory);
+    // await deployer.deploy(BoostedBunkersFactory);
+
+    // await deployer.deploy(FakeIBEP20);
+    // chainlink fake contracts
+    // await deployer.deploy(FakeLinkBSCOracle);
+    // cream fake contracts
+    // await deployer.deploy(FakeCErc20Delegator, FakeIBEP20.address);
+    // await deployer.deploy(FakeComptroller);
+    // pancakeswap fake contracts
+    // await deployer.deploy(FakePancakePair, FakeIBEP20.address, FakeIBEP20.address);
+    // await deployer.deploy(FakePancakeFactory, FakePancakePair.address);
+    // await deployer.deploy(FakeMasterChef);
+    // await deployer.deploy(FakePancakeRouter);
+
+    // testing FixedBunker contract
+    // await deployer.link(HighLevelSystem, ChargedBunker);
+    // var _uints = [10];
+    // var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address];
+    // var _name = 'Proof Token';
+    // var _symbol = 'pFakeToken';
+    // var _decimals = 10;
+    // await deployer.deploy(ChargedBunker, _uints, _addrs, _name, _symbol, _decimals);
+
     // testing ChargedBunker contract
-    await deployer.link(HighLevelSystem, ChargedBunker);
-    var _uints = [10, 10];
-    var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakePancakePair.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address];
-    var _name = 'Proof Token';
-    var _symbol = 'pFakeToken';
-    var _decimals = 10;
-    await deployer.deploy(ChargedBunker, _uints, _addrs, _name, _symbol, _decimals);
+    // await deployer.link(HighLevelSystem, ChargedBunker);
+    // var _uints = [10, 10];
+    // var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakePancakePair.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address];
+    // var _name = 'Proof Token';
+    // var _symbol = 'pFakeToken';
+    // var _decimals = 10;
+    // await deployer.deploy(ChargedBunker, _uints, _addrs, _name, _symbol, _decimals);
 
     // testing BoostedBunker contract
-    await deployer.link(HighLevelSystem, BoostedBunker);
-    var _uints = [10, 10];
-    var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakePancakePair.address];
-    var _name = 'Proof Token';
-    var _symbol = 'pFakeToken';
-    var _decimals = 10;
-    await deployer.deploy(BoostedBunker, _uints, _addrs, _name, _symbol, _decimals);
+    // await deployer.link(HighLevelSystem, BoostedBunker);
+    // var _uints = [10, 10];
+    // var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakePancakePair.address];
+    // var _name = 'Proof Token';
+    // var _symbol = 'pFakeToken';
+    // var _decimals = 10;
+    // await deployer.deploy(BoostedBunker, _uints, _addrs, _name, _symbol, _decimals);
   
   } else if (network == "BSCMainnet") {
     // high level system library

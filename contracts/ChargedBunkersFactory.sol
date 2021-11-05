@@ -3,11 +3,10 @@ pragma solidity >=0.8;
 
 import "./ChargedBunker.sol";
 import "./utils/BasicContract.sol";
-import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
 
 /// @title ChargedBunkerFactory
 /// @author Andrew FU
-contract ChargedBunkerFactory is BasicContract {
+contract ChargedBunkersFactory is BasicContract {
     
     uint256 public BunkerId;
     uint256 public BunkersLength;
@@ -43,29 +42,6 @@ contract ChargedBunkerFactory is BasicContract {
         ChargedBunker bunker = ChargedBunker(IdToBunker[_id]);
         bunker.setConfig(_config, _dofin, _deposit_limit);
         return true;
-    }
-
-    function getTotalAssetsBunkers (uint256[] memory _ids) external view returns(uint256[] memory) {
-        uint256[] memory BunkersTotalAssets = new uint256[] (BunkersLength);
-        uint256 temp;
-        for (uint i = 0; i < _ids.length; i++) {
-            ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
-            temp = bunker.getTotalAssets();
-            BunkersTotalAssets[i] = temp;
-        }
-        return BunkersTotalAssets;
-    }
-
-    function getPositionBunkers (uint256[] memory _ids) external view returns(HighLevelSystem.Position[] memory) {
-        HighLevelSystem.Position[] memory BunkersPosition = new HighLevelSystem.Position[] (_ids.length);
-        HighLevelSystem.Position memory temp;
-        ChargedBunker bunker;
-        for (uint i = 0; i < _ids.length; i++) {
-            bunker = ChargedBunker(IdToBunker[_ids[i]]);
-            temp = bunker.getPosition();
-            BunkersPosition[i] = temp;
-        }
-        return BunkersPosition;
     }
 
     function rebalanceBunker (uint256[] memory _ids) external onlyOwner returns(bool) {
