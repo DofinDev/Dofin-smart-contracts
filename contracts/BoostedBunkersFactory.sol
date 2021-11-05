@@ -10,14 +10,12 @@ contract BoostedBunkersFactory is BasicContract {
     
     uint256 public BunkerId;
     uint256 public BunkersLength;
-    mapping (address => uint256) public BunkerToId;
     mapping (uint256 => address) public IdToBunker;
 
     function createBunker (uint256[2] memory _uints, address[4] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external onlyOwner returns(address) {
         BunkerId++;
         BunkersLength++;
         BoostedBunker newBunker = new BoostedBunker(_uints, _addrs, _name, _symbol, _decimals);
-        BunkerToId[address(newBunker)] = BunkerId;
         IdToBunker[BunkerId] = address(newBunker);
         return address(newBunker);
     }
