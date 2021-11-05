@@ -8,7 +8,6 @@ import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
 
 /// @title ChargedBunker
 /// @author Andrew FU
-/// @dev All functions haven't finished unit test
 contract ChargedBunkerV1 is BasicContract {
 
     struct User {

@@ -9,7 +9,6 @@ import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
 
 /// @title BoostedBunker
 /// @author Andrew FU
-/// @dev All functions haven't finished unit test
 contract BoostedBunker is BasicContract, ProofToken {
 
     struct User {

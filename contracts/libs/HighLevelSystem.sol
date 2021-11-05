@@ -200,6 +200,26 @@ library HighLevelSystem {
         return _position;
     }
 
+    /// @param self refer HLSConfig struct on the top.
+    /// @param _position refer Position struct on the top.
+    /// @param _type enter type.
+    /// @dev Main entry function to borrow and enter a given position.
+    function enterPositionFixed(HLSConfig memory self, Position memory _position, uint256 _type) external returns (Position memory) { 
+        if (_type == 1) {
+            // Supply position
+            _position = _supplyCream(_position);
+        }
+        
+        if (_type == 1 || _type == 2) {
+            // Borrow
+            _position = _borrowCream(self, _position);
+        }
+        
+        _position.total_depts = getTotalDebtsFixed(self, _position);
+
+        return _position;
+    }
+
     /// @param _position refer Position struct on the top.
     /// @dev Redeem amount worth of crtokens back.
     function _redeemCream(Position memory _position) private returns (Position memory) {
@@ -305,6 +325,25 @@ library HighLevelSystem {
     }
 
     /// @param self refer HLSConfig struct on the top.
+    /// @param _position refer Position struct on the top.
+    /// @dev Main exit function to exit and repay a given position.
+    function exitPositionFixed(HLSConfig memory self, Position memory _position, uint256 _type) external returns (Position memory) {        
+        if (_type == 1 || _type == 2) {
+            // Repay
+            _position = _repay(_position);
+        }
+        
+        if (_type == 1) {
+            // Redeem
+            _position = _redeemCream(_position);
+        }
+
+        _position.total_depts = getTotalDebtsFixed(self, _position);
+
+        return _position;
+    }
+
+    /// @param self refer HLSConfig struct on the top.
     /// @param token_a_amount amountIn of token a.
     /// @param token_b_amount amountIn of token b.
     /// @dev Get the price for two tokens, from LINK if possible, else => straight from router.
@@ -393,6 +432,23 @@ library HighLevelSystem {
         uint256 pending_cake_value = getCakeChainLinkValue(self, pending_cake_amount);
         
         return pending_cake_value.add(token_a_value).add(token_b_value);
+    }
+
+    /// @param self refer HLSConfig struct on the top.
+    /// @param _position refer Position struct on the top.
+    /// @dev Return total debts for fixed bunker.
+    function getTotalDebtsFixed(HLSConfig memory self, Position memory _position) public view returns (uint256) {
+        // Cream borrowed amount
+        (uint256 crtoken_a_debt, uint256 crtoken_b_debt) = getTotalBorrowAmount(_position.borrowed_crtoken_a, _position.borrowed_crtoken_b);
+
+        uint256 cream_total_supply = _position.supply_crtoken_amount;
+        uint256 token_a_value;
+        uint256 token_b_value;
+        if (crtoken_a_debt != 0 && crtoken_b_debt != 0) {
+            (token_a_value, token_b_value) = getChainLinkValues(self, crtoken_a_debt, crtoken_b_debt);
+        }
+        
+        return cream_total_supply.add(token_a_value).add(token_b_value);
     }
 
     /// @param _position refer Position struct on the top.

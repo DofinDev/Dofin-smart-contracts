@@ -10,6 +10,7 @@ var FakePancakeRouter = artifacts.require("./fake/pancakeswap/FakePancakeRouter.
 // Library
 var HighLevelSystem = artifacts.require("./libs/HighLevelSystem.sol");
 // Contract
+var FixedBunker = artifacts.require("./FixedBunker.sol");
 var ChargedBunker = artifacts.require("./ChargedBunker.sol");
 var BoostedBunker = artifacts.require("./BoostedBunker.sol");
 
@@ -47,6 +48,15 @@ module.exports = async function(deployer, network, accounts) {
     var _symbol = 'pFakeToken';
     var _decimals = 10;
     await deployer.deploy(BoostedBunker, _uints, _addrs, _name, _symbol, _decimals);
+
+    // testing FixedBunker contract
+    await deployer.link(HighLevelSystem, FixedBunker);
+    var _uints = [10];
+    var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address];
+    var _name = 'Proof Token';
+    var _symbol = 'pFakeToken';
+    var _decimals = 10;
+    await deployer.deploy(FixedBunker, _uints, _addrs, _name, _symbol, _decimals);
   
   } else if (network == "BSCTestnet") {
     await deployer.deploy(FakeIBEP20);

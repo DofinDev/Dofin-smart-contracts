@@ -7,9 +7,9 @@ import "./utils/BasicContract.sol";
 import "./utils/ProofToken.sol";
 import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
 
-/// @title ChargedBunker
+/// @title FixedBunker
 /// @author Andrew FU
-contract ChargedBunker is BasicContract, ProofToken {
+contract FixedBunker is BasicContract, ProofToken {
 
     struct User {
         uint256 depositPtokenAmount;
@@ -30,9 +30,9 @@ contract ChargedBunker is BasicContract, ProofToken {
 
     mapping (address => User) private users;
 
-    constructor(uint256[2] memory _uints, address[7] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) ProofToken(_name, _symbol, _decimals) public {
+    constructor(uint256[1] memory _uints, address[6] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) ProofToken(_name, _symbol, _decimals) public {
         position = HighLevelSystem.Position({
-            pool_id: _uints[0],
+            pool_id: 0,
             token_amount: 0,
             token_a_amount: 0,
             token_b_amount: 0,
@@ -42,11 +42,11 @@ contract ChargedBunker is BasicContract, ProofToken {
             token: _addrs[0],
             token_a: _addrs[1],
             token_b: _addrs[2],
-            lp_token: _addrs[3],
-            supply_crtoken: _addrs[4],
-            borrowed_crtoken_a: _addrs[5],
-            borrowed_crtoken_b: _addrs[6],
-            supply_funds_percentage: _uints[1],
+            lp_token: address(0),
+            supply_crtoken: _addrs[3],
+            borrowed_crtoken_a: _addrs[4],
+            borrowed_crtoken_b: _addrs[5],
+            supply_funds_percentage: _uints[0],
             total_depts: 0
         });
     }
@@ -56,30 +56,17 @@ contract ChargedBunker is BasicContract, ProofToken {
         _;
     }
     
-    function setConfig(address[9] memory _config, address _dofin, uint256 _deposit_limit) external onlyOwner {
+    function setConfig(address[4] memory _config, address _dofin, uint256 _deposit_limit) external onlyOwner {
         HLSConfig.token_oracle = _config[0];
         HLSConfig.token_a_oracle = _config[1];
         HLSConfig.token_b_oracle = _config[2];
-        HLSConfig.cake_oracle = _config[3];
-        HLSConfig.router = _config[4];
-        HLSConfig.factory = _config[5];
-        HLSConfig.masterchef = _config[6];
-        HLSConfig.CAKE = _config[7];
-        HLSConfig.comptroller = _config[8];
+        HLSConfig.comptroller = _config[3];
 
         dofin = _dofin;
         deposit_limit = _deposit_limit;
 
         // Approve for Cream borrow 
         IBEP20(position.token).approve(position.supply_crtoken, MAX_INT_EXPONENTIATION);
-        // Approve for PancakeSwap addliquidity
-        IBEP20(position.token_a).approve(HLSConfig.router, MAX_INT_EXPONENTIATION);
-        IBEP20(position.token_b).approve(HLSConfig.router, MAX_INT_EXPONENTIATION);
-        // Approve for PancakeSwap stake
-        IBEP20(position.lp_token).approve(HLSConfig.masterchef, MAX_INT_EXPONENTIATION);
-
-        // Approve for PancakeSwap removeliquidity
-        IBEP20(position.lp_token).approve(HLSConfig.router, MAX_INT_EXPONENTIATION);
         // Approve for Cream repay
         IBEP20(position.token_a).approve(position.borrowed_crtoken_a, MAX_INT_EXPONENTIATION);
         IBEP20(position.token_b).approve(position.borrowed_crtoken_b, MAX_INT_EXPONENTIATION);
@@ -115,20 +102,14 @@ contract ChargedBunker is BasicContract, ProofToken {
     }
     
     function rebalanceWithRepay() external onlyOwner checkTag {
-        position = HighLevelSystem.exitPosition(HLSConfig, position, 2);
-        position = HighLevelSystem.enterPosition(HLSConfig, position, 2);
-        temp_free_funds = IBEP20(position.token).balanceOf(address(this));
-    }
-    
-    function rebalanceWithoutRepay() external onlyOwner checkTag {
-        position = HighLevelSystem.exitPosition(HLSConfig, position, 3);
-        position = HighLevelSystem.enterPosition(HLSConfig, position, 3);
+        position = HighLevelSystem.exitPositionFixed(HLSConfig, position, 2);
+        position = HighLevelSystem.enterPositionFixed(HLSConfig, position, 2);
         temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
     
     function rebalance() external onlyOwner checkTag  {
-        position = HighLevelSystem.exitPosition(HLSConfig, position, 1);
-        position = HighLevelSystem.enterPosition(HLSConfig, position, 1);
+        position = HighLevelSystem.exitPositionFixed(HLSConfig, position, 1);
+        position = HighLevelSystem.enterPositionFixed(HLSConfig, position, 1);
         temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
     
@@ -145,28 +126,23 @@ contract ChargedBunker is BasicContract, ProofToken {
         }
         return 0;
     }
-
-    function autoCompound(address[] calldata _path) external onlyOwner checkTag {
-        
-        HighLevelSystem.autoCompound(HLSConfig, _path);
-    }
     
     function enter(uint256 _type) external onlyOwner checkTag {
         
-        position = HighLevelSystem.enterPosition(HLSConfig, position, _type);
+        position = HighLevelSystem.enterPositionFixed(HLSConfig, position, _type);
         temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
 
     function exit(uint256 _type) external onlyOwner checkTag {
         
-        position = HighLevelSystem.exitPosition(HLSConfig, position, _type);
+        position = HighLevelSystem.exitPositionFixed(HLSConfig, position, _type);
     }
 
     function getTotalAssets() public view returns (uint256) {
         // Free funds amount
         uint256 freeFunds = IBEP20(position.token).balanceOf(address(this));
         // Total Debts amount from Cream, PancakeSwap
-        uint256 totalDebts = HighLevelSystem.getTotalDebts(HLSConfig, position);
+        uint256 totalDebts = HighLevelSystem.getTotalDebtsFixed(HLSConfig, position);
         
         return freeFunds.add(totalDebts);
     }
@@ -233,7 +209,7 @@ contract ChargedBunker is BasicContract, ProofToken {
         require(block.timestamp > user.depositBlockTimestamp, "Deposit and withdraw in same block");
         // If no enough amount of free funds can transfer will trigger exit position
         if (value > IBEP20(position.token).balanceOf(address(this))) {
-            HighLevelSystem.exitPosition(HLSConfig, position, 1);
+            HighLevelSystem.exitPositionFixed(HLSConfig, position, 1);
             totalAssets = IBEP20(position.token).balanceOf(address(this));
             value = withdraw_amount.mul(totalAssets).div(totalSupply_);
             need_rebalance = true;
@@ -257,7 +233,7 @@ contract ChargedBunker is BasicContract, ProofToken {
         IBEP20(position.token).transferFrom(address(this), msg.sender, user_value);
         // Enter position again
         if (need_rebalance == true) {
-            HighLevelSystem.enterPosition(HLSConfig, position, 1);
+            HighLevelSystem.enterPositionFixed(HLSConfig, position, 1);
             temp_free_funds = IBEP20(position.token).balanceOf(address(this));
         }
         
