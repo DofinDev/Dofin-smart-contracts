@@ -42,8 +42,8 @@ contract Ownable is Context {
      */
     modifier onlyOwner() {
         // Unit test need to comment this line.
-        // require(_owner == _msgSender(), 'Ownable: caller is not the owner');
-        require(_owner != address(0), 'Ownable: caller is not the owner');
+        require(_owner == _msgSender(), 'Ownable: caller is not the owner');
+        // require(_owner != address(0), 'Ownable: caller is not the owner');
         _;
     }
 
