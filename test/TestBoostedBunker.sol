@@ -19,6 +19,19 @@ contract TestBoostedBunker {
 	BoostedBunker public boostedbunker = BoostedBunker(DeployedAddresses.BoostedBunker());
 
 	function beforeAll() public {
+		uint256[2] memory _uints;
+		_uints[0] = 10;
+		_uints[1] = 10;
+		address[4] memory _addrs;
+		_addrs[0] = FakeIBEP20Address;
+		_addrs[1] = FakeIBEP20Address;
+		_addrs[2] = FakeIBEP20Address;
+		_addrs[3] = FakePancakePairAddress;
+		string memory _name = 'Proof Token';
+		string memory _symbol = 'pFakeToken';
+		uint8 _decimals = 10;
+		boostedbunker.initialize(_uints, _addrs, _name, _symbol, _decimals);
+
 		address[8] memory _config;
 		_config[0] = FakeLinkBSCOracleAddress;
 		_config[1] = FakeLinkBSCOracleAddress;

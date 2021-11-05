@@ -17,6 +17,20 @@ contract TestFixedBunker {
 	FixedBunker public fixedbunker = FixedBunker(DeployedAddresses.FixedBunker());
 
 	function beforeAll() public {
+		uint256[1] memory _uints;
+		_uints[0] = 10;
+		address[6] memory _addrs;
+		_addrs[0] = FakeIBEP20Address;
+		_addrs[1] = FakeIBEP20Address;
+		_addrs[2] = FakeIBEP20Address;
+		_addrs[3] = FakeCErc20DelegatorAddress;
+		_addrs[4] = FakeCErc20DelegatorAddress;
+		_addrs[5] = FakeCErc20DelegatorAddress;
+		string memory _name = 'Proof Token';
+		string memory _symbol = 'pFakeToken';
+		uint8 _decimals = 10;
+		fixedbunker.initialize(_uints, _addrs, _name, _symbol, _decimals);
+
 		address[4] memory _config;
 		_config[0] = FakeLinkBSCOracleAddress;
 		_config[1] = FakeLinkBSCOracleAddress;

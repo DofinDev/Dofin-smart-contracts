@@ -12,12 +12,13 @@ contract ChargedBunkersFactory is BasicContract {
     uint256 public BunkersLength;
     mapping (uint256 => address) public IdToBunker;
 
-    function createBunker (uint256[2] memory _uints, address[7] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external onlyOwner returns(address) {
+    function createBunker (uint256[2] memory _uints, address[7] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external onlyOwner returns(uint256, address) {
         BunkerId++;
         BunkersLength++;
-        ChargedBunker newBunker = new ChargedBunker(_uints, _addrs, _name, _symbol, _decimals);
+        ChargedBunker newBunker = new ChargedBunker();
+        newBunker.initialize(_uints, _addrs, _name, _symbol, _decimals);
         IdToBunker[BunkerId] = address(newBunker);
-        return address(newBunker);
+        return (BunkerId, address(newBunker));
     }
 
     function delBunker (uint256[] memory _ids) external onlyOwner returns(bool) {

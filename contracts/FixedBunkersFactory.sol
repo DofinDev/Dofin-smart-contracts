@@ -15,9 +15,10 @@ contract FixedBunkersFactory is BasicContract {
     function createBunker (uint256[1] memory _uints, address[6] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external onlyOwner returns(uint256, address) {
         BunkerId++;
         BunkersLength++;
-        FixedBunker newBunker = new FixedBunker(_uints, _addrs, _name, _symbol, _decimals);
+        FixedBunker newBunker = new FixedBunker();
+        newBunker.initialize(_uints, _addrs, _name, _symbol, _decimals);
         IdToBunker[BunkerId] = address(newBunker);
-        return address(newBunker);
+        return (BunkerId, address(newBunker));
     }
 
     function delBunker (uint256[] memory _ids) external onlyOwner returns(bool) {

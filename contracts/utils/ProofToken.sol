@@ -20,7 +20,7 @@ contract ProofToken {
     mapping(address => uint256) internal balances;
     mapping(address => mapping (address => uint256)) internal allowed;
 
-    constructor(string memory _name, string memory _symbol, uint8 _decimals) public {
+    function initializeToken(string memory _name, string memory _symbol, uint8 _decimals) internal {
         name = _name;
         symbol = _symbol;
         decimals = _decimals;

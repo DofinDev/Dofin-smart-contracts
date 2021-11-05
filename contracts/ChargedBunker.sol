@@ -30,7 +30,7 @@ contract ChargedBunker is BasicContract, ProofToken {
 
     mapping (address => User) private users;
 
-    constructor(uint256[2] memory _uints, address[7] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) ProofToken(_name, _symbol, _decimals) public {
+    function initialize(uint256[2] memory _uints, address[7] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external onlyOwner {
         position = HighLevelSystem.Position({
             pool_id: _uints[0],
             token_amount: 0,
@@ -49,6 +49,7 @@ contract ChargedBunker is BasicContract, ProofToken {
             supply_funds_percentage: _uints[1],
             total_depts: 0
         });
+        initializeToken(_name, _symbol, _decimals);
     }
 
     modifier checkTag() {

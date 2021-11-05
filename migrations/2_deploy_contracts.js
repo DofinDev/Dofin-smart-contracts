@@ -35,32 +35,17 @@ module.exports = async function(deployer, network, accounts) {
     // testing high level system library
     await deployer.deploy(HighLevelSystem);
 
+    // testing FixedBunker contract
+    await deployer.link(HighLevelSystem, FixedBunker);
+    await deployer.deploy(FixedBunker);
+
     // testing ChargedBunker contract
     await deployer.link(HighLevelSystem, ChargedBunker);
-    var _uints = [10, 10];
-    var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakePancakePair.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address];
-    var _name = 'Proof Token';
-    var _symbol = 'pFakeToken';
-    var _decimals = 10;
-    await deployer.deploy(ChargedBunker, _uints, _addrs, _name, _symbol, _decimals);
+    await deployer.deploy(ChargedBunker);
 
     // testing BoostedBunker contract
     await deployer.link(HighLevelSystem, BoostedBunker);
-    var _uints = [10, 10];
-    var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakePancakePair.address];
-    var _name = 'Proof Token';
-    var _symbol = 'pFakeToken';
-    var _decimals = 10;
-    await deployer.deploy(BoostedBunker, _uints, _addrs, _name, _symbol, _decimals);
-
-    // testing FixedBunker contract
-    await deployer.link(HighLevelSystem, FixedBunker);
-    var _uints = [10];
-    var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address];
-    var _name = 'Proof Token';
-    var _symbol = 'pFakeToken';
-    var _decimals = 10;
-    await deployer.deploy(FixedBunker, _uints, _addrs, _name, _symbol, _decimals);
+    await deployer.deploy(BoostedBunker);
   
   } else if (network == "BSCTestnet") {
     // testing HighLevelSystem library
