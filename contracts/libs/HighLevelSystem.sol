@@ -449,7 +449,7 @@ library HighLevelSystem {
         uint256 amountIn = IBEP20(self.CAKE).balanceOf(address(this));
         uint256 amountInSlippage = amountIn.mul(98).div(100);
         uint256[] memory amountOutMinArray = IPancakeRouter02(self.router).getAmountsOut(amountInSlippage, _path);
-        uint256 amountOutMin = amountOutMinArray[amountOutMinArray.length];
+        uint256 amountOutMin = amountOutMinArray[amountOutMinArray.length - 1];
         IPancakeRouter02(self.router).swapExactTokensForTokens(amountIn, amountOutMin, _path, address(this), block.timestamp);
     }
 
