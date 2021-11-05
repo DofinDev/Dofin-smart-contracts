@@ -46,7 +46,7 @@ module.exports = {
       skipDryRun: true
     },
     BSCMainnet: {
-      provider: () => new HDWalletProvider(env.BSCMainnet_mnemonic, 'https://bsc-dataseed.binance.org/'),
+      provider: () => new HDWalletProvider(env.BSCMainnet_mnemonic, 'https://bsc-dataseed1.defibit.io/'),
       network_id: 56,
       confirmations: 2,
       timeoutBlocks: 200,

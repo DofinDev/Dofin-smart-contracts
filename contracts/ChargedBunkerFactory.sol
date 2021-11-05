@@ -12,13 +12,13 @@ contract ChargedBunkerFactory is BasicContract {
     
     address[] public ChargedBunkers;
 
-    function createChargedBunker (uint256[2] memory _uints, address[7] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external onlyOwner returns(address) {
+    function createBunker (uint256[2] memory _uints, address[7] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external onlyOwner returns(address) {
         ChargedBunker newBunker = new ChargedBunker(_uints, _addrs, _name, _symbol, _decimals);
         ChargedBunkers.push(address(newBunker));
         return address(newBunker);
     }
 
-    function setTagAllChargedBunker (bool _tag) external onlyOwner returns(bool) {
+    function setTagAllBunkers (bool _tag) external onlyOwner returns(bool) {
         for (uint i = 0; i < ChargedBunkers.length; i++) {
             ChargedBunker bunker = ChargedBunker(ChargedBunkers[i]);
             bunker.setTag(_tag);
@@ -26,7 +26,7 @@ contract ChargedBunkerFactory is BasicContract {
         return true;
     }
 
-    function getTotalAssetsAllChargedBunker () external view returns(uint256[] memory) {
+    function getTotalAssetsAllBunkers () external view returns(uint256[] memory) {
         uint256[] memory BunkersTotalAssets = new uint256[] (ChargedBunkers.length);
         uint256 temp;
         for (uint i = 0; i < ChargedBunkers.length; i++) {
