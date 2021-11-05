@@ -26,7 +26,8 @@ module.exports = {
   },
   contracts_build_directory: path.join(__dirname, "client/src/contracts"),
   plugins: [
-    'truffle-plugin-verify'
+    'truffle-plugin-verify',
+    'truffle-contract-size'
   ],
   api_keys: {
     bscscan: env.BSCSCANAPIKEY
