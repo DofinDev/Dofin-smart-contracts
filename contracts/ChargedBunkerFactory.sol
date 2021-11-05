@@ -2,39 +2,112 @@
 pragma solidity >=0.8;
 
 import "./ChargedBunker.sol";
-// import "./BoostedBunker.sol";
 import "./utils/BasicContract.sol";
-// import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
+import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
 
 /// @title ChargedBunkerFactory
 /// @author Andrew FU
 contract ChargedBunkerFactory is BasicContract {
     
-    address[] public ChargedBunkers;
+    uint256 public BunkerId;
+    uint256 public BunkersLength;
+    mapping (address => uint256) public BunkerToId;
+    mapping (uint256 => address) public IdToBunker;
 
     function createBunker (uint256[2] memory _uints, address[7] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external onlyOwner returns(address) {
+        BunkerId++;
+        BunkersLength++;
         ChargedBunker newBunker = new ChargedBunker(_uints, _addrs, _name, _symbol, _decimals);
-        ChargedBunkers.push(address(newBunker));
+        BunkerToId[address(newBunker)] = BunkerId;
+        IdToBunker[BunkerId] = address(newBunker);
         return address(newBunker);
     }
 
-    function setTagAllBunkers (bool _tag) external onlyOwner returns(bool) {
-        for (uint i = 0; i < ChargedBunkers.length; i++) {
-            ChargedBunker bunker = ChargedBunker(ChargedBunkers[i]);
+    function delBunker (uint256[] memory _ids) external onlyOwner returns(bool) {
+        BunkersLength = BunkersLength - _ids.length;
+        for (uint i = 0; i < _ids.length; i++) {
+            delete IdToBunker[_ids[i]];
+        }
+        return true;
+    }
+
+    function setTagBunkers (uint256[] memory _ids, bool _tag) external onlyOwner returns(bool) {
+        for (uint i = 0; i < _ids.length; i++) {
+            ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
             bunker.setTag(_tag);
         }
         return true;
     }
 
-    function getTotalAssetsAllBunkers () external view returns(uint256[] memory) {
-        uint256[] memory BunkersTotalAssets = new uint256[] (ChargedBunkers.length);
+    function setConfigBunker (uint256 _id, address[9] memory _config, address _dofin, uint256 _deposit_limit) external onlyOwner returns(bool) {
+        ChargedBunker bunker = ChargedBunker(IdToBunker[_id]);
+        bunker.setConfig(_config, _dofin, _deposit_limit);
+        return true;
+    }
+
+    function getTotalAssetsBunkers (uint256[] memory _ids) external view returns(uint256[] memory) {
+        uint256[] memory BunkersTotalAssets = new uint256[] (BunkersLength);
         uint256 temp;
-        for (uint i = 0; i < ChargedBunkers.length; i++) {
-            ChargedBunker bunker = ChargedBunker(ChargedBunkers[i]);
+        for (uint i = 0; i < _ids.length; i++) {
+            ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
             temp = bunker.getTotalAssets();
             BunkersTotalAssets[i] = temp;
         }
         return BunkersTotalAssets;
+    }
+
+    function getPositionBunkers (uint256[] memory _ids) external view returns(HighLevelSystem.Position[] memory) {
+        HighLevelSystem.Position[] memory BunkersPosition = new HighLevelSystem.Position[] (_ids.length);
+        HighLevelSystem.Position memory temp;
+        ChargedBunker bunker;
+        for (uint i = 0; i < _ids.length; i++) {
+            bunker = ChargedBunker(IdToBunker[_ids[i]]);
+            temp = bunker.getPosition();
+            BunkersPosition[i] = temp;
+        }
+        return BunkersPosition;
+    }
+
+    function rebalanceBunker (uint256[] memory _ids) external onlyOwner returns(bool) {
+        for (uint i = 0; i < _ids.length; i++) {
+            ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
+            bunker.rebalance();
+        }
+        return true;
+    }
+
+    function rebalanceWithRepayBunker (uint256[] memory _ids) external onlyOwner returns(bool) {
+        for (uint i = 0; i < _ids.length; i++) {
+            ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
+            bunker.rebalanceWithRepay();
+        }
+        return true;
+    }
+
+    function rebalanceWithoutRepayBunker (uint256[] memory _ids) external onlyOwner returns(bool) {
+        for (uint i = 0; i < _ids.length; i++) {
+            ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
+            bunker.rebalanceWithoutRepay();
+        }
+        return true;
+    }
+
+    function enterBunker (uint256[] memory _ids, uint256[] memory _types) external onlyOwner returns(bool) {
+        require(_ids.length == _types.length, "Two length different");
+        for (uint i = 0; i < _ids.length; i++) {
+            ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
+            bunker.enter(_types[i]);
+        }
+        return true;
+    }
+
+    function exitBunker (uint256[] memory _ids, uint256[] memory _types) external onlyOwner returns(bool) {
+        require(_ids.length == _types.length, "Two length different");
+        for (uint i = 0; i < _ids.length; i++) {
+            ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
+            bunker.exit(_types[i]);
+        }
+        return true;
     }
 
 }
