@@ -8,7 +8,7 @@ import "./utils/BasicContract.sol";
 /// @author Andrew FU
 contract BoostedBunkersFactory is BasicContract {
     
-    uint256 public BunkerId;
+    uint256 private BunkerId;
     uint256 public BunkersLength;
     mapping (uint256 => address) public IdToBunker;
 
