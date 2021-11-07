@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8;
 
-import "./token/BEP20/IBEP20.sol";
-import "./math/SafeMath.sol";
+import "./libs/IBEP20.sol";
+import "./libs/SafeMath.sol";
 import "./utils/ProofToken.sol";
 import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
 

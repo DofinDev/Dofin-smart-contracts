@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8;
 
-import "../token/BEP20/IBEP20.sol";
-import "../math/SafeMath.sol";
+import "./IBEP20.sol";
+import "./SafeMath.sol";
 import "../interfaces/chainlink/AggregatorInterface.sol";
 import "../interfaces/cream/CErc20Delegator.sol";
 import "../interfaces/cream/ComptrollerInterface.sol";

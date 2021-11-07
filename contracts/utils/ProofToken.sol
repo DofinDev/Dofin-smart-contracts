@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8;
 
-import "../math/SafeMath.sol";
+import "../libs/SafeMath.sol";
 
 /// @title ProofToken
 /// @author Andrew FU
