@@ -3,13 +3,12 @@ pragma solidity >=0.8;
 
 import "./token/BEP20/IBEP20.sol";
 import "./math/SafeMath.sol";
-import "./utils/BasicContract.sol";
 import "./utils/ProofToken.sol";
 import { HighLevelSystem } from "./libs/HighLevelSystem.sol";
 
 /// @title ChargedBunker
 /// @author Andrew FU
-contract ChargedBunker is BasicContract, ProofToken {
+contract ChargedBunker is ProofToken {
 
     struct User {
         uint256 depositPtokenAmount;
@@ -27,10 +26,14 @@ contract ChargedBunker is BasicContract, ProofToken {
     uint256 private temp_free_funds;
     bool public TAG = false;
     address private dofin;
+    address private factory = address(0);
 
     mapping (address => User) private users;
 
-    function initialize(uint256[2] memory _uints, address[7] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external onlyOwner {
+    function initialize(uint256[2] memory _uints, address[7] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external {
+        if (factory != address(0)) {
+            require(msg.sender == factory, "Only factory can call this function");
+        }
         position = HighLevelSystem.Position({
             pool_id: _uints[0],
             token_amount: 0,
@@ -50,14 +53,11 @@ contract ChargedBunker is BasicContract, ProofToken {
             total_depts: 0
         });
         initializeToken(_name, _symbol, _decimals);
-    }
-
-    modifier checkTag() {
-        require(TAG == true, 'TAG ERROR.');
-        _;
+        factory = msg.sender;
     }
     
-    function setConfig(address[9] memory _config, address _dofin, uint256 _deposit_limit) external onlyOwner {
+    function setConfig(address[9] memory _config, address _dofin, uint256 _deposit_limit) external {
+        require(msg.sender == factory, "Only factory can call this function");
         HLSConfig.token_oracle = _config[0];
         HLSConfig.token_a_oracle = _config[1];
         HLSConfig.token_b_oracle = _config[2];
@@ -91,8 +91,8 @@ contract ChargedBunker is BasicContract, ProofToken {
         setTag(true);
     }
 
-    function setTag(bool _tag) public onlyOwner {
-        
+    function setTag(bool _tag) public {
+        require(msg.sender == factory, "Only factory can call this function");
         TAG = _tag;
         if (_tag == true) {
             address[] memory crtokens = new address[] (3);
@@ -115,25 +115,31 @@ contract ChargedBunker is BasicContract, ProofToken {
         return users[_account];
     }
     
-    function rebalanceWithRepay() external onlyOwner checkTag {
+    function rebalanceWithRepay() external {
+        require(msg.sender == factory, "Only factory can call this function");
+        require(TAG == true, 'TAG ERROR.');
         position = HighLevelSystem.exitPosition(HLSConfig, position, 2);
         position = HighLevelSystem.enterPosition(HLSConfig, position, 2);
         temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
     
-    function rebalanceWithoutRepay() external onlyOwner checkTag {
+    function rebalanceWithoutRepay() external {
+        require(msg.sender == factory, "Only factory can call this function");
+        require(TAG == true, 'TAG ERROR.');
         position = HighLevelSystem.exitPosition(HLSConfig, position, 3);
         position = HighLevelSystem.enterPosition(HLSConfig, position, 3);
         temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
     
-    function rebalance() external onlyOwner checkTag  {
+    function rebalance() external  {
+        require(msg.sender == factory, "Only factory can call this function");
+        require(TAG == true, 'TAG ERROR.');
         position = HighLevelSystem.exitPosition(HLSConfig, position, 1);
         position = HighLevelSystem.enterPosition(HLSConfig, position, 1);
         temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
     
-    function checkAddNewFunds() external onlyOwner checkTag view returns (uint256) {
+    function checkAddNewFunds() external view returns (uint256) {
         uint256 free_funds = IBEP20(position.token).balanceOf(address(this));
         if (free_funds > temp_free_funds) {
             if (position.token_a_amount == 0 && position.token_b_amount == 0) {
@@ -147,19 +153,22 @@ contract ChargedBunker is BasicContract, ProofToken {
         return 0;
     }
 
-    function autoCompound(address[] calldata _path) external onlyOwner checkTag {
-        
+    function autoCompound(address[] calldata _path) external {
+        require(msg.sender == factory, "Only factory can call this function");
+        require(TAG == true, 'TAG ERROR.');
         HighLevelSystem.autoCompound(HLSConfig, _path);
     }
     
-    function enter(uint256 _type) external onlyOwner checkTag {
-        
+    function enter(uint256 _type) external {
+        require(msg.sender == factory, "Only factory can call this function");
+        require(TAG == true, 'TAG ERROR.');
         position = HighLevelSystem.enterPosition(HLSConfig, position, _type);
         temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
 
-    function exit(uint256 _type) external onlyOwner checkTag {
-        
+    function exit(uint256 _type) external {
+        require(msg.sender == factory, "Only factory can call this function");
+        require(TAG == true, 'TAG ERROR.');
         position = HighLevelSystem.exitPosition(HLSConfig, position, _type);
     }
 
@@ -183,7 +192,8 @@ contract ChargedBunker is BasicContract, ProofToken {
         return shares;
     }
     
-    function deposit(uint256 _deposit_amount) external checkTag returns (bool) {
+    function deposit(uint256 _deposit_amount) external returns (bool) {
+        require(TAG == true, 'TAG ERROR.');
         require(_deposit_amount <= deposit_limit.mul(10**IBEP20(position.token).decimals()), "Deposit too much!");
         require(_deposit_amount > 0, "Deposit amount must bigger than 0.");
         
@@ -224,7 +234,8 @@ contract ChargedBunker is BasicContract, ProofToken {
         return user_value;
     }
     
-    function withdraw() external checkTag returns (bool) {
+    function withdraw() external returns (bool) {
+        require(TAG == true, 'TAG ERROR.');
         uint256 withdraw_amount = balanceOf(msg.sender);
         uint256 totalAssets = getTotalAssets();
         uint256 value = withdraw_amount.mul(totalAssets).div(totalSupply_);
