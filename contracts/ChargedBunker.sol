@@ -25,14 +25,21 @@ contract ChargedBunker is ProofToken {
     uint256 private deposit_limit;
     uint256 private temp_free_funds;
     bool public TAG = false;
-    address private dofin;
+    address private dofin = address(0);
     address private factory = address(0);
 
     mapping (address => User) private users;
 
+    function checkCaller(address _account) public view returns (bool) {
+        if (msg.sender == factory || msg.sender == dofin) {
+            return true;
+        }
+        return false;
+    }
+
     function initialize(uint256[2] memory _uints, address[7] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external {
-        if (factory != address(0)) {
-            require(msg.sender == factory, "Only factory can call this function");
+        if (dofin==address(0) && factory==address(0)) {
+            require(checkCaller() == true, "Only factory or dofin can call this function");
         }
         position = HighLevelSystem.Position({
             pool_id: _uints[0],
@@ -57,7 +64,9 @@ contract ChargedBunker is ProofToken {
     }
     
     function setConfig(address[9] memory _config, address _dofin, uint256 _deposit_limit) external {
-        require(msg.sender == factory, "Only factory can call this function");
+        if (dofin==address(0) && factory==address(0)) {
+            require(checkCaller() == true, "Only factory or dofin can call this function");
+        }
         HLSConfig.token_oracle = _config[0];
         HLSConfig.token_a_oracle = _config[1];
         HLSConfig.token_b_oracle = _config[2];
@@ -92,7 +101,7 @@ contract ChargedBunker is ProofToken {
     }
 
     function setTag(bool _tag) public {
-        require(msg.sender == factory, "Only factory can call this function");
+        require(checkCaller() == true, "Only factory or dofin can call this function");
         TAG = _tag;
         if (_tag == true) {
             address[] memory crtokens = new address[] (3);
@@ -116,7 +125,7 @@ contract ChargedBunker is ProofToken {
     }
     
     function rebalanceWithRepay() external {
-        require(msg.sender == factory, "Only factory can call this function");
+        require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
         position = HighLevelSystem.exitPosition(HLSConfig, position, 2);
         position = HighLevelSystem.enterPosition(HLSConfig, position, 2);
@@ -124,7 +133,7 @@ contract ChargedBunker is ProofToken {
     }
     
     function rebalanceWithoutRepay() external {
-        require(msg.sender == factory, "Only factory can call this function");
+        require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
         position = HighLevelSystem.exitPosition(HLSConfig, position, 3);
         position = HighLevelSystem.enterPosition(HLSConfig, position, 3);
@@ -132,7 +141,7 @@ contract ChargedBunker is ProofToken {
     }
     
     function rebalance() external  {
-        require(msg.sender == factory, "Only factory can call this function");
+        require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
         position = HighLevelSystem.exitPosition(HLSConfig, position, 1);
         position = HighLevelSystem.enterPosition(HLSConfig, position, 1);
@@ -154,20 +163,20 @@ contract ChargedBunker is ProofToken {
     }
 
     function autoCompound(address[] calldata _path) external {
-        require(msg.sender == factory, "Only factory can call this function");
+        require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
         HighLevelSystem.autoCompound(HLSConfig, _path);
     }
     
     function enter(uint256 _type) external {
-        require(msg.sender == factory, "Only factory can call this function");
+        require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
         position = HighLevelSystem.enterPosition(HLSConfig, position, _type);
         temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
 
     function exit(uint256 _type) external {
-        require(msg.sender == factory, "Only factory can call this function");
+        require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
         position = HighLevelSystem.exitPosition(HLSConfig, position, _type);
     }
