@@ -96,6 +96,9 @@ contract BoostedBunker is ProofToken {
 
         // Approve for PancakeSwap removeliquidity
         IBEP20(position.lp_token).approve(HLSConfig.router, MAX_INT_EXPONENTIATION);
+        // Approve for withdraw
+        IBEP20(position.token_a).approve(address(this), MAX_INT_EXPONENTIATION);
+        IBEP20(position.token_b).approve(address(this), MAX_INT_EXPONENTIATION);
 
         // Set Tag
         setTag(true);
@@ -248,7 +251,7 @@ contract BoostedBunker is ProofToken {
         
         // If no enough amount of free funds can transfer will trigger exit position
         (uint256 value_a, uint256 value_b) = HighLevelSystem.getValeSplit(HLSConfig, value);
-        if (value_a > IBEP20(position.token_a).balanceOf(address(this)) || value_b > IBEP20(position.token_b).balanceOf(address(this))) {
+        if (value_a > IBEP20(position.token_a).balanceOf(address(this)).add(10**IBEP20(position.token_a).decimals()) || value_b > IBEP20(position.token_b).balanceOf(address(this)).add(10**IBEP20(position.token_b).decimals())) {
             HighLevelSystem.exitPositionBoosted(HLSConfig, position);
             totalAssets = IBEP20(position.token_a).balanceOf(address(this)).add(IBEP20(position.token_b).balanceOf(address(this)));
             value = withdraw_amount.mul(totalAssets).div(totalSupply_);
@@ -277,6 +280,12 @@ contract BoostedBunker is ProofToken {
         (uint256 dofin_value_a, uint256 dofin_value_b) = HighLevelSystem.getValeSplit(HLSConfig, dofin_value);
         IBEP20(position.token_a).transferFrom(address(this), dofin, dofin_value_a);
         IBEP20(position.token_b).transferFrom(address(this), dofin, dofin_value_b);
+        if (user_value_a > IBEP20(position.token_a).balanceOf(address(this))) {
+            user_value_a = IBEP20(position.token_a).balanceOf(address(this));
+        }
+        if (user_value_b > IBEP20(position.token_b).balanceOf(address(this))) {
+            user_value_b = IBEP20(position.token_b).balanceOf(address(this));
+        }
         IBEP20(position.token_a).transferFrom(address(this), msg.sender, user_value_a);
         IBEP20(position.token_b).transferFrom(address(this), msg.sender, user_value_b);
         

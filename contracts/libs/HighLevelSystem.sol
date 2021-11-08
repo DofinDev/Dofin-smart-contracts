@@ -224,7 +224,7 @@ library HighLevelSystem {
     /// @dev Redeem amount worth of crtokens back.
     function _redeemCream(Position memory _position) private returns (Position memory) {
         uint256 redeem_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
-        redeem_amount = redeem_amount.mul(999999).div(1000000);
+        redeem_amount = redeem_amount.mul(9999).div(1000000);
         require(CErc20Delegator(_position.supply_crtoken).redeem(redeem_amount) == 0, "Redeem not work");
 
         // Update posititon amount data

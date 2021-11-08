@@ -84,6 +84,8 @@ contract FixedBunker is ProofToken {
         IBEP20(position.token_b).approve(position.borrowed_crtoken_b, MAX_INT_EXPONENTIATION);
         // Approve for Cream redeem
         IBEP20(position.supply_crtoken).approve(position.supply_crtoken, MAX_INT_EXPONENTIATION);
+        // Approve for withdraw
+        IBEP20(position.token).approve(address(this), MAX_INT_EXPONENTIATION);
 
         // Set Tag
         setTag(true);

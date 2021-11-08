@@ -89,7 +89,7 @@ module.exports = function(deployer, network, accounts) {
   
   } else if (network == "BSCMainnet") {
     // testing HighLevelSystem library
-    // deployer.deploy(HighLevelSystem);
+    deployer.deploy(HighLevelSystem);
 
     // testing FixedBunkersFactory contract
     // deployer.link(HighLevelSystem, FixedBunkersFactory);
@@ -104,55 +104,31 @@ module.exports = function(deployer, network, accounts) {
     // deployer.deploy(BoostedBunkersFactory);
 
     // testing FixedBunker contract
-    // deployer.link(HighLevelSystem, FixedBunker);
-    // deployer.deploy(FixedBunker);
+    deployer.link(HighLevelSystem, FixedBunker);
+    deployer.deploy(FixedBunker);
 
     // testing ChargedBunker contract
-    // deployer.link(HighLevelSystem, ChargedBunker);
-    // deployer.deploy(ChargedBunker);
+    deployer.link(HighLevelSystem, ChargedBunker);
+    deployer.deploy(ChargedBunker);
 
     // testing BoostedBunker contract
-    // deployer.link(HighLevelSystem, BoostedBunker);
-    // deployer.deploy(BoostedBunker);
+    deployer.link(HighLevelSystem, BoostedBunker);
+    deployer.deploy(BoostedBunker);
 
   } else if (network == "BSCForkMainnet") {
     // high level system library
     deployer.deploy(HighLevelSystem);
 
+    // BoostedBunker contract
+    deployer.link(HighLevelSystem, FixedBunker);
+    deployer.deploy(FixedBunker);
+
     // ChargedBunker contract
     deployer.link(HighLevelSystem, ChargedBunker);
-    // _uints = [pool_id, supply_funds_percentage]
-    var _uints = [258, 90];
-    // _addrs = [token, token_a, token_b, lp_token, supply_crtoken, borrowed_crtoken_a, borrowed_crtoken_b]
-    // _addrs = [USDC, USDT, BUSD, USDT-BUSD, crUSDC, crUSDT, crBUSD]
-    var _addrs = [
-      '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
-      '0x55d398326f99059fF775485246999027B3197955',
-      '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',
-      '0x7EFaEf62fDdCCa950418312c6C91Aef321375A00',
-      '0xD83C88DB3A6cA4a32FFf1603b0f7DDce01F5f727',
-      '0xEF6d459FE81C3Ed53d292c936b2df5a8084975De',
-      '0x2Bc4eb013DDee29D37920938B96d353171289B7C'
-    ];
-    var _name = 'Proof Token';
-    var _symbol = 'pUSDC';
-    var _decimals = 18;
-    deployer.deploy(ChargedBunker, _uints, _addrs, _name, _symbol, _decimals);
+    deployer.deploy(ChargedBunker);
 
     // BoostedBunker contract
     deployer.link(HighLevelSystem, BoostedBunker);
-    var _uints = [258, 90];
-    // _addrs = [token, token_a, token_b, lp_token]
-    // _addrs = [USDC, CAKE, BUSD, CAKE-BUSD]
-    var _addrs = [
-      '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
-      '0x55d398326f99059fF775485246999027B3197955',
-      '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',
-      '0x7EFaEf62fDdCCa950418312c6C91Aef321375A00'
-    ];
-    var _name = 'Proof Token';
-    var _symbol = 'pUSDC';
-    var _decimals = 18;
-    deployer.deploy(BoostedBunker, _uints, _addrs, _name, _symbol, _decimals);
+    deployer.deploy(BoostedBunker);
   }
 };
