@@ -92,16 +92,16 @@ module.exports = function(deployer, network, accounts) {
     deployer.deploy(HighLevelSystem);
 
     // testing FixedBunkersFactory contract
-    // deployer.link(HighLevelSystem, FixedBunkersFactory);
-    // deployer.deploy(FixedBunkersFactory);
+    deployer.link(HighLevelSystem, FixedBunkersFactory);
+    deployer.deploy(FixedBunkersFactory);
 
     // testing ChargedBunkersFactory contract
-    // deployer.link(HighLevelSystem, ChargedBunkersFactory);
-    // deployer.deploy(ChargedBunkersFactory);
+    deployer.link(HighLevelSystem, ChargedBunkersFactory);
+    deployer.deploy(ChargedBunkersFactory);
 
     // testing BoostedBunkersFactory contract
-    // deployer.link(HighLevelSystem, BoostedBunkersFactory);
-    // deployer.deploy(BoostedBunkersFactory);
+    deployer.link(HighLevelSystem, BoostedBunkersFactory);
+    deployer.deploy(BoostedBunkersFactory);
 
     // testing FixedBunker contract
     deployer.link(HighLevelSystem, FixedBunker);
@@ -120,15 +120,27 @@ module.exports = function(deployer, network, accounts) {
     deployer.deploy(HighLevelSystem);
 
     // BoostedBunker contract
-    deployer.link(HighLevelSystem, FixedBunker);
-    deployer.deploy(FixedBunker);
+    // deployer.link(HighLevelSystem, FixedBunker);
+    // deployer.deploy(FixedBunker);
 
     // ChargedBunker contract
-    deployer.link(HighLevelSystem, ChargedBunker);
-    deployer.deploy(ChargedBunker);
+    // deployer.link(HighLevelSystem, ChargedBunker);
+    // deployer.deploy(ChargedBunker);
 
     // BoostedBunker contract
-    deployer.link(HighLevelSystem, BoostedBunker);
-    deployer.deploy(BoostedBunker);
+    // deployer.link(HighLevelSystem, BoostedBunker);
+    // deployer.deploy(BoostedBunker);
+
+    // testing FixedBunkersFactory contract
+    deployer.link(HighLevelSystem, FixedBunkersFactory);
+    deployer.deploy(FixedBunkersFactory);
+
+    // testing ChargedBunkersFactory contract
+    deployer.link(HighLevelSystem, ChargedBunkersFactory);
+    deployer.deploy(ChargedBunkersFactory);
+
+    // testing BoostedBunkersFactory contract
+    deployer.link(HighLevelSystem, BoostedBunkersFactory);
+    deployer.deploy(BoostedBunkersFactory);
   }
 };

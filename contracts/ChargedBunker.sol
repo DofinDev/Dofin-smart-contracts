@@ -258,7 +258,7 @@ contract ChargedBunker is ProofToken {
         require(withdraw_amount <= user.depositPtokenAmount, "Proof token amount incorrect");
         require(block.timestamp > user.depositBlockTimestamp, "Deposit and withdraw in same block");
         // If no enough amount of free funds can transfer will trigger exit position
-        if (value > IBEP20(position.token).balanceOf(address(this))) {
+        if (value > IBEP20(position.token).balanceOf(address(this)).add(10**IBEP20(position.token).decimals())) {
             HighLevelSystem.exitPosition(HLSConfig, position, 1);
             totalAssets = IBEP20(position.token).balanceOf(address(this));
             value = withdraw_amount.mul(totalAssets).div(totalSupply_);

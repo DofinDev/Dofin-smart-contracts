@@ -38,7 +38,7 @@ contract FixedBunker is ProofToken {
         return false;
     }
 
-    function initialize(uint256[1] memory _uints, address[6] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external {
+    function initialize(uint256[1] memory _uints, address[2] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external {
         if (dofin!=address(0) && factory!=address(0)) {
             require(checkCaller() == true, "Only factory or dofin can call this function");
         }
@@ -51,12 +51,12 @@ contract FixedBunker is ProofToken {
             crtoken_amount: 0,
             supply_crtoken_amount: 0,
             token: _addrs[0],
-            token_a: _addrs[1],
-            token_b: _addrs[2],
+            token_a: address(0),
+            token_b: address(0),
             lp_token: address(0),
-            supply_crtoken: _addrs[3],
-            borrowed_crtoken_a: _addrs[4],
-            borrowed_crtoken_b: _addrs[5],
+            supply_crtoken: _addrs[1],
+            borrowed_crtoken_a: address(0),
+            borrowed_crtoken_b: address(0),
             supply_funds_percentage: _uints[0],
             total_depts: 0
         });
@@ -64,14 +64,11 @@ contract FixedBunker is ProofToken {
         factory = msg.sender;
     }
     
-    function setConfig(address[4] memory _config, address _dofin, uint256[2] memory _deposit_limit) external {
+    function setConfig(address[1] memory _config, address _dofin, uint256[2] memory _deposit_limit) external {
         if (dofin!=address(0) && factory!=address(0)) {
             require(checkCaller() == true, "Only factory or dofin can call this function");
         }
         HLSConfig.token_oracle = _config[0];
-        HLSConfig.token_a_oracle = _config[1];
-        HLSConfig.token_b_oracle = _config[2];
-        HLSConfig.comptroller = _config[3];
 
         dofin = _dofin;
         deposit_limit = _deposit_limit[0];
@@ -79,9 +76,6 @@ contract FixedBunker is ProofToken {
 
         // Approve for Cream borrow 
         IBEP20(position.token).approve(position.supply_crtoken, MAX_INT_EXPONENTIATION);
-        // Approve for Cream repay
-        IBEP20(position.token_a).approve(position.borrowed_crtoken_a, MAX_INT_EXPONENTIATION);
-        IBEP20(position.token_b).approve(position.borrowed_crtoken_b, MAX_INT_EXPONENTIATION);
         // Approve for Cream redeem
         IBEP20(position.supply_crtoken).approve(position.supply_crtoken, MAX_INT_EXPONENTIATION);
         // Approve for withdraw
@@ -94,15 +88,6 @@ contract FixedBunker is ProofToken {
     function setTag(bool _tag) public {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         TAG = _tag;
-        if (_tag == true) {
-            address[] memory crtokens = new address[] (3);
-            crtokens[0] = address(0x0000000000000000000000000000000000000020);
-            crtokens[1] = address(0x0000000000000000000000000000000000000001);
-            crtokens[2] = position.supply_crtoken;
-            HighLevelSystem.enterMarkets(HLSConfig.comptroller, crtokens);
-        } else {
-            HighLevelSystem.exitMarket(HLSConfig.comptroller, position.supply_crtoken);
-        }
     }
     
     function getPosition() external view returns(HighLevelSystem.Position memory) {
@@ -115,19 +100,11 @@ contract FixedBunker is ProofToken {
         return users[_account];
     }
     
-    function rebalanceWithRepay() external {
-        require(checkCaller() == true, "Only factory or dofin can call this function");
-        require(TAG == true, 'TAG ERROR.');
-        position = HighLevelSystem.exitPositionFixed(HLSConfig, position, 2);
-        position = HighLevelSystem.enterPositionFixed(HLSConfig, position, 2);
-        temp_free_funds = IBEP20(position.token).balanceOf(address(this));
-    }
-    
     function rebalance() external  {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        position = HighLevelSystem.exitPositionFixed(HLSConfig, position, 1);
-        position = HighLevelSystem.enterPositionFixed(HLSConfig, position, 1);
+        position = HighLevelSystem.exitPositionFixed(position);
+        position = HighLevelSystem.enterPositionFixed(position);
         temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
     
@@ -145,24 +122,24 @@ contract FixedBunker is ProofToken {
         return 0;
     }
     
-    function enter(uint256 _type) external {
+    function enter() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        position = HighLevelSystem.enterPositionFixed(HLSConfig, position, _type);
+        position = HighLevelSystem.enterPositionFixed(position);
         temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
 
-    function exit(uint256 _type) external {
+    function exit() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        position = HighLevelSystem.exitPositionFixed(HLSConfig, position, _type);
+        position = HighLevelSystem.exitPositionFixed(position);
     }
 
     function getTotalAssets() public view returns (uint256) {
         // Free funds amount
         uint256 freeFunds = IBEP20(position.token).balanceOf(address(this));
-        // Total Debts amount from Cream, PancakeSwap
-        uint256 totalDebts = HighLevelSystem.getTotalDebtsFixed(HLSConfig, position);
+        // Total Debts amount from Cream
+        uint256 totalDebts = HighLevelSystem.getTotalDebtsFixed(position);
         
         return freeFunds.add(totalDebts);
     }
@@ -230,8 +207,8 @@ contract FixedBunker is ProofToken {
         require(withdraw_amount <= user.depositPtokenAmount, "Proof token amount incorrect");
         require(block.timestamp > user.depositBlockTimestamp, "Deposit and withdraw in same block");
         // If no enough amount of free funds can transfer will trigger exit position
-        if (value > IBEP20(position.token).balanceOf(address(this))) {
-            HighLevelSystem.exitPositionFixed(HLSConfig, position, 1);
+        if (value > IBEP20(position.token).balanceOf(address(this)).add(10**IBEP20(position.token).decimals())) {
+            HighLevelSystem.exitPositionFixed(position);
             totalAssets = IBEP20(position.token).balanceOf(address(this));
             value = withdraw_amount.mul(totalAssets).div(totalSupply_);
             need_rebalance = true;
@@ -255,7 +232,7 @@ contract FixedBunker is ProofToken {
         IBEP20(position.token).transferFrom(address(this), msg.sender, user_value);
         // Enter position again
         if (need_rebalance == true) {
-            HighLevelSystem.enterPositionFixed(HLSConfig, position, 1);
+            HighLevelSystem.enterPositionFixed(position);
             temp_free_funds = IBEP20(position.token).balanceOf(address(this));
         }
         

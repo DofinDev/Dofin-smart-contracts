@@ -22,7 +22,7 @@ contract FixedBunkersFactory {
         _owner = newOwner;
     }
 
-    function createBunker (uint256[1] memory _uints, address[6] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external returns(uint256, address) {
+    function createBunker (uint256[1] memory _uints, address[2] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external returns(uint256, address) {
         require(msg.sender == _owner, "Only Owner can call this function");
         BunkerId++;
         BunkersLength++;
@@ -50,7 +50,7 @@ contract FixedBunkersFactory {
         return true;
     }
 
-    function setConfigBunker (uint256 _id, address[4] memory _config, address _dofin, uint256[2] memory _deposit_limit) external returns(bool) {
+    function setConfigBunker (uint256 _id, address[1] memory _config, address _dofin, uint256[2] memory _deposit_limit) external returns(bool) {
         require(msg.sender == _owner, "Only Owner can call this function");
         FixedBunker bunker = FixedBunker(IdToBunker[_id]);
         bunker.setConfig(_config, _dofin, _deposit_limit);
@@ -66,31 +66,20 @@ contract FixedBunkersFactory {
         return true;
     }
 
-    function rebalanceWithRepayBunker (uint256[] memory _ids) external returns(bool) {
+    function enterBunker (uint256[] memory _ids) external returns(bool) {
         require(msg.sender == _owner, "Only Owner can call this function");
         for (uint i = 0; i < _ids.length; i++) {
             FixedBunker bunker = FixedBunker(IdToBunker[_ids[i]]);
-            bunker.rebalanceWithRepay();
+            bunker.enter();
         }
         return true;
     }
 
-    function enterBunker (uint256[] memory _ids, uint256[] memory _types) external returns(bool) {
+    function exitBunker (uint256[] memory _ids) external returns(bool) {
         require(msg.sender == _owner, "Only Owner can call this function");
-        require(_ids.length == _types.length, "Two length different");
         for (uint i = 0; i < _ids.length; i++) {
             FixedBunker bunker = FixedBunker(IdToBunker[_ids[i]]);
-            bunker.enter(_types[i]);
-        }
-        return true;
-    }
-
-    function exitBunker (uint256[] memory _ids, uint256[] memory _types) external returns(bool) {
-        require(msg.sender == _owner, "Only Owner can call this function");
-        require(_ids.length == _types.length, "Two length different");
-        for (uint i = 0; i < _ids.length; i++) {
-            FixedBunker bunker = FixedBunker(IdToBunker[_ids[i]]);
-            bunker.exit(_types[i]);
+            bunker.exit();
         }
         return true;
     }
