@@ -36,15 +36,15 @@ module.exports = {
       network_id: 97,
       confirmations: 0,
       networkCheckTimeout: 1000000,
-      timeoutBlocks: 5000,
+      timeoutBlocks: 50000,
       skipDryRun: true
     },
     BSCMainnet: {
-      provider: () => new HDWalletProvider(env.BSCMainnet_mnemonic, 'https://bsc-dataseed.binance.org/'),
+      provider: () => new HDWalletProvider(env.BSCMainnet_mnemonic, 'wss://speedy-nodes-nyc.moralis.io/c0d694dd12278e2411cbe24c/bsc/mainnet/ws'),
       network_id: 56,
       confirmations: 0,
       networkCheckTimeout: 1000000,
-      timeoutBlocks: 5000,
+      timeoutBlocks: 50000,
       skipDryRun: true
     },
     BSCForkMainnet: {
