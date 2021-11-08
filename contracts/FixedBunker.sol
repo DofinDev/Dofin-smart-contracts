@@ -22,6 +22,7 @@ contract FixedBunker is ProofToken {
     using SafeMath for uint256;
     uint256 constant private MAX_INT_EXPONENTIATION = 2**256 - 1;
 
+    uint256 private total_deposit_limit;
     uint256 private deposit_limit;
     uint256 private temp_free_funds;
     bool public TAG = false;
@@ -30,7 +31,7 @@ contract FixedBunker is ProofToken {
 
     mapping (address => User) private users;
 
-    function checkCaller(address _account) public view returns (bool) {
+    function checkCaller() public view returns (bool) {
         if (msg.sender == factory || msg.sender == dofin) {
             return true;
         }
@@ -38,7 +39,7 @@ contract FixedBunker is ProofToken {
     }
 
     function initialize(uint256[1] memory _uints, address[6] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external {
-        if (dofin==address(0) && factory==address(0)) {
+        if (dofin!=address(0) && factory!=address(0)) {
             require(checkCaller() == true, "Only factory or dofin can call this function");
         }
         position = HighLevelSystem.Position({
@@ -63,8 +64,8 @@ contract FixedBunker is ProofToken {
         factory = msg.sender;
     }
     
-    function setConfig(address[4] memory _config, address _dofin, uint256 _deposit_limit) external {
-        if (dofin==address(0) && factory==address(0)) {
+    function setConfig(address[4] memory _config, address _dofin, uint256[2] memory _deposit_limit) external {
+        if (dofin!=address(0) && factory!=address(0)) {
             require(checkCaller() == true, "Only factory or dofin can call this function");
         }
         HLSConfig.token_oracle = _config[0];
@@ -73,7 +74,8 @@ contract FixedBunker is ProofToken {
         HLSConfig.comptroller = _config[3];
 
         dofin = _dofin;
-        deposit_limit = _deposit_limit;
+        deposit_limit = _deposit_limit[0];
+        total_deposit_limit = _deposit_limit[1];
 
         // Approve for Cream borrow 
         IBEP20(position.token).approve(position.supply_crtoken, MAX_INT_EXPONENTIATION);
@@ -164,7 +166,10 @@ contract FixedBunker is ProofToken {
     }
 
     function getDepositAmountOut(uint256 _deposit_amount) public view returns (uint256) {
+        require(_deposit_amount <= deposit_limit.mul(10**IBEP20(position.token).decimals()), "Deposit too much");
+        require(_deposit_amount > 0, "Deposit amount must bigger than 0");
         uint256 totalAssets = IBEP20(position.token).balanceOf(address(this)).add(position.total_depts);
+        require(total_deposit_limit.mul(10**IBEP20(position.token).decimals()) >= totalAssets.add(_deposit_amount), "Deposit get limited");
         uint256 shares;
         if (totalSupply_ > 0) {
             shares = _deposit_amount.mul(totalSupply_).div(totalAssets);
@@ -176,9 +181,6 @@ contract FixedBunker is ProofToken {
     
     function deposit(uint256 _deposit_amount) external returns (bool) {
         require(TAG == true, 'TAG ERROR.');
-        require(_deposit_amount <= deposit_limit.mul(10**IBEP20(position.token).decimals()), "Deposit too much!");
-        require(_deposit_amount > 0, "Deposit amount must bigger than 0.");
-        
         // Calculation of pToken amount need to mint
         uint256 shares = getDepositAmountOut(_deposit_amount);
         

@@ -24,7 +24,10 @@ contract BoostedBunker is ProofToken {
     using SafeMath for uint256;
     uint256 constant private MAX_INT_EXPONENTIATION = 2**256 - 1;
 
-    uint256 private deposit_limit;
+    uint256 private total_deposit_limit_a;
+    uint256 private total_deposit_limit_b;
+    uint256 private deposit_limit_a;
+    uint256 private deposit_limit_b;
     uint256 private temp_free_funds_a;
     uint256 private temp_free_funds_b;
     bool public TAG = false;
@@ -33,7 +36,7 @@ contract BoostedBunker is ProofToken {
 
     mapping (address => User) private users;
 
-    function checkCaller(address _account) public view returns (bool) {
+    function checkCaller() public view returns (bool) {
         if (msg.sender == factory || msg.sender == dofin) {
             return true;
         }
@@ -41,7 +44,7 @@ contract BoostedBunker is ProofToken {
     }
 
     function initialize(uint256[2] memory _uints, address[4] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external {
-        if (dofin==address(0) && factory==address(0)) {
+        if (dofin!=address(0) && factory!=address(0)) {
             require(checkCaller() == true, "Only factory or dofin can call this function");
         }
         position = HighLevelSystem.Position({
@@ -66,8 +69,8 @@ contract BoostedBunker is ProofToken {
         factory = msg.sender;
     }
     
-    function setConfig(address[8] memory _config, address _dofin, uint256 _deposit_limit) external {
-        if (dofin==address(0) && factory==address(0)) {
+    function setConfig(address[8] memory _config, address _dofin, uint256[4] memory _deposit_limit) external {
+        if (dofin!=address(0) && factory!=address(0)) {
             require(checkCaller() == true, "Only factory or dofin can call this function");
         }
         HLSConfig.token_oracle = _config[0];
@@ -80,7 +83,10 @@ contract BoostedBunker is ProofToken {
         HLSConfig.CAKE = _config[7];
 
         dofin = _dofin;
-        deposit_limit = _deposit_limit;
+        deposit_limit_a = _deposit_limit[0];
+        deposit_limit_b = _deposit_limit[1];
+        total_deposit_limit_a = _deposit_limit[2];
+        total_deposit_limit_b = _deposit_limit[3];
 
         // Approve for PancakeSwap addliquidity
         IBEP20(position.token_a).approve(HLSConfig.router, MAX_INT_EXPONENTIATION);
@@ -170,6 +176,12 @@ contract BoostedBunker is ProofToken {
         uint256 totalAssets = token_a_value.add(token_b_value).add(position.total_depts);
         uint256 token_value;
         (_token_a_amount, _token_b_amount, token_value) = HighLevelSystem.getUpdatedAmount(HLSConfig, position, _token_a_amount, _token_b_amount);
+        require(_token_a_amount <= deposit_limit_a.mul(10**IBEP20(position.token_a).decimals()), "Deposit too much token a!");
+        require(_token_a_amount <= deposit_limit_b.mul(10**IBEP20(position.token_b).decimals()), "Deposit too much token b!");
+        require(_token_a_amount > 0, "Deposit token a amount must bigger than 0.");
+        require(_token_b_amount > 0, "Deposit token b amount must bigger than 0.");
+        uint256 total_deposit_limit = total_deposit_limit_a.mul(10**IBEP20(position.token_a).decimals()).add(total_deposit_limit_b.mul(10**IBEP20(position.token_b).decimals()));
+        require(total_deposit_limit >= totalAssets.add(_token_a_amount).add(_token_b_amount), "Deposit get limited");
 
         uint256 shares;
         if (totalSupply_ > 0) {
@@ -187,11 +199,6 @@ contract BoostedBunker is ProofToken {
          uint256 shares;
         (_token_a_amount, _token_b_amount, token_value, shares) = getDepositAmountOut(_token_a_amount, _token_b_amount);
 
-        require(_token_a_amount <= deposit_limit.mul(10**IBEP20(position.token_a).decimals()), "Deposit too much token a!");
-        require(_token_a_amount <= deposit_limit.mul(10**IBEP20(position.token_b).decimals()), "Deposit too much token b!");
-        require(_token_a_amount > 0, "Deposit token a amount must bigger than 0.");
-        require(_token_b_amount > 0, "Deposit token b amount must bigger than 0.");
-        
         // Record user deposit amount
         users[msg.sender] = User({
             depositPtokenAmount: shares,

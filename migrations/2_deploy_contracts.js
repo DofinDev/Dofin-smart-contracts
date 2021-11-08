@@ -56,12 +56,24 @@ module.exports = function(deployer, network, accounts) {
     deployer.deploy(FixedBunkersFactory);
 
     // testing ChargedBunkersFactory contract
-    // deployer.link(HighLevelSystem, ChargedBunkersFactory);
-    // deployer.deploy(ChargedBunkersFactory);
+    deployer.link(HighLevelSystem, ChargedBunkersFactory);
+    deployer.deploy(ChargedBunkersFactory);
 
     // testing BoostedBunkersFactory contract
-    // deployer.link(HighLevelSystem, BoostedBunkersFactory);
-    // deployer.deploy(BoostedBunkersFactory);
+    deployer.link(HighLevelSystem, BoostedBunkersFactory);
+    deployer.deploy(BoostedBunkersFactory);
+
+    // testing FixedBunker contract
+    deployer.link(HighLevelSystem, FixedBunker);
+    deployer.deploy(FixedBunker);
+
+    // testing ChargedBunker contract
+    deployer.link(HighLevelSystem, ChargedBunker);
+    deployer.deploy(ChargedBunker);
+
+    // testing BoostedBunker contract
+    deployer.link(HighLevelSystem, BoostedBunker);
+    deployer.deploy(BoostedBunker);
 
     // deployer.deploy(FakeIBEP20);
     // chainlink fake contracts
@@ -74,41 +86,34 @@ module.exports = function(deployer, network, accounts) {
     // deployer.deploy(FakePancakeFactory, FakePancakePair.address);
     // deployer.deploy(FakeMasterChef);
     // deployer.deploy(FakePancakeRouter);
+  
+  } else if (network == "BSCMainnet") {
+    // testing HighLevelSystem library
+    // deployer.deploy(HighLevelSystem);
+
+    // testing FixedBunkersFactory contract
+    // deployer.link(HighLevelSystem, FixedBunkersFactory);
+    // deployer.deploy(FixedBunkersFactory);
+
+    // testing ChargedBunkersFactory contract
+    // deployer.link(HighLevelSystem, ChargedBunkersFactory);
+    // deployer.deploy(ChargedBunkersFactory);
+
+    // testing BoostedBunkersFactory contract
+    // deployer.link(HighLevelSystem, BoostedBunkersFactory);
+    // deployer.deploy(BoostedBunkersFactory);
 
     // testing FixedBunker contract
-    // deployer.link(HighLevelSystem, ChargedBunker);
-    // var _uints = [10];
-    // var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address];
-    // var _name = 'Proof Token';
-    // var _symbol = 'pFakeToken';
-    // var _decimals = 10;
-    // deployer.deploy(ChargedBunker, _uints, _addrs, _name, _symbol, _decimals);
+    // deployer.link(HighLevelSystem, FixedBunker);
+    // deployer.deploy(FixedBunker);
 
     // testing ChargedBunker contract
     // deployer.link(HighLevelSystem, ChargedBunker);
-    // var _uints = [10, 10];
-    // var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakePancakePair.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address, FakeCErc20Delegator.address];
-    // var _name = 'Proof Token';
-    // var _symbol = 'pFakeToken';
-    // var _decimals = 10;
-    // deployer.deploy(ChargedBunker, _uints, _addrs, _name, _symbol, _decimals);
+    // deployer.deploy(ChargedBunker);
 
     // testing BoostedBunker contract
     // deployer.link(HighLevelSystem, BoostedBunker);
-    // var _uints = [10, 10];
-    // var _addrs = [FakeIBEP20.address, FakeIBEP20.address, FakeIBEP20.address, FakePancakePair.address];
-    // var _name = 'Proof Token';
-    // var _symbol = 'pFakeToken';
-    // var _decimals = 10;
-    // deployer.deploy(BoostedBunker, _uints, _addrs, _name, _symbol, _decimals);
-  
-  } else if (network == "BSCMainnet") {
-    // high level system library
-    deployer.deploy(HighLevelSystem);
-
-    // ChargedBunker contract
-    deployer.link(HighLevelSystem, ChargedBunker);
-    deployer.deploy(ChargedBunker, _uints, _addrs, _name, _symbol, _decimals);
+    // deployer.deploy(BoostedBunker);
 
   } else if (network == "BSCForkMainnet") {
     // high level system library
