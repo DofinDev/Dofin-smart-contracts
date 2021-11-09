@@ -203,13 +203,12 @@ contract BoostedBunker is ProofToken {
         (_token_a_amount, _token_b_amount, token_value, shares) = getDepositAmountOut(_token_a_amount, _token_b_amount);
 
         // Record user deposit amount
-        users[msg.sender] = User({
-            depositPtokenAmount: shares,
-            depositTokenAAmount: _token_a_amount,
-            depositTokenBAmount: _token_b_amount,
-            depositTokenValue: token_value,
-            depositBlockTimestamp: block.timestamp
-        });
+        User memory user = users[msg.sender];
+        user.depositPtokenAmount = user.depositPtokenAmount.add(shares);
+        user.depositTokenAAmount = user.depositTokenAAmount.add(_token_a_amount);
+        user.depositTokenBAmount = user.depositTokenBAmount.add(_token_b_amount);
+        user.depositBlockTimestamp = block.timestamp;
+        users[msg.sender] = user;
 
         // Mint pToken and transfer Token to cashbox
         mint(msg.sender, shares);

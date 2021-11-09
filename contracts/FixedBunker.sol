@@ -164,11 +164,10 @@ contract FixedBunker is ProofToken {
         uint256 shares = getDepositAmountOut(_deposit_amount);
         
         // Record user deposit amount
-        users[msg.sender] = User({
-            depositPtokenAmount: shares,
-            depositTokenAmount: _deposit_amount,
-            depositBlockTimestamp: block.timestamp
-        });
+        user.depositPtokenAmount = user.depositPtokenAmount.add(shares);
+        user.depositTokenAmount = user.depositTokenAmount.add(_deposit_amount);
+        user.depositBlockTimestamp = block.timestamp;
+        users[msg.sender] = user;
 
         // Mint pToken and transfer Token to cashbox
         mint(msg.sender, shares);
