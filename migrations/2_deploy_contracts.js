@@ -88,32 +88,20 @@ module.exports = function(deployer, network, accounts) {
     // deployer.deploy(FakePancakeRouter);
   
   } else if (network == "BSCMainnet") {
-    // testing HighLevelSystem library
+    // HighLevelSystem library
     deployer.deploy(HighLevelSystem);
 
-    // testing FixedBunkersFactory contract
+    // FixedBunkersFactory contract
     deployer.link(HighLevelSystem, FixedBunkersFactory);
     deployer.deploy(FixedBunkersFactory);
 
-    // testing ChargedBunkersFactory contract
+    // ChargedBunkersFactory contract
     deployer.link(HighLevelSystem, ChargedBunkersFactory);
     deployer.deploy(ChargedBunkersFactory);
 
-    // testing BoostedBunkersFactory contract
+    // BoostedBunkersFactory contract
     deployer.link(HighLevelSystem, BoostedBunkersFactory);
     deployer.deploy(BoostedBunkersFactory);
-
-    // testing FixedBunker contract
-    deployer.link(HighLevelSystem, FixedBunker);
-    deployer.deploy(FixedBunker);
-
-    // testing ChargedBunker contract
-    deployer.link(HighLevelSystem, ChargedBunker);
-    deployer.deploy(ChargedBunker);
-
-    // testing BoostedBunker contract
-    deployer.link(HighLevelSystem, BoostedBunker);
-    deployer.deploy(BoostedBunker);
 
   } else if (network == "BSCForkMainnet") {
     // high level system library
