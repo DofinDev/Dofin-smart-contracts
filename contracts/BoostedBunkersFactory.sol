@@ -3,7 +3,7 @@ pragma solidity >=0.8;
 
 import "./BoostedBunker.sol";
 
-/// @title BoostedBunkerFactory
+/// @title BoostedBunkersFactory
 /// @author Andrew FU
 contract BoostedBunkersFactory {
     
