@@ -298,5 +298,18 @@ contract BoostedBunker is ProofToken {
         
         return true;
     }
+
+    function emergencyWithdrawal() external returns (bool) {
+        require(TAG == false, 'NOT EMERGENCY');
+        uint256 pTokenBalance = balanceOf(msg.sender);
+        User memory user = users[msg.sender];
+        require(pTokenBalance > 0,  "Incorrect quantity of Proof Token");
+        require(user.depositPtokenAmount > 0, "Not depositor");
+
+        IBEP20(position.token_a).transferFrom(address(this), msg.sender, user.depositTokenAAmount);
+        IBEP20(position.token_b).transferFrom(address(this), msg.sender, user.depositTokenBAmount);
+        
+        return true;
+    }
     
 }
