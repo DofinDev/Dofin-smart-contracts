@@ -277,16 +277,18 @@ contract BoostedBunker is ProofToken {
         users[msg.sender] = user;
         (uint256 user_value_a, uint256 user_value_b) = HighLevelSystem.getValeSplit(HLSConfig, user_value);
         (uint256 dofin_value_a, uint256 dofin_value_b) = HighLevelSystem.getValeSplit(HLSConfig, dofin_value);
-        IBEP20(position.token_a).transferFrom(address(this), dofin, dofin_value_a);
-        IBEP20(position.token_b).transferFrom(address(this), dofin, dofin_value_b);
-        if (user_value_a > IBEP20(position.token_a).balanceOf(address(this))) {
-            user_value_a = IBEP20(position.token_a).balanceOf(address(this));
-        }
-        if (user_value_b > IBEP20(position.token_b).balanceOf(address(this))) {
-            user_value_b = IBEP20(position.token_b).balanceOf(address(this));
-        }
         IBEP20(position.token_a).transferFrom(address(this), msg.sender, user_value_a);
         IBEP20(position.token_b).transferFrom(address(this), msg.sender, user_value_b);
+        if (dofin_value_a > IBEP20(position.token_a).balanceOf(address(this))) {
+            dofin_value_a = IBEP20(position.token_a).balanceOf(address(this));
+            need_rebalance = false;
+        }
+        if (dofin_value_b > IBEP20(position.token_b).balanceOf(address(this))) {
+            dofin_value_b = IBEP20(position.token_b).balanceOf(address(this));
+            need_rebalance = false;
+        }
+        IBEP20(position.token_a).transferFrom(address(this), dofin, dofin_value_a);
+        IBEP20(position.token_b).transferFrom(address(this), dofin, dofin_value_b);
         
         // Enter position again
         if (need_rebalance == true) {
