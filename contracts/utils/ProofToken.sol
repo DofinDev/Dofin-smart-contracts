@@ -5,7 +5,6 @@ import "../libs/SafeMath.sol";
 
 /// @title ProofToken
 /// @author Andrew FU
-/// @dev All functions haven't finished unit test
 contract ProofToken {
     
     using SafeMath for uint256;

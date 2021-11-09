@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8;
+pragma solidity >=0.8;
 
 import "./IBEP20.sol";
 import "./SafeMath.sol";
@@ -13,7 +13,6 @@ import "../interfaces/pancakeswap/IPancakeRouter02.sol";
 
 /// @title High level system execution
 /// @author Andrew FU
-/// @dev All functions haven't finished unit test
 library HighLevelSystem {    
 
     using SafeMath for uint256;

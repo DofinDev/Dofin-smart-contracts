@@ -5,7 +5,7 @@ const path = require("path");
 module.exports = {
   compilers: {
     solc: {
-      version: "pragma",
+      version: "0.8.9",
       docker: false,
       parser: "solcjs",
       settings: {
