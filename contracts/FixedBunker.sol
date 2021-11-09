@@ -164,6 +164,7 @@ contract FixedBunker is ProofToken {
         uint256 shares = getDepositAmountOut(_deposit_amount);
         
         // Record user deposit amount
+        User memory user = users[msg.sender];
         user.depositPtokenAmount = user.depositPtokenAmount.add(shares);
         user.depositTokenAmount = user.depositTokenAmount.add(_deposit_amount);
         user.depositBlockTimestamp = block.timestamp;
