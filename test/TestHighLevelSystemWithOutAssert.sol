@@ -37,7 +37,8 @@ contract TestHighLevelSystemWithOutAssert {
       token_b_amount: 10,
       lp_token_amount: 10,
       crtoken_amount: 10,
-      supply_crtoken_amount: 10,
+      supply_amount: 10,
+      liquidity: 0,
       token: FakeIBEP20Address,
       token_a: FakeIBEP20Address,
       token_b: FakeIBEP20Address,
@@ -45,7 +46,7 @@ contract TestHighLevelSystemWithOutAssert {
       supply_crtoken: FakeCErc20DelegatorAddress,
       borrowed_crtoken_a: FakeCErc20DelegatorAddress,
       borrowed_crtoken_b: FakeCErc20DelegatorAddress,
-      supply_funds_percentage: 95,
+      funds_percentage: 95,
       total_depts: 0
     });
   }

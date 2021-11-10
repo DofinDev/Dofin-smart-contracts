@@ -49,7 +49,8 @@ contract FixedBunker is ProofToken {
             token_b_amount: 0,
             lp_token_amount: 0,
             crtoken_amount: 0,
-            supply_crtoken_amount: 0,
+            supply_amount: 0,
+            liquidity: 0,
             token: _addrs[0],
             token_a: address(0),
             token_b: address(0),
@@ -57,7 +58,7 @@ contract FixedBunker is ProofToken {
             supply_crtoken: _addrs[1],
             borrowed_crtoken_a: address(0),
             borrowed_crtoken_b: address(0),
-            supply_funds_percentage: _uints[0],
+            funds_percentage: _uints[0],
             total_depts: 0
         });
         initializeToken(_name, _symbol, _decimals);

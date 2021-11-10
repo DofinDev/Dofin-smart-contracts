@@ -42,7 +42,11 @@ contract TestBoostedBunker {
 		_config[6] = FakeMasterChefAddress;
 		_config[7] = FakeIBEP20Address;
 		address dofin = address(0x0000000000000000000000000000000000000000);
-		uint256 deposit_limit = 1000000;
+		uint256[4] memory deposit_limit;
+		deposit_limit[0] = 1000;
+		deposit_limit[1] = 1000;
+		deposit_limit[2] = 100000000000;
+		deposit_limit[3] = 100000000000;
 		boostedbunker.setConfig(_config, dofin, deposit_limit);
 	}
 
@@ -56,7 +60,8 @@ contract TestBoostedBunker {
 		  token_b_amount: 0,
 		  lp_token_amount: 0,
 		  crtoken_amount: 0,
-		  supply_crtoken_amount: 0,
+		  supply_amount: 0,
+		  liquidity: 0,
 		  token: FakeIBEP20Address,
 		  token_a: FakeIBEP20Address,
 		  token_b: FakeIBEP20Address,
@@ -64,7 +69,7 @@ contract TestBoostedBunker {
 		  supply_crtoken: address(0x0000000000000000000000000000000000000000),
 		  borrowed_crtoken_a: address(0x0000000000000000000000000000000000000000),
 		  borrowed_crtoken_b: address(0x0000000000000000000000000000000000000000),
-		  supply_funds_percentage: 10,
+		  funds_percentage: 10,
 		  total_depts: 0
 		});
 
@@ -74,7 +79,8 @@ contract TestBoostedBunker {
 		Assert.equal(result.token_b_amount, expected.token_b_amount, "It should get the position data of token_b_amount.");
 		Assert.equal(result.lp_token_amount, expected.lp_token_amount, "It should get the position data of lp_token_amount.");
 		Assert.equal(result.crtoken_amount, expected.crtoken_amount, "It should get the position data of crtoken_amount.");
-		Assert.equal(result.supply_crtoken_amount, expected.supply_crtoken_amount, "It should get the position data of supply_crtoken_amount.");
+		Assert.equal(result.supply_amount, expected.supply_amount, "It should get the position data of supply_amount.");
+		Assert.equal(result.liquidity, expected.liquidity, "It should get the position data of liquidity.");
 		Assert.equal(result.token, expected.token, "It should get the position data of token.");
 		Assert.equal(result.token_a, expected.token_a, "It should get the position data of token_a.");
 		Assert.equal(result.token_b, expected.token_b, "It should get the position data of token_b.");
@@ -82,7 +88,7 @@ contract TestBoostedBunker {
 		Assert.equal(result.supply_crtoken, expected.supply_crtoken, "It should get the position data of supply_crtoken.");
 		Assert.equal(result.borrowed_crtoken_a, expected.borrowed_crtoken_a, "It should get the position data of borrowed_crtoken_a.");
 		Assert.equal(result.borrowed_crtoken_b, expected.borrowed_crtoken_b, "It should get the position data of borrowed_crtoken_b.");
-		Assert.equal(result.supply_funds_percentage, expected.supply_funds_percentage, "It should get the position data of supply_funds_percentage.");
+		Assert.equal(result.funds_percentage, expected.funds_percentage, "It should get the position data of funds_percentage.");
 		Assert.equal(result.total_depts, expected.total_depts, "It should get the position data of total_depts.");
 	}
 
@@ -223,11 +229,11 @@ contract TestBoostedBunker {
 	function testGetWithdrawAmount() public {
 		// Testing
 		(uint result_1, uint result_2) = boostedbunker.getWithdrawAmount();
-		uint expected_1 = 80000000000000000014;
-		uint expected_2 = 80000000000000000014;
+		uint expected_1 = 80000000000000000012;
+		uint expected_2 = 80000000000000000012;
 
-		Assert.equal(result_1, expected_1, "It should get the value 80000000000000000014 of withdraw amount 1.");
-		Assert.equal(result_2, expected_2, "It should get the value 80000000000000000014 of withdraw amount 2.");
+		Assert.equal(result_1, expected_1, "It should get the value 80000000000000000012 of withdraw amount 1.");
+		Assert.equal(result_2, expected_2, "It should get the value 80000000000000000012 of withdraw amount 2.");
 	}
 
 	function testWithdraw() public {

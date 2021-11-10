@@ -19,25 +19,20 @@ contract TestFixedBunker {
 	function beforeAll() public {
 		uint256[1] memory _uints;
 		_uints[0] = 10;
-		address[6] memory _addrs;
+		address[2] memory _addrs;
 		_addrs[0] = FakeIBEP20Address;
-		_addrs[1] = FakeIBEP20Address;
-		_addrs[2] = FakeIBEP20Address;
-		_addrs[3] = FakeCErc20DelegatorAddress;
-		_addrs[4] = FakeCErc20DelegatorAddress;
-		_addrs[5] = FakeCErc20DelegatorAddress;
+		_addrs[1] = FakeCErc20DelegatorAddress;
 		string memory _name = 'Proof Token';
 		string memory _symbol = 'pFakeToken';
 		uint8 _decimals = 10;
 		fixedbunker.initialize(_uints, _addrs, _name, _symbol, _decimals);
 
-		address[4] memory _config;
+		address[1] memory _config;
 		_config[0] = FakeLinkBSCOracleAddress;
-		_config[1] = FakeLinkBSCOracleAddress;
-		_config[2] = FakeLinkBSCOracleAddress;
-		_config[3] = FakeComptrollerAddress;
 		address dofin = address(0);
-		uint256 deposit_limit = 1000000;
+		uint256[2] memory deposit_limit;
+		deposit_limit[0] = 1000;
+		deposit_limit[1] = 100000000000;
 		fixedbunker.setConfig(_config, dofin, deposit_limit);
 	}
 
@@ -51,15 +46,16 @@ contract TestFixedBunker {
 		  token_b_amount: 0,
 		  lp_token_amount: 0,
 		  crtoken_amount: 0,
-		  supply_crtoken_amount: 0,
+		  supply_amount: 0,
+		  liquidity: 0,
 		  token: FakeIBEP20Address,
-		  token_a: FakeIBEP20Address,
-		  token_b: FakeIBEP20Address,
+		  token_a: address(0),
+		  token_b: address(0),
 		  lp_token: address(0),
 		  supply_crtoken: FakeCErc20DelegatorAddress,
-		  borrowed_crtoken_a: FakeCErc20DelegatorAddress,
-		  borrowed_crtoken_b: FakeCErc20DelegatorAddress,
-		  supply_funds_percentage: 10,
+		  borrowed_crtoken_a: address(0),
+		  borrowed_crtoken_b: address(0),
+		  funds_percentage: 10,
 		  total_depts: 0
 		});
 
@@ -69,7 +65,8 @@ contract TestFixedBunker {
 		Assert.equal(result.token_b_amount, expected.token_b_amount, "It should get the position data of token_b_amount.");
 		Assert.equal(result.lp_token_amount, expected.lp_token_amount, "It should get the position data of lp_token_amount.");
 		Assert.equal(result.crtoken_amount, expected.crtoken_amount, "It should get the position data of crtoken_amount.");
-		Assert.equal(result.supply_crtoken_amount, expected.supply_crtoken_amount, "It should get the position data of supply_crtoken_amount.");
+		Assert.equal(result.supply_amount, expected.supply_amount, "It should get the position data of supply_amount.");
+		Assert.equal(result.liquidity, expected.liquidity, "It should get the position data of liquidity.");
 		Assert.equal(result.token, expected.token, "It should get the position data of token.");
 		Assert.equal(result.token_a, expected.token_a, "It should get the position data of token_a.");
 		Assert.equal(result.token_b, expected.token_b, "It should get the position data of token_b.");
@@ -77,13 +74,8 @@ contract TestFixedBunker {
 		Assert.equal(result.supply_crtoken, expected.supply_crtoken, "It should get the position data of supply_crtoken.");
 		Assert.equal(result.borrowed_crtoken_a, expected.borrowed_crtoken_a, "It should get the position data of borrowed_crtoken_a.");
 		Assert.equal(result.borrowed_crtoken_b, expected.borrowed_crtoken_b, "It should get the position data of borrowed_crtoken_b.");
-		Assert.equal(result.supply_funds_percentage, expected.supply_funds_percentage, "It should get the position data of supply_funds_percentage.");
+		Assert.equal(result.funds_percentage, expected.funds_percentage, "It should get the position data of funds_percentage.");
 		Assert.equal(result.total_depts, expected.total_depts, "It should get the position data of total_depts.");
-	}
-
-	function testRebalanceWithRepay() public {
-		// Testing
-		fixedbunker.rebalanceWithRepay();
 	}
 
 	function testRebalance() public {
@@ -99,24 +91,14 @@ contract TestFixedBunker {
 		Assert.equal(result, expected, "It should get the value 0 of CheckAddNewFunds signal.");
 	}
 
-	function testExit1() public {
+	function testExit() public {
 		// Testing
-		fixedbunker.exit(1);
+		fixedbunker.exit();
 	}
 
-	function testExit2() public {
+	function testEnter() public {
 		// Testing
-		fixedbunker.exit(2);
-	}
-
-	function testEnter1() public {
-		// Testing
-		fixedbunker.enter(1);
-	}
-
-	function testEnter2() public {
-		// Testing
-		fixedbunker.enter(2);
+		fixedbunker.enter();
 	}
 
 	function testTotalSupply() public {
@@ -185,9 +167,9 @@ contract TestFixedBunker {
 	function testGetTotalAssets() public {
 		// Testing
 		uint result = fixedbunker.getTotalAssets();
-		uint expected = 110000000000000000020;
+		uint expected = 110000000000000000000;
 
-		Assert.equal(result, expected, "It should get the value 110000000000000000020 of total assets.");
+		Assert.equal(result, expected, "It should get the value 110000000000000000000 of total assets.");
 	}
 
 	function testGetDepositAmountOut() public {
@@ -213,9 +195,9 @@ contract TestFixedBunker {
 	function testGetWithdrawAmount() public {
 		// Testing
 		uint result = fixedbunker.getWithdrawAmount();
-		uint expected = 88000000000000000018;
+		uint expected = 88000000000000000002;
 
-		Assert.equal(result, expected, "It should get the value 88000000000000000018 of withdraw amount.");
+		Assert.equal(result, expected, "It should get the value 88000000000000000002 of withdraw amount.");
 	}
 
 	function testWithdraw() public {

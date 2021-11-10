@@ -54,7 +54,8 @@ contract BoostedBunker is ProofToken {
             token_b_amount: 0,
             lp_token_amount: 0,
             crtoken_amount: 0,
-            supply_crtoken_amount: 0,
+            supply_amount: 0,
+            liquidity: 0,
             token: _addrs[0],
             token_a: _addrs[1],
             token_b: _addrs[2],
@@ -62,7 +63,7 @@ contract BoostedBunker is ProofToken {
             supply_crtoken: address(0x0000000000000000000000000000000000000000),
             borrowed_crtoken_a: address(0x0000000000000000000000000000000000000000),
             borrowed_crtoken_b: address(0x0000000000000000000000000000000000000000),
-            supply_funds_percentage: _uints[1],
+            funds_percentage: _uints[1],
             total_depts: 0
         });
         initializeToken(_name, _symbol, _decimals);

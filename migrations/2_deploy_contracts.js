@@ -18,117 +18,105 @@ var FixedBunkersFactory = artifacts.require("./FixedBunkersFactory.sol");
 var ChargedBunkersFactory = artifacts.require("./ChargedBunkersFactory.sol");
 var BoostedBunkersFactory = artifacts.require("./BoostedBunkersFactory.sol");
 
-module.exports = function(deployer, network, accounts) {
-  if (network == "develop" || network == "test") {
-    deployer.deploy(FakeIBEP20);
+module.exports = async function(deployer, network, accounts) {
+  if (network == "develop", network == "test") {
+    await deployer.deploy(FakeIBEP20);
     // chainlink fake contracts
-    deployer.deploy(FakeLinkBSCOracle);
+    await deployer.deploy(FakeLinkBSCOracle);
     // cream fake contracts
-    deployer.deploy(FakeCErc20Delegator, FakeIBEP20.address);
-    deployer.deploy(FakeComptroller);
+    await deployer.deploy(FakeCErc20Delegator, FakeIBEP20.address);
+    await deployer.deploy(FakeComptroller);
     // pancakeswap fake contracts
-    deployer.deploy(FakePancakePair, FakeIBEP20.address, FakeIBEP20.address);
-    deployer.deploy(FakePancakeFactory, FakePancakePair.address);
-    deployer.deploy(FakeMasterChef);
-    deployer.deploy(FakePancakeRouter);
+    await deployer.deploy(FakePancakePair, FakeIBEP20.address, FakeIBEP20.address);
+    await deployer.deploy(FakePancakeFactory, FakePancakePair.address);
+    await deployer.deploy(FakeMasterChef);
+    await deployer.deploy(FakePancakeRouter);
 
     // testing high level system library
-    deployer.deploy(HighLevelSystem);
+    await deployer.deploy(HighLevelSystem);
 
     // testing FixedBunker contract
-    deployer.link(HighLevelSystem, FixedBunker);
-    deployer.deploy(FixedBunker);
+    await deployer.link(HighLevelSystem, FixedBunker);
+    await deployer.deploy(FixedBunker);
 
     // testing ChargedBunker contract
-    deployer.link(HighLevelSystem, ChargedBunker);
-    deployer.deploy(ChargedBunker);
+    await deployer.link(HighLevelSystem, ChargedBunker);
+    await deployer.deploy(ChargedBunker);
 
     // testing BoostedBunker contract
-    deployer.link(HighLevelSystem, BoostedBunker);
-    deployer.deploy(BoostedBunker);
+    await deployer.link(HighLevelSystem, BoostedBunker);
+    await deployer.deploy(BoostedBunker);
   
   } else if (network == "BSCTestnet") {
     // testing HighLevelSystem library
-    deployer.deploy(HighLevelSystem);
+    await deployer.deploy(HighLevelSystem);
 
     // testing FixedBunkersFactory contract
-    deployer.link(HighLevelSystem, FixedBunkersFactory);
-    deployer.deploy(FixedBunkersFactory);
+    // await deployer.link(HighLevelSystem, FixedBunkersFactory);
+    // await deployer.deploy(FixedBunkersFactory);
 
     // testing ChargedBunkersFactory contract
-    deployer.link(HighLevelSystem, ChargedBunkersFactory);
-    deployer.deploy(ChargedBunkersFactory);
+    // await deployer.link(HighLevelSystem, ChargedBunkersFactory);
+    // await deployer.deploy(ChargedBunkersFactory);
 
     // testing BoostedBunkersFactory contract
-    deployer.link(HighLevelSystem, BoostedBunkersFactory);
-    deployer.deploy(BoostedBunkersFactory);
+    // await deployer.link(HighLevelSystem, BoostedBunkersFactory);
+    // await deployer.deploy(BoostedBunkersFactory);
 
     // testing FixedBunker contract
-    deployer.link(HighLevelSystem, FixedBunker);
-    deployer.deploy(FixedBunker);
+    await deployer.link(HighLevelSystem, FixedBunker);
+    await deployer.deploy(FixedBunker);
 
     // testing ChargedBunker contract
-    deployer.link(HighLevelSystem, ChargedBunker);
-    deployer.deploy(ChargedBunker);
+    await deployer.link(HighLevelSystem, ChargedBunker);
+    await deployer.deploy(ChargedBunker);
 
     // testing BoostedBunker contract
-    deployer.link(HighLevelSystem, BoostedBunker);
-    deployer.deploy(BoostedBunker);
+    await deployer.link(HighLevelSystem, BoostedBunker);
+    await deployer.deploy(BoostedBunker);
 
-    // deployer.deploy(FakeIBEP20);
+    await deployer.deploy(FakeIBEP20);
     // chainlink fake contracts
-    // deployer.deploy(FakeLinkBSCOracle);
+    await deployer.deploy(FakeLinkBSCOracle);
     // cream fake contracts
-    // deployer.deploy(FakeCErc20Delegator, FakeIBEP20.address);
-    // deployer.deploy(FakeComptroller);
+    await deployer.deploy(FakeCErc20Delegator, FakeIBEP20.address);
+    await deployer.deploy(FakeComptroller);
     // pancakeswap fake contracts
-    // deployer.deploy(FakePancakePair, FakeIBEP20.address, FakeIBEP20.address);
-    // deployer.deploy(FakePancakeFactory, FakePancakePair.address);
-    // deployer.deploy(FakeMasterChef);
-    // deployer.deploy(FakePancakeRouter);
+    await deployer.deploy(FakePancakePair, FakeIBEP20.address, FakeIBEP20.address);
+    await deployer.deploy(FakePancakeFactory, FakePancakePair.address);
+    await deployer.deploy(FakeMasterChef);
+    await deployer.deploy(FakePancakeRouter);
   
   } else if (network == "BSCMainnet") {
     // HighLevelSystem library
-    deployer.deploy(HighLevelSystem);
+    await deployer.deploy(HighLevelSystem);
 
     // FixedBunkersFactory contract
-    deployer.link(HighLevelSystem, FixedBunkersFactory);
-    deployer.deploy(FixedBunkersFactory);
+    await deployer.link(HighLevelSystem, FixedBunkersFactory);
+    await deployer.deploy(FixedBunkersFactory);
 
     // ChargedBunkersFactory contract
-    deployer.link(HighLevelSystem, ChargedBunkersFactory);
-    deployer.deploy(ChargedBunkersFactory);
+    await deployer.link(HighLevelSystem, ChargedBunkersFactory);
+    await deployer.deploy(ChargedBunkersFactory);
 
     // BoostedBunkersFactory contract
-    deployer.link(HighLevelSystem, BoostedBunkersFactory);
-    deployer.deploy(BoostedBunkersFactory);
+    await deployer.link(HighLevelSystem, BoostedBunkersFactory);
+    await deployer.deploy(BoostedBunkersFactory);
 
   } else if (network == "BSCForkMainnet") {
     // high level system library
-    deployer.deploy(HighLevelSystem);
-
-    // BoostedBunker contract
-    // deployer.link(HighLevelSystem, FixedBunker);
-    // deployer.deploy(FixedBunker);
-
-    // ChargedBunker contract
-    // deployer.link(HighLevelSystem, ChargedBunker);
-    // deployer.deploy(ChargedBunker);
-
-    // BoostedBunker contract
-    // deployer.link(HighLevelSystem, BoostedBunker);
-    // deployer.deploy(BoostedBunker);
+    await deployer.deploy(HighLevelSystem);
 
     // testing FixedBunkersFactory contract
-    deployer.link(HighLevelSystem, FixedBunkersFactory);
-    deployer.deploy(FixedBunkersFactory);
+    await deployer.link(HighLevelSystem, FixedBunkersFactory);
+    await deployer.deploy(FixedBunkersFactory);
 
     // testing ChargedBunkersFactory contract
-    deployer.link(HighLevelSystem, ChargedBunkersFactory);
-    deployer.deploy(ChargedBunkersFactory);
+    await deployer.link(HighLevelSystem, ChargedBunkersFactory);
+    await deployer.deploy(ChargedBunkersFactory);
 
     // testing BoostedBunkersFactory contract
-    deployer.link(HighLevelSystem, BoostedBunkersFactory);
-    deployer.deploy(BoostedBunkersFactory);
+    await deployer.link(HighLevelSystem, BoostedBunkersFactory);
+    await deployer.deploy(BoostedBunkersFactory);
   }
 };
