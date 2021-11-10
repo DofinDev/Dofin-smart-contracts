@@ -38,7 +38,8 @@ library HighLevelSystem {
         uint256 token_b_amount;
         uint256 lp_token_amount;
         uint256 crtoken_amount;
-        uint256 supply_crtoken_amount;
+        uint256 supply_amount;
+        uint256 liquidity;
         address token;
         address token_a;
         address token_b;
@@ -46,21 +47,21 @@ library HighLevelSystem {
         address supply_crtoken;
         address borrowed_crtoken_a;
         address borrowed_crtoken_b;
-        uint256 supply_funds_percentage;
+        uint256 funds_percentage;
         uint256 total_depts;
     }
 
     /// @param _position refer Position struct on the top.
     /// @dev Supplies 'amount' worth of tokens to cream.
     function _supplyCream(Position memory _position) private returns(Position memory) {
-        uint256 supply_amount = IBEP20(_position.token).balanceOf(address(this)).mul(_position.supply_funds_percentage).div(100);
+        uint256 supply_amount = IBEP20(_position.token).balanceOf(address(this)).mul(_position.funds_percentage).div(100);
         
         require(CErc20Delegator(_position.supply_crtoken).mint(supply_amount) == 0, "Supply not work");
 
         // Update posititon amount data
         _position.token_amount = IBEP20(_position.token).balanceOf(address(this));
         _position.crtoken_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
-        _position.supply_crtoken_amount = supply_amount;
+        _position.supply_amount = supply_amount;
 
         return _position;
     }
@@ -69,7 +70,7 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Borrow the required tokens for a given position on CREAM.
     function _borrowCream(HLSConfig memory self, Position memory _position) private returns(Position memory) {
-        uint256 token_value = _position.supply_crtoken_amount.mul(75).div(100);
+        uint256 token_value = _position.supply_amount.mul(75).div(100);
         token_value = token_value.mul(375).div(1000);
         uint256 token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer());
         uint256 token_a_price = uint256(AggregatorInterface(self.token_a_oracle).latestAnswer()).mul(10**8);
@@ -108,9 +109,10 @@ library HighLevelSystem {
         min_a_amnt = max_available_staking_a_slippage.min(min_a_amnt);
         min_b_amnt = max_available_staking_b_slippage.min(min_b_amnt);
 
-        IPancakeRouter02(self.router).addLiquidity(_position.token_a, _position.token_b, max_available_staking_a, max_available_staking_b, min_a_amnt, min_b_amnt, address(this), block.timestamp);
+        (, , uint256 liquidity) = IPancakeRouter02(self.router).addLiquidity(_position.token_a, _position.token_b, max_available_staking_a, max_available_staking_b, min_a_amnt, min_b_amnt, address(this), block.timestamp);
         
         // Update posititon amount data
+        _position.liquidity = liquidity;
         _position.lp_token_amount = IBEP20(_position.lp_token).balanceOf(address(this));
         _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
         _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
@@ -122,8 +124,8 @@ library HighLevelSystem {
     /// @param _position refer Position struct on t he top.
     /// @dev Adds liquidity to a given pool.
     function _addLiquidityBoosted(HLSConfig memory self, Position memory _position) private returns (Position memory) {
-        uint256 max_available_staking_a = IBEP20(_position.token_a).balanceOf(address(this)).mul(_position.supply_funds_percentage).div(100);
-        uint256 max_available_staking_b = IBEP20(_position.token_b).balanceOf(address(this)).mul(_position.supply_funds_percentage).div(100);
+        uint256 max_available_staking_a = IBEP20(_position.token_a).balanceOf(address(this)).mul(_position.funds_percentage).div(100);
+        uint256 max_available_staking_b = IBEP20(_position.token_b).balanceOf(address(this)).mul(_position.funds_percentage).div(100);
         
         uint256 max_available_staking_a_slippage = max_available_staking_a.mul(98).div(100);
         uint256 max_available_staking_b_slippage = max_available_staking_b.mul(98).div(100);
@@ -135,9 +137,10 @@ library HighLevelSystem {
         min_a_amnt = max_available_staking_a_slippage.min(min_a_amnt);
         min_b_amnt = max_available_staking_b_slippage.min(min_b_amnt);
 
-        IPancakeRouter02(self.router).addLiquidity(_position.token_a, _position.token_b, max_available_staking_a, max_available_staking_b, min_a_amnt, min_b_amnt, address(this), block.timestamp);
+        (, , uint256 liquidity) = IPancakeRouter02(self.router).addLiquidity(_position.token_a, _position.token_b, max_available_staking_a, max_available_staking_b, min_a_amnt, min_b_amnt, address(this), block.timestamp);
         
         // Update posititon amount data
+        _position.liquidity = liquidity;
         _position.lp_token_amount = IBEP20(_position.lp_token).balanceOf(address(this));
         _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
         _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
@@ -218,7 +221,7 @@ library HighLevelSystem {
 
         // Update posititon amount data
         _position.crtoken_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
-        _position.supply_crtoken_amount = 0;
+        _position.supply_amount = 0;
 
         return _position;
     }
@@ -251,6 +254,7 @@ library HighLevelSystem {
         IPancakeRouter02(self.router).removeLiquidity(_position.token_a, _position.token_b, _position.lp_token_amount, token_a_amnt, token_b_amnt, address(this), block.timestamp);
 
         // Update posititon amount data
+        _position.liquidity = 0;
         _position.lp_token_amount = IBEP20(_position.lp_token).balanceOf(address(this));
         _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
         _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
@@ -382,7 +386,7 @@ library HighLevelSystem {
         // PancakeSwap staked amount
         (uint256 token_a_amount, uint256 token_b_amount) = getStakedTokens(_position);
 
-        uint256 cream_total_supply = _position.supply_crtoken_amount;
+        uint256 cream_total_supply = _position.supply_amount;
         uint256 token_a_value;
         uint256 token_b_value;
         if (token_a_amount < crtoken_a_debt) {
@@ -418,7 +422,7 @@ library HighLevelSystem {
     /// @dev Return total debts for fixed bunker.
     function getTotalDebtsFixed(Position memory _position) public view returns (uint256) {
         
-        return _position.supply_crtoken_amount;
+        return _position.supply_amount;
     }
 
     /// @param _position refer Position struct on the top.
