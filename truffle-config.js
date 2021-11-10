@@ -52,7 +52,7 @@ module.exports = {
     },
     BSCForkMainnet: {
       // provider: () => new HDWalletProvider(env.BSCForkMainnet_mnemonic, 'http://127.0.0.1:7545'),
-      host: "127.0.0.1",
+      host: "52.196.52.71",
       port: 7545,
       from: env.BSCForkMainnet_wallet,
       network_id: 80,

@@ -61,7 +61,8 @@ contract TestBoostedBunker {
 		  lp_token_amount: 0,
 		  crtoken_amount: 0,
 		  supply_amount: 0,
-		  liquidity: 0,
+		  liquidity_a: 0,
+    	  liquidity_b: 0,
 		  token: FakeIBEP20Address,
 		  token_a: FakeIBEP20Address,
 		  token_b: FakeIBEP20Address,
@@ -80,7 +81,8 @@ contract TestBoostedBunker {
 		Assert.equal(result.lp_token_amount, expected.lp_token_amount, "It should get the position data of lp_token_amount.");
 		Assert.equal(result.crtoken_amount, expected.crtoken_amount, "It should get the position data of crtoken_amount.");
 		Assert.equal(result.supply_amount, expected.supply_amount, "It should get the position data of supply_amount.");
-		Assert.equal(result.liquidity, expected.liquidity, "It should get the position data of liquidity.");
+		Assert.equal(result.liquidity_a, expected.liquidity_a, "It should get the position data of liquidity_a.");
+		Assert.equal(result.liquidity_b, expected.liquidity_b, "It should get the position data of liquidity_b.");
 		Assert.equal(result.token, expected.token, "It should get the position data of token.");
 		Assert.equal(result.token_a, expected.token_a, "It should get the position data of token_a.");
 		Assert.equal(result.token_b, expected.token_b, "It should get the position data of token_b.");

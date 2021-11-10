@@ -55,7 +55,8 @@ contract BoostedBunker is ProofToken {
             lp_token_amount: 0,
             crtoken_amount: 0,
             supply_amount: 0,
-            liquidity: 0,
+            liquidity_a: 0,
+            liquidity_b: 0,
             token: _addrs[0],
             token_a: _addrs[1],
             token_b: _addrs[2],
@@ -253,7 +254,7 @@ contract BoostedBunker is ProofToken {
         (uint256 value_a, uint256 value_b) = HighLevelSystem.getValeSplit(HLSConfig, value);
         if (value_a > IBEP20(position.token_a).balanceOf(address(this)).add(10**IBEP20(position.token_a).decimals()) || value_b > IBEP20(position.token_b).balanceOf(address(this)).add(10**IBEP20(position.token_b).decimals())) {
             HighLevelSystem.exitPositionBoosted(HLSConfig, position);
-            totalAssets = IBEP20(position.token_a).balanceOf(address(this)).add(IBEP20(position.token_b).balanceOf(address(this)));
+            totalAssets = getTotalAssets();
             value = withdraw_amount.mul(totalAssets).div(totalSupply_);
             need_rebalance = true;
         }

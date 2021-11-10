@@ -39,7 +39,8 @@ library HighLevelSystem {
         uint256 lp_token_amount;
         uint256 crtoken_amount;
         uint256 supply_amount;
-        uint256 liquidity;
+        uint256 liquidity_a;
+        uint256 liquidity_b;
         address token;
         address token_a;
         address token_b;
@@ -109,10 +110,11 @@ library HighLevelSystem {
         min_a_amnt = max_available_staking_a_slippage.min(min_a_amnt);
         min_b_amnt = max_available_staking_b_slippage.min(min_b_amnt);
 
-        (, , uint256 liquidity) = IPancakeRouter02(self.router).addLiquidity(_position.token_a, _position.token_b, max_available_staking_a, max_available_staking_b, min_a_amnt, min_b_amnt, address(this), block.timestamp);
+        (uint256 liquidity_a, uint256 liquidity_b, ) = IPancakeRouter02(self.router).addLiquidity(_position.token_a, _position.token_b, max_available_staking_a, max_available_staking_b, min_a_amnt, min_b_amnt, address(this), block.timestamp);
         
         // Update posititon amount data
-        _position.liquidity = liquidity;
+        _position.liquidity_a = liquidity_a;
+        _position.liquidity_b = liquidity_b;
         _position.lp_token_amount = IBEP20(_position.lp_token).balanceOf(address(this));
         _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
         _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
@@ -137,10 +139,11 @@ library HighLevelSystem {
         min_a_amnt = max_available_staking_a_slippage.min(min_a_amnt);
         min_b_amnt = max_available_staking_b_slippage.min(min_b_amnt);
 
-        (, , uint256 liquidity) = IPancakeRouter02(self.router).addLiquidity(_position.token_a, _position.token_b, max_available_staking_a, max_available_staking_b, min_a_amnt, min_b_amnt, address(this), block.timestamp);
+        (uint256 liquidity_a, uint256 liquidity_b, ) = IPancakeRouter02(self.router).addLiquidity(_position.token_a, _position.token_b, max_available_staking_a, max_available_staking_b, min_a_amnt, min_b_amnt, address(this), block.timestamp);
         
         // Update posititon amount data
-        _position.liquidity = liquidity;
+        _position.liquidity_a = liquidity_a;
+        _position.liquidity_b = liquidity_b;
         _position.lp_token_amount = IBEP20(_position.lp_token).balanceOf(address(this));
         _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
         _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
@@ -246,7 +249,7 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Removes liquidity from a given pool.
     function _removeLiquidity(HLSConfig memory self, Position memory _position) private returns (Position memory) {
-        (uint256 reserve0, uint256 reserve1, uint256 blockTimestampLast) = IPancakePair(_position.lp_token).getReserves();
+        (uint256 reserve0, uint256 reserve1, ) = IPancakePair(_position.lp_token).getReserves();
         uint256 total_supply = IPancakePair(_position.lp_token).totalSupply();
         uint256 token_a_amnt = reserve0.mul(_position.lp_token_amount).div(total_supply);
         uint256 token_b_amnt = reserve1.mul(_position.lp_token_amount).div(total_supply);
@@ -254,7 +257,8 @@ library HighLevelSystem {
         IPancakeRouter02(self.router).removeLiquidity(_position.token_a, _position.token_b, _position.lp_token_amount, token_a_amnt, token_b_amnt, address(this), block.timestamp);
 
         // Update posititon amount data
-        _position.liquidity = 0;
+        _position.liquidity_a = 0;
+        _position.liquidity_b = 0;
         _position.lp_token_amount = IBEP20(_position.lp_token).balanceOf(address(this));
         _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
         _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
@@ -368,7 +372,7 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Return staked tokens.
     function getStakedTokens(Position memory _position) private view returns (uint256, uint256) {
-        (uint256 reserve0, uint256 reserve1, uint256 blockTimestampLast) = IPancakePair(_position.lp_token).getReserves();
+        (uint256 reserve0, uint256 reserve1, ) = IPancakePair(_position.lp_token).getReserves();
         uint256 total_supply = IPancakePair(_position.lp_token).totalSupply();
         uint256 token_a_amnt = reserve0.mul(_position.lp_token_amount).div(total_supply);
         uint256 token_b_amnt = reserve1.mul(_position.lp_token_amount).div(total_supply);
@@ -430,7 +434,7 @@ library HighLevelSystem {
     /// @param _token_b_amount amount of token b.
     /// @dev Return updated token a, token b amount and value.
     function getUpdatedAmount(HLSConfig memory self, Position memory _position, uint256 _token_a_amount, uint256 _token_b_amount) external view returns (uint256, uint256, uint256) {
-        (uint256 reserve0, uint256 reserve1, uint256 blockTimestampLast) = IPancakePair(_position.lp_token).getReserves();
+        (uint256 reserve0, uint256 reserve1, ) = IPancakePair(_position.lp_token).getReserves();
         if (_token_a_amount == 0) {
             _token_b_amount = IPancakeRouter02(self.router).quote(_token_a_amount, reserve0, reserve1);
         } else if (_token_b_amount == 0) {
