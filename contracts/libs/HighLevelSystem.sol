@@ -72,16 +72,8 @@ library HighLevelSystem {
     /// @dev Borrow the required tokens for a given position on CREAM.
     function _borrowCream(HLSConfig memory self, Position memory _position) private returns(Position memory) {
         uint256 token_value = _position.supply_amount.mul(75).div(100);
-        token_value = token_value.mul(375).div(1000);
-        uint256 token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer());
-        uint256 token_a_price = uint256(AggregatorInterface(self.token_a_oracle).latestAnswer()).mul(10**8);
-        uint256 token_b_price = uint256(AggregatorInterface(self.token_b_oracle).latestAnswer()).mul(10**8);
-        // Borrow token_a amount
-        uint256 token_a_rate = token_a_price.div(token_price);
-        uint256 token_a_borrow_amount = token_value.div(token_a_rate).mul(10**8);
-        // Borrow token_b amount
-        uint256 token_b_rate = token_b_price.div(token_price);
-        uint256 token_b_borrow_amount = token_value.div(token_b_rate).mul(10**8);
+        token_value = token_value.mul(375).mul(2).div(1000);
+        (uint256 token_a_borrow_amount, uint256 token_b_borrow_amount) = getValeSplit(self, token_value);
         
         require(CErc20Delegator(_position.borrowed_crtoken_a).borrow(token_a_borrow_amount) == 0, "Borrow token a not work");
         require(CErc20Delegator(_position.borrowed_crtoken_b).borrow(token_b_borrow_amount) == 0, "Borrow token b not work");
@@ -334,25 +326,27 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param token_a_amount amountIn of token a.
     /// @param token_b_amount amountIn of token b.
-    /// @dev Get the price for two tokens, from LINK if possible, else => straight from router.
+    /// @dev Get the price for two tokens from LINK.
     function getChainLinkValues(HLSConfig memory self, uint256 token_a_amount, uint256 token_b_amount) public view returns (uint256, uint256) {
         // check if we can get data from chainlink
-        uint256 token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer());
-        uint256 token_a_price = uint256(AggregatorInterface(self.token_a_oracle).latestAnswer());
-        uint256 token_b_price = uint256(AggregatorInterface(self.token_b_oracle).latestAnswer());
+        uint256 multiplier = 10**18;
+        uint256 token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_oracle).decimals());
+        uint256 token_a_price = uint256(AggregatorInterface(self.token_a_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_a_oracle).decimals());
+        uint256 token_b_price = uint256(AggregatorInterface(self.token_b_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_b_oracle).decimals());
 
         return (token_a_amount.mul(token_a_price).div(token_price), token_b_amount.mul(token_b_price).div(token_price));
     }
 
     /// @param self refer HLSConfig struct on the top.
     /// @param cake_amount amountIn of CAKE.
-    /// @dev Get the price for two tokens, from LINK if possible, else => straight from router.
+    /// @dev Get the price for two tokens from LINK.
     function getCakeChainLinkValue(HLSConfig memory self, uint256 cake_amount) private view returns (uint256) {        
         uint256 token_price;
         uint256 cake_price;
+        uint256 multiplier = 10**18;
         if (self.token_oracle != address(0)  && self.cake_oracle != address(0)) {
-            token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer());
-            cake_price = uint256(AggregatorInterface(self.cake_oracle).latestAnswer());
+            token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_oracle).decimals());
+            cake_price = uint256(AggregatorInterface(self.cake_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.cake_oracle).decimals());
 
             return cake_amount.mul(cake_price).div(token_price);
         }
@@ -436,9 +430,9 @@ library HighLevelSystem {
     function getUpdatedAmount(HLSConfig memory self, Position memory _position, uint256 _token_a_amount, uint256 _token_b_amount) external view returns (uint256, uint256, uint256) {
         (uint256 reserve0, uint256 reserve1, ) = IPancakePair(_position.lp_token).getReserves();
         if (_token_a_amount == 0) {
-            _token_b_amount = IPancakeRouter02(self.router).quote(_token_a_amount, reserve0, reserve1);
-        } else if (_token_b_amount == 0) {
             _token_a_amount = IPancakeRouter02(self.router).quote(_token_b_amount, reserve1, reserve0);
+        } else if (_token_b_amount == 0) {
+            _token_b_amount = IPancakeRouter02(self.router).quote(_token_a_amount, reserve0, reserve1);            
         }
 
         (uint256 token_a_value, uint256 token_b_value) = getChainLinkValues(self, _token_a_amount, _token_b_amount);
@@ -451,9 +445,10 @@ library HighLevelSystem {
     /// @dev Return total debts for boosted bunker.
     function getValeSplit(HLSConfig memory self, uint256 _value) public view returns (uint256, uint256) {
         // check if we can get data from chainlink
-        uint256 token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer());
-        uint256 token_a_price = uint256(AggregatorInterface(self.token_a_oracle).latestAnswer());
-        uint256 token_b_price = uint256(AggregatorInterface(self.token_b_oracle).latestAnswer());
+        uint256 multiplier = 10**18;
+        uint256 token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_oracle).decimals());
+        uint256 token_a_price = uint256(AggregatorInterface(self.token_a_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_a_oracle).decimals());
+        uint256 token_b_price = uint256(AggregatorInterface(self.token_b_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_b_oracle).decimals());
         uint256 value_a = _value.div(2);
         uint256 value_b = _value.sub(value_a);
 
