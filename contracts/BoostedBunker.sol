@@ -57,6 +57,8 @@ contract BoostedBunker is ProofToken {
             supply_amount: 0,
             liquidity_a: 0,
             liquidity_b: 0,
+            borrowed_token_a_amount: 0,
+            borrowed_token_b_amount: 0,
             token: _addrs[0],
             token_a: _addrs[1],
             token_b: _addrs[2],

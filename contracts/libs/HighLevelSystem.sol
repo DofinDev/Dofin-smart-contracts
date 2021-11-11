@@ -39,6 +39,8 @@ library HighLevelSystem {
         uint256 lp_token_amount;
         uint256 crtoken_amount;
         uint256 supply_amount;
+        uint256 borrowed_token_a_amount;
+        uint256 borrowed_token_b_amount;
         uint256 liquidity_a;
         uint256 liquidity_b;
         address token;
@@ -79,6 +81,8 @@ library HighLevelSystem {
         require(CErc20Delegator(_position.borrowed_crtoken_b).borrow(token_b_borrow_amount) == 0, "Borrow token b not work");
 
         // Update posititon amount data
+        _position.borrowed_token_a_amount = token_a_borrow_amount;
+        _position.borrowed_token_b_amount = token_b_borrow_amount;
         _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
         _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
 
@@ -231,6 +235,8 @@ library HighLevelSystem {
         require(CErc20Delegator(_position.borrowed_crtoken_b).repayBorrow(b_repay_amount) == 0, "Repay token b not work");
 
         // Update posititon amount data
+        _position.borrowed_token_a_amount = 0;
+        _position.borrowed_token_b_amount = 0;
         _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
         _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
 

@@ -40,6 +40,8 @@ contract TestHighLevelSystemWithOutAssert {
       supply_amount: 10,
       liquidity_a: 0,
       liquidity_b: 0,
+      borrowed_token_a_amount: 0,
+      borrowed_token_b_amount: 0,
       token: FakeIBEP20Address,
       token_a: FakeIBEP20Address,
       token_b: FakeIBEP20Address,
