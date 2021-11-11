@@ -173,14 +173,13 @@ contract BoostedBunker is ProofToken {
         uint256 tokenBfreeFunds = IBEP20(position.token_b).balanceOf(address(this));
         (uint256 token_a_value, uint256 token_b_value) = HighLevelSystem.getChainLinkValues(HLSConfig, tokenAfreeFunds, tokenBfreeFunds);
         // Total Debts amount from PancakeSwap
-        uint256 totalDebts = HighLevelSystem.getTotalDebtsBoosted(HLSConfig, position);
+        uint256 totalDebts = position.total_depts;
         
         return token_a_value.add(token_b_value).add(totalDebts);
     }
 
     function getDepositAmountOut(uint256 _token_a_amount, uint256 _token_b_amount) public view returns (uint256, uint256, uint256, uint256) {
-        (uint256 token_a_value, uint256 token_b_value) = HighLevelSystem.getChainLinkValues(HLSConfig, IBEP20(position.token_a).balanceOf(address(this)), IBEP20(position.token_b).balanceOf(address(this)));
-        uint256 totalAssets = token_a_value.add(token_b_value).add(position.total_depts);
+        uint256 totalAssets = getTotalAssets();
         uint256 token_value;
         (_token_a_amount, _token_b_amount, token_value) = HighLevelSystem.getUpdatedAmount(HLSConfig, position, _token_a_amount, _token_b_amount);
         require(_token_a_amount <= deposit_limit_a.mul(10**IBEP20(position.token_a).decimals()), "Deposit too much token a!");
@@ -211,6 +210,7 @@ contract BoostedBunker is ProofToken {
         user.depositPtokenAmount = user.depositPtokenAmount.add(shares);
         user.depositTokenAAmount = user.depositTokenAAmount.add(_token_a_amount);
         user.depositTokenBAmount = user.depositTokenBAmount.add(_token_b_amount);
+        user.depositTokenValue = user.depositTokenValue.add(token_value);
         user.depositBlockTimestamp = block.timestamp;
         users[msg.sender] = user;
 

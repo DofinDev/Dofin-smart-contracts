@@ -382,7 +382,7 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Return total debts for charged bunker.
-    function getTotalDebts(HLSConfig memory self, Position memory _position) public view returns (uint256) {
+    function getTotalDebts(HLSConfig memory self, Position memory _position) private view returns (uint256) {
         // Cream borrowed amount
         (uint256 crtoken_a_debt, uint256 crtoken_b_debt) = getTotalBorrowAmount(_position.borrowed_crtoken_a, _position.borrowed_crtoken_b);
         // PancakeSwap pending cake amount(getTotalCakePendingRewards)
@@ -410,7 +410,7 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Return total debts for boosted bunker.
-    function getTotalDebtsBoosted(HLSConfig memory self, Position memory _position) public view returns (uint256) {
+    function getTotalDebtsBoosted(HLSConfig memory self, Position memory _position) private view returns (uint256) {
         // PancakeSwap pending cake amount(getTotalCakePendingRewards)
         uint256 pending_cake_amount = MasterChef(self.masterchef).pendingCake(_position.pool_id, address(this));
         // PancakeSwap staked amount
@@ -424,7 +424,7 @@ library HighLevelSystem {
 
     /// @param _position refer Position struct on the top.
     /// @dev Return total debts for fixed bunker.
-    function getTotalDebtsFixed(Position memory _position) public view returns (uint256) {
+    function getTotalDebtsFixed(Position memory _position) private view returns (uint256) {
         
         return _position.supply_amount;
     }

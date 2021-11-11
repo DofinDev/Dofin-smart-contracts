@@ -235,11 +235,11 @@ contract TestBoostedBunker {
 	function testGetWithdrawAmount() public {
 		// Testing
 		(uint result_1, uint result_2) = boostedbunker.getWithdrawAmount();
-		uint expected_1 = 80000000000000000012;
-		uint expected_2 = 80000000000000000012;
+		uint expected_1 = 80000000000000000014;
+		uint expected_2 = 80000000000000000014;
 
-		Assert.equal(result_1, expected_1, "It should get the value 80000000000000000012 of withdraw amount 1.");
-		Assert.equal(result_2, expected_2, "It should get the value 80000000000000000012 of withdraw amount 2.");
+		Assert.equal(result_1, expected_1, "It should get the value 80000000000000000014 of withdraw amount 1.");
+		Assert.equal(result_2, expected_2, "It should get the value 80000000000000000014 of withdraw amount 2.");
 	}
 
 	function testWithdraw() public {

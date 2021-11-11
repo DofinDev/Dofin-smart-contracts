@@ -194,7 +194,7 @@ contract ChargedBunker is ProofToken {
         // Free funds amount
         uint256 freeFunds = IBEP20(position.token).balanceOf(address(this));
         // Total Debts amount from Cream, PancakeSwap
-        uint256 totalDebts = HighLevelSystem.getTotalDebts(HLSConfig, position);
+        uint256 totalDebts = position.total_depts;
         
         return freeFunds.add(totalDebts);
     }
@@ -202,7 +202,7 @@ contract ChargedBunker is ProofToken {
     function getDepositAmountOut(uint256 _deposit_amount) public view returns (uint256) {
         require(_deposit_amount <= deposit_limit.mul(10**IBEP20(position.token).decimals()), "Deposit too much!");
         require(_deposit_amount > 0, "Deposit amount must bigger than 0.");
-        uint256 totalAssets = IBEP20(position.token).balanceOf(address(this)).add(position.total_depts);
+        uint256 totalAssets = getTotalAssets();
         require(total_deposit_limit.mul(10**IBEP20(position.token).decimals()) >= totalAssets.add(_deposit_amount), "Deposit get limited");
         uint256 shares;
         if (totalSupply_ > 0) {

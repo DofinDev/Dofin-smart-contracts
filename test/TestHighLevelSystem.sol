@@ -55,15 +55,6 @@ contract TestHighLevelSystem {
     });
   }
 
-  function testGetTotalDebts() public {
-
-    // Testing
-    uint result_1 = HighLevelSystem.getTotalDebts(HLSConfig, Position);
-    uint expected_1 = 20;
-
-    Assert.equal(result_1, expected_1, "It should get the value 20.");
-  }
-
   function testEnterPosition() public {
     // Testing
     HighLevelSystem.Position memory result_1 = HighLevelSystem.enterPosition(HLSConfig, Position, 1);

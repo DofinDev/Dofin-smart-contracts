@@ -54,12 +54,6 @@ contract TestHighLevelSystemWithOutAssert {
     });
   }
 
-  function testGetTotalDebts() public {
-
-    // Testing
-    uint result_1 = HighLevelSystem.getTotalDebts(HLSConfig, Position);
-  }
-
   function testEnterPosition1() public {
     // Testing
     HighLevelSystem.Position memory result_1 = HighLevelSystem.enterPosition(HLSConfig, Position, 1);
