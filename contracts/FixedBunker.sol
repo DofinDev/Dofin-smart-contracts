@@ -93,6 +93,11 @@ contract FixedBunker is ProofToken {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         TAG = _tag;
     }
+
+    function getConfig() external view returns(HighLevelSystem.HLSConfig memory) {
+        
+        return HLSConfig;
+    }
     
     function getPosition() external view returns(HighLevelSystem.Position memory) {
         
@@ -221,7 +226,8 @@ contract FixedBunker is ProofToken {
         burn(msg.sender, withdraw_amount);
         uint256 dofin_value;
         uint256 user_value;
-        if (value > user.depositTokenAmount) {
+        // TODO need double check
+        if (value > user.depositTokenAmount.add(10**IBEP20(position.token).decimals())) {
             dofin_value = value.sub(user.depositTokenAmount).mul(20).div(100);
             user_value = value.sub(dofin_value);
         } else {

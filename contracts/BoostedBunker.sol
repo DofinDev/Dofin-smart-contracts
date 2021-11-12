@@ -113,6 +113,11 @@ contract BoostedBunker is ProofToken {
         TAG = _tag;
     }
     
+    function getConfig() external view returns(HighLevelSystem.HLSConfig memory) {
+        
+        return HLSConfig;
+    }
+
     function getPosition() external view returns(HighLevelSystem.Position memory) {
         
         return position;
@@ -265,7 +270,8 @@ contract BoostedBunker is ProofToken {
         burn(msg.sender, withdraw_amount);
         uint256 dofin_value;
         uint256 user_value;
-        if (value > user.depositTokenValue) {
+        // TODO need double check
+        if (value > user.depositTokenValue.add(10**IBEP20(position.token).decimals())) {
             dofin_value = value.sub(user.depositTokenValue).mul(20).div(100);
             user_value = value.sub(dofin_value);
         } else {

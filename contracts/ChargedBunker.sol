@@ -122,6 +122,11 @@ contract ChargedBunker is ProofToken {
             HighLevelSystem.exitMarket(HLSConfig.comptroller, position.supply_crtoken);
         }
     }
+
+    function getConfig() external view returns(HighLevelSystem.HLSConfig memory) {
+        
+        return HLSConfig;
+    }
     
     function getPosition() external view returns(HighLevelSystem.Position memory) {
         
@@ -272,7 +277,8 @@ contract ChargedBunker is ProofToken {
         burn(msg.sender, withdraw_amount);
         uint256 dofin_value;
         uint256 user_value;
-        if (value > user.depositTokenAmount) {
+        // TODO need double check
+        if (value > user.depositTokenAmount.add(10**IBEP20(position.token).decimals())) {
             dofin_value = value.sub(user.depositTokenAmount).mul(20).div(100);
             user_value = value.sub(dofin_value);
         } else {
