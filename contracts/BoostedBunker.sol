@@ -24,10 +24,10 @@ contract BoostedBunker is ProofToken {
     using SafeMath for uint256;
     uint256 constant private MAX_INT_EXPONENTIATION = 2**256 - 1;
 
-    uint256 private total_deposit_limit_a;
-    uint256 private total_deposit_limit_b;
-    uint256 private deposit_limit_a;
-    uint256 private deposit_limit_b;
+    uint256 public total_deposit_limit_a;
+    uint256 public total_deposit_limit_b;
+    uint256 public deposit_limit_a;
+    uint256 public deposit_limit_b;
     uint256 private temp_free_funds_a;
     uint256 private temp_free_funds_b;
     bool public TAG = false;
