@@ -51,7 +51,7 @@ contract TestChargedBunker {
 		uint256[2] memory deposit_limit;
 		deposit_limit[0] = 1000;
 		deposit_limit[1] = 100000000000;
-		chargedbunker.setConfig(_config, dofin, deposit_limit);
+		chargedbunker.setConfig(_config, dofin, deposit_limit, true);
 	}
 
 	function testGetPosition() public {

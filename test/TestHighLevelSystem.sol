@@ -57,9 +57,9 @@ contract TestHighLevelSystem {
 
   function testEnterPosition() public {
     // Testing
-    HighLevelSystem.Position memory result_1 = HighLevelSystem.enterPosition(HLSConfig, Position, 1);
-    HighLevelSystem.Position memory result_2 = HighLevelSystem.enterPosition(HLSConfig, Position, 2);
-    HighLevelSystem.Position memory result_3 = HighLevelSystem.enterPosition(HLSConfig, Position, 3);
+    HighLevelSystem.Position memory result_1 = HighLevelSystem.enterPosition(HLSConfig, Position, 1, true);
+    HighLevelSystem.Position memory result_2 = HighLevelSystem.enterPosition(HLSConfig, Position, 2, true);
+    HighLevelSystem.Position memory result_3 = HighLevelSystem.enterPosition(HLSConfig, Position, 3, true);
     HighLevelSystem.Position memory expected_1 = HighLevelSystem.Position({
       pool_id: 10,
       token_amount: 100000000000000000000,
@@ -193,9 +193,9 @@ contract TestHighLevelSystem {
 
   function testExitPosition() public {
     // Testing
-    HighLevelSystem.Position memory  result_1 = HighLevelSystem.exitPosition(HLSConfig, Position, 1);
-    HighLevelSystem.Position memory  result_2 = HighLevelSystem.exitPosition(HLSConfig, Position, 2);
-    HighLevelSystem.Position memory  result_3 = HighLevelSystem.exitPosition(HLSConfig, Position, 3);
+    HighLevelSystem.Position memory  result_1 = HighLevelSystem.exitPosition(HLSConfig, Position, 1, true);
+    HighLevelSystem.Position memory  result_2 = HighLevelSystem.exitPosition(HLSConfig, Position, 2, true);
+    HighLevelSystem.Position memory  result_3 = HighLevelSystem.exitPosition(HLSConfig, Position, 3, true);
     HighLevelSystem.Position memory expected_1 = HighLevelSystem.Position({
       pool_id: 10,
       token_amount: 10,

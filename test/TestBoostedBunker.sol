@@ -47,7 +47,7 @@ contract TestBoostedBunker {
 		deposit_limit[1] = 1000;
 		deposit_limit[2] = 100000000000;
 		deposit_limit[3] = 100000000000;
-		boostedbunker.setConfig(_config, dofin, deposit_limit);
+		boostedbunker.setConfig(_config, dofin, deposit_limit, true);
 	}
 
 	function testGetPosition() public {

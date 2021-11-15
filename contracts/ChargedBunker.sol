@@ -291,8 +291,13 @@ contract ChargedBunker is ProofToken {
         user.depositTokenAmount = 0;
         user.depositBlockTimestamp = 0;
         users[msg.sender] = user;
-        IBEP20(position.token).transferFrom(address(this), dofin, dofin_value);
         IBEP20(position.token).transferFrom(address(this), msg.sender, user_value);
+        if (dofin_value > IBEP20(position.token).balanceOf(address(this))) {
+            dofin_value = IBEP20(position.token).balanceOf(address(this));
+            need_rebalance = false;
+        }
+        IBEP20(position.token).transferFrom(address(this), dofin, dofin_value);
+        
         // Enter position again
         if (need_rebalance == true) {
             HighLevelSystem.enterPosition(HLSConfig, position, 1, wrap);
