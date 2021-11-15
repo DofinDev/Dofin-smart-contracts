@@ -184,17 +184,17 @@ contract ChargedBunker is ProofToken {
         HighLevelSystem.autoCompound(HLSConfig, _path);
     }
     
-    function enter(uint256 _type) external {
+    function enter() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        position = HighLevelSystem.enterPosition(HLSConfig, position, _type, wrap);
+        position = HighLevelSystem.enterPosition(HLSConfig, position, 1, wrap);
         temp_free_funds = IBEP20(position.token).balanceOf(address(this));
     }
 
-    function exit(uint256 _type) external {
+    function exit() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        position = HighLevelSystem.exitPosition(HLSConfig, position, _type, wrap);
+        position = HighLevelSystem.exitPosition(HLSConfig, position, 1, wrap);
     }
 
     function getTotalAssets() public view returns (uint256) {

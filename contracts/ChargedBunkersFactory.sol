@@ -8,7 +8,6 @@ import "./ChargedBunker.sol";
 contract ChargedBunkersFactory {
     
     address private _owner;
-    uint256 private BunkerId;
     uint256 public BunkersLength;
     mapping (uint256 => address) public IdToBunker;
 
@@ -22,14 +21,13 @@ contract ChargedBunkersFactory {
         _owner = newOwner;
     }
 
-    function createBunker (uint256[2] memory _uints, address[7] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external returns(uint256, address) {
+    function createBunker (uint256 _id, uint256[2] memory _uints, address[7] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external returns(address) {
         require(msg.sender == _owner, "Only Owner can call this function");
-        BunkerId++;
         BunkersLength++;
         ChargedBunker newBunker = new ChargedBunker();
         newBunker.initialize(_uints, _addrs, _name, _symbol, _decimals);
-        IdToBunker[BunkerId] = address(newBunker);
-        return (BunkerId, address(newBunker));
+        IdToBunker[_id] = address(newBunker);
+        return address(newBunker);
     }
 
     function delBunker (uint256[] memory _ids) external returns(bool) {
@@ -84,22 +82,20 @@ contract ChargedBunkersFactory {
         return true;
     }
 
-    function enterBunker (uint256[] memory _ids, uint256[] memory _types) external returns(bool) {
+    function enterBunker (uint256[] memory _ids) external returns(bool) {
         require(msg.sender == _owner, "Only Owner can call this function");
-        require(_ids.length == _types.length, "Two length different");
         for (uint i = 0; i < _ids.length; i++) {
             ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
-            bunker.enter(_types[i]);
+            bunker.enter();
         }
         return true;
     }
 
-    function exitBunker (uint256[] memory _ids, uint256[] memory _types) external returns(bool) {
+    function exitBunker (uint256[] memory _ids) external returns(bool) {
         require(msg.sender == _owner, "Only Owner can call this function");
-        require(_ids.length == _types.length, "Two length different");
         for (uint i = 0; i < _ids.length; i++) {
             ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
-            bunker.exit(_types[i]);
+            bunker.exit();
         }
         return true;
     }

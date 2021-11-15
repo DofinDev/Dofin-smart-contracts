@@ -8,7 +8,6 @@ import "./FixedBunker.sol";
 contract FixedBunkersFactory {
     
     address private _owner;
-    uint256 private BunkerId;
     uint256 public BunkersLength;
     mapping (uint256 => address) public IdToBunker;
 
@@ -22,14 +21,13 @@ contract FixedBunkersFactory {
         _owner = newOwner;
     }
 
-    function createBunker (uint256[1] memory _uints, address[2] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external returns(uint256, address) {
+    function createBunker (uint256 _id, uint256[1] memory _uints, address[2] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external returns(address) {
         require(msg.sender == _owner, "Only Owner can call this function");
-        BunkerId++;
         BunkersLength++;
         FixedBunker newBunker = new FixedBunker();
         newBunker.initialize(_uints, _addrs, _name, _symbol, _decimals);
-        IdToBunker[BunkerId] = address(newBunker);
-        return (BunkerId, address(newBunker));
+        IdToBunker[_id] = address(newBunker);
+        return address(newBunker);
     }
 
     function delBunker (uint256[] memory _ids) external returns(bool) {
