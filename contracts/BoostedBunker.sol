@@ -31,6 +31,7 @@ contract BoostedBunker is ProofToken {
     uint256 private temp_free_funds_a;
     uint256 private temp_free_funds_b;
     bool public TAG = false;
+    bool public wrap = true;
     address private dofin = address(0);
     address private factory = address(0);
 
@@ -73,7 +74,7 @@ contract BoostedBunker is ProofToken {
         factory = msg.sender;
     }
     
-    function setConfig(address[8] memory _config, address _dofin, uint256[4] memory _deposit_limit) external {
+    function setConfig(address[8] memory _config, address _dofin, uint256[4] memory _deposit_limit, bool _wrap) external {
         if (dofin!=address(0) && factory!=address(0)) {
             require(checkCaller() == true, "Only factory or dofin can call this function");
         }
@@ -91,6 +92,7 @@ contract BoostedBunker is ProofToken {
         deposit_limit_b = _deposit_limit[1];
         total_deposit_limit_a = _deposit_limit[2];
         total_deposit_limit_b = _deposit_limit[3];
+        wrap = _wrap;
 
         // Approve for PancakeSwap addliquidity
         IBEP20(position.token_a).approve(HLSConfig.router, MAX_INT_EXPONENTIATION);
@@ -131,8 +133,8 @@ contract BoostedBunker is ProofToken {
     function rebalanceWithoutRepay() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        position = HighLevelSystem.exitPositionBoosted(HLSConfig, position);
-        position = HighLevelSystem.enterPositionBoosted(HLSConfig, position);
+        position = HighLevelSystem.exitPositionBoosted(HLSConfig, position, wrap);
+        position = HighLevelSystem.enterPositionBoosted(HLSConfig, position, wrap);
         temp_free_funds_a = IBEP20(position.token_a).balanceOf(address(this));
         temp_free_funds_b = IBEP20(position.token_b).balanceOf(address(this));
     }
@@ -161,7 +163,7 @@ contract BoostedBunker is ProofToken {
     function enter() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        position = HighLevelSystem.enterPositionBoosted(HLSConfig, position);
+        position = HighLevelSystem.enterPositionBoosted(HLSConfig, position, wrap);
         temp_free_funds_a = IBEP20(position.token_a).balanceOf(address(this));
         temp_free_funds_b = IBEP20(position.token_b).balanceOf(address(this));
     }
@@ -169,7 +171,7 @@ contract BoostedBunker is ProofToken {
     function exit() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        position = HighLevelSystem.exitPositionBoosted(HLSConfig, position);
+        position = HighLevelSystem.exitPositionBoosted(HLSConfig, position, wrap);
     }
 
     function getTotalAssets() public view returns (uint256) {
@@ -260,7 +262,7 @@ contract BoostedBunker is ProofToken {
         // If no enough amount of free funds can transfer will trigger exit position
         (uint256 value_a, uint256 value_b) = HighLevelSystem.getValeSplit(HLSConfig, value);
         if (value_a > IBEP20(position.token_a).balanceOf(address(this)).add(10**IBEP20(position.token_a).decimals()) || value_b > IBEP20(position.token_b).balanceOf(address(this)).add(10**IBEP20(position.token_b).decimals())) {
-            HighLevelSystem.exitPositionBoosted(HLSConfig, position);
+            HighLevelSystem.exitPositionBoosted(HLSConfig, position, wrap);
             totalAssets = getTotalAssets();
             value = withdraw_amount.mul(totalAssets).div(totalSupply_);
             need_rebalance = true;
@@ -302,7 +304,7 @@ contract BoostedBunker is ProofToken {
         
         // Enter position again
         if (need_rebalance == true) {
-            HighLevelSystem.enterPositionBoosted(HLSConfig, position);
+            HighLevelSystem.enterPositionBoosted(HLSConfig, position, wrap);
             temp_free_funds_a = IBEP20(position.token_a).balanceOf(address(this));
             temp_free_funds_b = IBEP20(position.token_b).balanceOf(address(this));
         }

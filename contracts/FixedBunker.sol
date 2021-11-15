@@ -26,6 +26,7 @@ contract FixedBunker is ProofToken {
     uint256 public deposit_limit;
     uint256 private temp_free_funds;
     bool public TAG = false;
+    bool public wrap = true;
     address private dofin = address(0);
     address private factory = address(0);
 
@@ -68,7 +69,7 @@ contract FixedBunker is ProofToken {
         factory = msg.sender;
     }
     
-    function setConfig(address[1] memory _config, address _dofin, uint256[2] memory _deposit_limit) external {
+    function setConfig(address[1] memory _config, address _dofin, uint256[2] memory _deposit_limit, bool _wrap) external {
         if (dofin!=address(0) && factory!=address(0)) {
             require(checkCaller() == true, "Only factory or dofin can call this function");
         }
@@ -77,6 +78,7 @@ contract FixedBunker is ProofToken {
         dofin = _dofin;
         deposit_limit = _deposit_limit[0];
         total_deposit_limit = _deposit_limit[1];
+        wrap = _wrap;
 
         // Approve for Cream borrow 
         IBEP20(position.token).approve(position.supply_crtoken, MAX_INT_EXPONENTIATION);
