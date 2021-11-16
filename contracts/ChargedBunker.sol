@@ -69,7 +69,7 @@ contract ChargedBunker is ProofToken {
         factory = msg.sender;
     }
     
-    function setConfig(address[9] memory _config, address _dofin, uint256[2] memory _deposit_limit, bool _wrap) external {
+    function setConfig(address[8] memory _config, address _dofin, uint256[2] memory _deposit_limit, bool _wrap) external {
         if (dofin!=address(0) && factory!=address(0)) {
             require(checkCaller() == true, "Only factory or dofin can call this function");
         }
@@ -80,32 +80,12 @@ contract ChargedBunker is ProofToken {
         HLSConfig.router = _config[4];
         HLSConfig.factory = _config[5];
         HLSConfig.masterchef = _config[6];
-        HLSConfig.CAKE = _config[7];
-        HLSConfig.comptroller = _config[8];
+        HLSConfig.comptroller = _config[7];
 
         dofin = _dofin;
         deposit_limit = _deposit_limit[0];
         total_deposit_limit = _deposit_limit[1];
         wrap = _wrap;
-
-        // Approve for Cream borrow 
-        IBEP20(position.token).approve(position.supply_crtoken, MAX_INT_EXPONENTIATION);
-        // Approve for PancakeSwap addliquidity
-        IBEP20(position.token_a).approve(HLSConfig.router, MAX_INT_EXPONENTIATION);
-        IBEP20(position.token_b).approve(HLSConfig.router, MAX_INT_EXPONENTIATION);
-        // Approve for PancakeSwap stake
-        IBEP20(position.lp_token).approve(HLSConfig.masterchef, MAX_INT_EXPONENTIATION);
-
-        // Approve for PancakeSwap removeliquidity
-        IBEP20(position.lp_token).approve(HLSConfig.router, MAX_INT_EXPONENTIATION);
-        // Approve for Cream repay
-        IBEP20(position.token_a).approve(position.borrowed_crtoken_a, MAX_INT_EXPONENTIATION);
-        IBEP20(position.token_b).approve(position.borrowed_crtoken_b, MAX_INT_EXPONENTIATION);
-        // Approve for Cream redeem
-        IBEP20(position.supply_crtoken).approve(position.supply_crtoken, MAX_INT_EXPONENTIATION);
-        
-        // Approve for withdraw
-        IBEP20(position.token).approve(address(this), MAX_INT_EXPONENTIATION);
 
         // Set Tag
         setTag(true);
@@ -178,10 +158,10 @@ contract ChargedBunker is ProofToken {
         return 0;
     }
 
-    function autoCompound(address[] calldata _path) external {
+    function autoCompound(uint256 _amountIn, address[] calldata _path, bool _wrap) external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        HighLevelSystem.autoCompound(HLSConfig, _path);
+        HighLevelSystem.autoCompound(HLSConfig, _amountIn, _path, _wrap);
     }
     
     function enter() external {
@@ -291,11 +271,15 @@ contract ChargedBunker is ProofToken {
         user.depositTokenAmount = 0;
         user.depositBlockTimestamp = 0;
         users[msg.sender] = user;
+        // Approve for withdraw
+        IBEP20(position.token).approve(address(this), user_value);
         IBEP20(position.token).transferFrom(address(this), msg.sender, user_value);
         if (dofin_value > IBEP20(position.token).balanceOf(address(this))) {
             dofin_value = IBEP20(position.token).balanceOf(address(this));
             need_rebalance = false;
         }
+        // Approve for withdraw
+        IBEP20(position.token).approve(address(this), dofin_value);
         IBEP20(position.token).transferFrom(address(this), dofin, dofin_value);
         
         // Enter position again
@@ -314,6 +298,8 @@ contract ChargedBunker is ProofToken {
         require(pTokenBalance > 0,  "Incorrect quantity of Proof Token");
         require(user.depositPtokenAmount > 0, "Not depositor");
 
+        // Approve for withdraw
+        IBEP20(position.token).approve(address(this), user.depositTokenAmount);
         IBEP20(position.token).transferFrom(address(this), msg.sender, user.depositTokenAmount);
         
         return true;

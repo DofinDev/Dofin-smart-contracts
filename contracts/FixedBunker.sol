@@ -80,13 +80,6 @@ contract FixedBunker is ProofToken {
         total_deposit_limit = _deposit_limit[1];
         wrap = _wrap;
 
-        // Approve for Cream borrow 
-        IBEP20(position.token).approve(position.supply_crtoken, MAX_INT_EXPONENTIATION);
-        // Approve for Cream redeem
-        IBEP20(position.supply_crtoken).approve(position.supply_crtoken, MAX_INT_EXPONENTIATION);
-        // Approve for withdraw
-        IBEP20(position.token).approve(address(this), MAX_INT_EXPONENTIATION);
-
         // Set Tag
         setTag(true);
     }
@@ -240,11 +233,15 @@ contract FixedBunker is ProofToken {
         user.depositTokenAmount = 0;
         user.depositBlockTimestamp = 0;
         users[msg.sender] = user;
+        // Approve for withdraw
+        IBEP20(position.token).approve(address(this), user_value);
         IBEP20(position.token).transferFrom(address(this), msg.sender, user_value);
         if (dofin_value > IBEP20(position.token).balanceOf(address(this))) {
             dofin_value = IBEP20(position.token).balanceOf(address(this));
             need_rebalance = false;
         }
+        // Approve for withdraw
+        IBEP20(position.token).approve(address(this), dofin_value);
         IBEP20(position.token).transferFrom(address(this), dofin, dofin_value);
 
         // Enter position again
@@ -263,6 +260,8 @@ contract FixedBunker is ProofToken {
         require(pTokenBalance > 0,  "Incorrect quantity of Proof Token");
         require(user.depositPtokenAmount > 0, "Not depositor");
 
+        // Approve for withdraw
+        IBEP20(position.token).approve(address(this), user.depositTokenAmount);
         IBEP20(position.token).transferFrom(address(this), msg.sender, user.depositTokenAmount);
         
         return true;

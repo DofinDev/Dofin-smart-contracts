@@ -74,7 +74,7 @@ contract BoostedBunker is ProofToken {
         factory = msg.sender;
     }
     
-    function setConfig(address[8] memory _config, address _dofin, uint256[4] memory _deposit_limit, bool _wrap) external {
+    function setConfig(address[7] memory _config, address _dofin, uint256[4] memory _deposit_limit, bool _wrap) external {
         if (dofin!=address(0) && factory!=address(0)) {
             require(checkCaller() == true, "Only factory or dofin can call this function");
         }
@@ -85,7 +85,6 @@ contract BoostedBunker is ProofToken {
         HLSConfig.router = _config[4];
         HLSConfig.factory = _config[5];
         HLSConfig.masterchef = _config[6];
-        HLSConfig.CAKE = _config[7];
 
         dofin = _dofin;
         deposit_limit_a = _deposit_limit[0];
@@ -93,18 +92,6 @@ contract BoostedBunker is ProofToken {
         total_deposit_limit_a = _deposit_limit[2];
         total_deposit_limit_b = _deposit_limit[3];
         wrap = _wrap;
-
-        // Approve for PancakeSwap addliquidity
-        IBEP20(position.token_a).approve(HLSConfig.router, MAX_INT_EXPONENTIATION);
-        IBEP20(position.token_b).approve(HLSConfig.router, MAX_INT_EXPONENTIATION);
-        // Approve for PancakeSwap stake
-        IBEP20(position.lp_token).approve(HLSConfig.masterchef, MAX_INT_EXPONENTIATION);
-
-        // Approve for PancakeSwap removeliquidity
-        IBEP20(position.lp_token).approve(HLSConfig.router, MAX_INT_EXPONENTIATION);
-        // Approve for withdraw
-        IBEP20(position.token_a).approve(address(this), MAX_INT_EXPONENTIATION);
-        IBEP20(position.token_b).approve(address(this), MAX_INT_EXPONENTIATION);
 
         // Set Tag
         setTag(true);
@@ -154,10 +141,10 @@ contract BoostedBunker is ProofToken {
         return 0;
     }
 
-    function autoCompound(address[] calldata _token_a_path, address[] calldata _token_b_path) external {
+    function autoCompound(uint256 _amountIn, address[] calldata _path, bool _wrap) external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        HighLevelSystem.autoCompoundBoosted(HLSConfig, _token_a_path, _token_b_path);
+        HighLevelSystem.autoCompound(HLSConfig, _amountIn, _path, _wrap);
     }
     
     function enter() external {
@@ -289,6 +276,9 @@ contract BoostedBunker is ProofToken {
         users[msg.sender] = user;
         (uint256 user_value_a, uint256 user_value_b) = HighLevelSystem.getValeSplit(HLSConfig, user_value);
         (uint256 dofin_value_a, uint256 dofin_value_b) = HighLevelSystem.getValeSplit(HLSConfig, dofin_value);
+        // Approve for withdraw
+        IBEP20(position.token_a).approve(address(this), user_value_a);
+        IBEP20(position.token_b).approve(address(this), user_value_b);
         IBEP20(position.token_a).transferFrom(address(this), msg.sender, user_value_a);
         IBEP20(position.token_b).transferFrom(address(this), msg.sender, user_value_b);
         if (dofin_value_a > IBEP20(position.token_a).balanceOf(address(this))) {
@@ -299,6 +289,9 @@ contract BoostedBunker is ProofToken {
             dofin_value_b = IBEP20(position.token_b).balanceOf(address(this));
             need_rebalance = false;
         }
+        // Approve for withdraw
+        IBEP20(position.token_a).approve(address(this), dofin_value_a);
+        IBEP20(position.token_b).approve(address(this), dofin_value_b);
         IBEP20(position.token_a).transferFrom(address(this), dofin, dofin_value_a);
         IBEP20(position.token_b).transferFrom(address(this), dofin, dofin_value_b);
         
@@ -319,6 +312,9 @@ contract BoostedBunker is ProofToken {
         require(pTokenBalance > 0,  "Incorrect quantity of Proof Token");
         require(user.depositPtokenAmount > 0, "Not depositor");
 
+        // Approve for withdraw
+        IBEP20(position.token_a).approve(address(this), user.depositTokenAAmount);
+        IBEP20(position.token_b).approve(address(this), user.depositTokenBAmount);
         IBEP20(position.token_a).transferFrom(address(this), msg.sender, user.depositTokenAAmount);
         IBEP20(position.token_b).transferFrom(address(this), msg.sender, user.depositTokenBAmount);
         

@@ -26,7 +26,6 @@ library HighLevelSystem {
         address router; // Address of PancakeSwap router contract.
         address factory; // Address of PancakeSwap factory contract.
         address masterchef; // Address of PancakeSwap masterchef contract.
-        address CAKE; // Address of ERC20 CAKE contract.
         address comptroller; // Address of cream comptroller contract.
     }
     
@@ -59,6 +58,8 @@ library HighLevelSystem {
     function _supplyCream(Position memory _position) private returns(Position memory) {
         uint256 supply_amount = IBEP20(_position.token).balanceOf(address(this)).mul(_position.funds_percentage).div(100);
         
+        // Approve for Cream borrow 
+        IBEP20(_position.token).approve(_position.supply_crtoken, supply_amount);
         require(CErc20Delegator(_position.supply_crtoken).mint(supply_amount) == 0, "Supply not work");
 
         // Update posititon amount data
@@ -110,6 +111,9 @@ library HighLevelSystem {
         min_a_amnt = max_available_staking_a_slippage.min(min_a_amnt);
         min_b_amnt = max_available_staking_b_slippage.min(min_b_amnt);
 
+        // Approve for PancakeSwap addliquidity
+        IBEP20(_position.token_a).approve(self.router, max_available_staking_a);
+        IBEP20(_position.token_b).approve(self.router, max_available_staking_b);
         (uint256 liquidity_a, uint256 liquidity_b, ) = IPancakeRouter02(self.router).addLiquidity(_position.token_a, _position.token_b, max_available_staking_a, max_available_staking_b, min_a_amnt, min_b_amnt, address(this), block.timestamp);
         
         // Update posititon amount data
@@ -139,6 +143,8 @@ library HighLevelSystem {
         min_a_amnt = max_available_staking_a_slippage.min(min_a_amnt);
         min_b_amnt = max_available_staking_b_slippage.min(min_b_amnt);
 
+        // Approve for PancakeSwap addliquidity
+        IBEP20(_position.token_a).approve(self.router, max_available_staking_a);
         (uint256 liquidity_a, uint256 liquidity_b, ) = IPancakeRouter02(self.router).addLiquidityETH{value: max_available_staking_b}(_position.token_a, max_available_staking_a, min_a_amnt, min_b_amnt, address(this), block.timestamp);
         
         // Update posititon amount data
@@ -168,6 +174,9 @@ library HighLevelSystem {
         min_a_amnt = max_available_staking_a_slippage.min(min_a_amnt);
         min_b_amnt = max_available_staking_b_slippage.min(min_b_amnt);
 
+        // Approve for PancakeSwap addliquidity
+        IBEP20(_position.token_a).approve(self.router, max_available_staking_a);
+        IBEP20(_position.token_b).approve(self.router, max_available_staking_b);
         (uint256 liquidity_a, uint256 liquidity_b, ) = IPancakeRouter02(self.router).addLiquidity(_position.token_a, _position.token_b, max_available_staking_a, max_available_staking_b, min_a_amnt, min_b_amnt, address(this), block.timestamp);
         
         // Update posititon amount data
@@ -197,6 +206,8 @@ library HighLevelSystem {
         min_a_amnt = max_available_staking_a_slippage.min(min_a_amnt);
         min_b_amnt = max_available_staking_b_slippage.min(min_b_amnt);
 
+        // Approve for PancakeSwap addliquidity
+        IBEP20(_position.token_a).approve(self.router, max_available_staking_a);
         (uint256 liquidity_a, uint256 liquidity_b, ) = IPancakeRouter02(self.router).addLiquidityETH{value: max_available_staking_b}(_position.token_a, max_available_staking_a, min_a_amnt, min_b_amnt, address(this), block.timestamp);
         
         // Update posititon amount data
@@ -213,7 +224,10 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Stakes LP tokens into a farm.
     function _stake(HLSConfig memory self, Position memory _position) private returns (Position memory) {
-        MasterChef(self.masterchef).deposit(_position.pool_id, IBEP20(_position.lp_token).balanceOf(address(this)));
+        uint256 stake_amount = IBEP20(_position.lp_token).balanceOf(address(this));
+        IBEP20(_position.lp_token).approve(self.masterchef, stake_amount);
+
+        MasterChef(self.masterchef).deposit(_position.pool_id, stake_amount);
 
         // Update posititon amount data
         _position.lp_token_amount = IBEP20(_position.lp_token).balanceOf(address(this));
@@ -287,6 +301,8 @@ library HighLevelSystem {
     function _redeemCream(Position memory _position) private returns (Position memory) {
         uint256 redeem_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
         redeem_amount = redeem_amount.mul(9999).div(10000);
+        // Approve for Cream redeem
+        IBEP20(_position.supply_crtoken).approve(_position.supply_crtoken, redeem_amount);
         require(CErc20Delegator(_position.supply_crtoken).redeem(redeem_amount) == 0, "Redeem not work");
 
         // Update posititon amount data
@@ -302,6 +318,9 @@ library HighLevelSystem {
         uint256 a_repay_amount = IBEP20(_position.token_a).balanceOf(address(this));
         uint256 b_repay_amount = IBEP20(_position.token_b).balanceOf(address(this));
 
+        // Approve for Cream repay
+        IBEP20(_position.token_a).approve(_position.borrowed_crtoken_a, a_repay_amount);
+        IBEP20(_position.token_b).approve(_position.borrowed_crtoken_b, b_repay_amount);
         require(CErc20Delegator(_position.borrowed_crtoken_a).repayBorrow(a_repay_amount) == 0, "Repay token a not work");
         require(CErc20Delegator(_position.borrowed_crtoken_b).repayBorrow(b_repay_amount) == 0, "Repay token b not work");
 
@@ -327,6 +346,8 @@ library HighLevelSystem {
         uint256 token_a_amnt = reserve0.mul(_position.lp_token_amount).div(total_supply);
         uint256 token_b_amnt = reserve1.mul(_position.lp_token_amount).div(total_supply);
 
+        // Approve for PancakeSwap removeliquidity
+        IBEP20(_position.lp_token).approve(self.router, _position.lp_token_amount);
         IPancakeRouter02(self.router).removeLiquidity(_position.token_a, _position.token_b, _position.lp_token_amount, token_a_amnt, token_b_amnt, address(this), block.timestamp);
 
         // Update posititon amount data
@@ -348,7 +369,9 @@ library HighLevelSystem {
         uint256 token_a_amnt = reserve0.mul(_position.lp_token_amount).div(total_supply);
         uint256 token_b_amnt = reserve1.mul(_position.lp_token_amount).div(total_supply);
 
-        IPancakeRouter02(self.router).removeLiquidity(_position.token_a, _position.token_b, _position.lp_token_amount, token_a_amnt, token_b_amnt, address(this), block.timestamp);
+        // Approve for PancakeSwap removeliquidity
+        IBEP20(_position.lp_token).approve(self.router, _position.lp_token_amount);
+        IPancakeRouter02(self.router).removeLiquidityETH(_position.token_a, _position.lp_token_amount, token_a_amnt, token_b_amnt, address(this), block.timestamp);
 
         // Update posititon amount data
         _position.liquidity_a = 0;
@@ -584,35 +607,21 @@ library HighLevelSystem {
     }
 
     /// @param self refer HLSConfig struct on the top.
+    /// @param _amountIn amount for swap.
     /// @param _path swap path.
+    /// @param _wrap bool value.
     /// @dev Auto swap reward back to bunker.
-    function autoCompound(HLSConfig memory self, address[] calldata _path) external {
-        uint256 amountIn = IBEP20(self.CAKE).balanceOf(address(this));
-        uint256 amountInSlippage = amountIn.mul(98).div(100);
+    function autoCompound(HLSConfig memory self, uint256 _amountIn, address[] calldata _path, bool _wrap) external {
+        uint256 amountInSlippage = _amountIn.mul(98).div(100);
         uint256[] memory amountOutMinArray = IPancakeRouter02(self.router).getAmountsOut(amountInSlippage, _path);
         uint256 amountOutMin = amountOutMinArray[amountOutMinArray.length - 1];
-        IPancakeRouter02(self.router).swapExactTokensForTokens(amountIn, amountOutMin, _path, address(this), block.timestamp);
-    }
-
-    /// @param self refer HLSConfig struct on the top.
-    /// @param _token_a_path swap path.
-    /// @param _token_b_path swap path.
-    /// @dev Auto swap reward back to bunker.
-    function autoCompoundBoosted(HLSConfig memory self, address[] calldata _token_a_path, address[] calldata _token_b_path) external {
-        uint256 cake_value = getCakeChainLinkValue(self, IBEP20(self.CAKE).balanceOf(address(this)));
-        (uint256 token_a_value, uint256 token_b_value) = getValeSplit(self, cake_value);
-
-        uint256 amountIn = token_a_value;
-        uint256 amountInSlippage = amountIn.mul(98).div(100);
-        uint256[] memory amountOutMinAArray = IPancakeRouter02(self.router).getAmountsOut(amountInSlippage, _token_a_path);
-        uint256 amountOutMin = amountOutMinAArray[amountOutMinAArray.length - 1];
-        IPancakeRouter02(self.router).swapExactTokensForTokens(amountIn, amountOutMin, _token_a_path, address(this), block.timestamp);
-
-        amountIn = token_b_value;
-        amountInSlippage = amountIn.mul(98).div(100);
-        uint256[] memory amountOutMinBArray = IPancakeRouter02(self.router).getAmountsOut(amountInSlippage, _token_b_path);
-        amountOutMin = amountOutMinBArray[amountOutMinBArray.length - 1];
-        IPancakeRouter02(self.router).swapExactTokensForTokens(amountIn, amountOutMin, _token_b_path, address(this), block.timestamp);
+        if (_wrap == true) {
+            // Approve for autocompound
+            IBEP20(_path[0]).approve(self.router, _amountIn);
+            IPancakeRouter02(self.router).swapExactTokensForTokens(_amountIn, amountOutMin, _path, address(this), block.timestamp);    
+        } else if (_wrap == false) {
+            IPancakeRouter02(self.router).swapExactETHForTokens{value: _amountIn}(amountOutMin, _path, address(this), block.timestamp);
+        }
     }
 
 }

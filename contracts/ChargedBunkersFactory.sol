@@ -48,7 +48,7 @@ contract ChargedBunkersFactory {
         return true;
     }
 
-    function setConfigBunker (uint256 _id, address[9] memory _config, address _dofin, uint256[2] memory _deposit_limit, bool _wrap) external returns(bool) {
+    function setConfigBunker (uint256 _id, address[8] memory _config, address _dofin, uint256[2] memory _deposit_limit, bool _wrap) external returns(bool) {
         require(msg.sender == _owner, "Only Owner can call this function");
         ChargedBunker bunker = ChargedBunker(IdToBunker[_id]);
         bunker.setConfig(_config, _dofin, _deposit_limit, _wrap);
