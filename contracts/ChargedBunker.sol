@@ -158,10 +158,10 @@ contract ChargedBunker is ProofToken {
         return 0;
     }
 
-    function autoCompound(uint256 _amountIn, address[] calldata _path, bool _wrap) external {
+    function autoCompound(uint256 _amountIn, address[] calldata _path, uint256 _wrapType) external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        HighLevelSystem.autoCompound(HLSConfig, _amountIn, _path, _wrap);
+        HighLevelSystem.autoCompound(HLSConfig, _amountIn, _path, _wrapType);
     }
     
     function enter() external {

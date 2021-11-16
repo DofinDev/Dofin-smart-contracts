@@ -609,18 +609,22 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param _amountIn amount for swap.
     /// @param _path swap path.
-    /// @param _wrap bool value.
+    /// @param _wrapType bool value.
     /// @dev Auto swap reward back to bunker.
-    function autoCompound(HLSConfig memory self, uint256 _amountIn, address[] calldata _path, bool _wrap) external {
+    function autoCompound(HLSConfig memory self, uint256 _amountIn, address[] calldata _path, uint256 _wrapType) external {
         uint256 amountInSlippage = _amountIn.mul(98).div(100);
         uint256[] memory amountOutMinArray = IPancakeRouter02(self.router).getAmountsOut(amountInSlippage, _path);
         uint256 amountOutMin = amountOutMinArray[amountOutMinArray.length - 1];
-        if (_wrap == true) {
+        address token = _path[0];
+        if (_wrapType == 1) {
             // Approve for autocompound
-            address token = _path[0];
             IBEP20(token).approve(self.router, _amountIn);
             IPancakeRouter02(self.router).swapExactTokensForTokens(_amountIn, amountOutMin, _path, address(this), block.timestamp);    
-        } else if (_wrap == false) {
+        } else if (_wrapType == 2) {
+            // Approve for autocompound
+            IBEP20(token).approve(self.router, _amountIn);
+            IPancakeRouter02(self.router).swapExactTokensForETH(_amountIn, amountOutMin, _path, address(this), block.timestamp);
+        } else if (_wrapType == 3) {
             IPancakeRouter02(self.router).swapExactETHForTokens{value: _amountIn}(amountOutMin, _path, address(this), block.timestamp);
         }
     }

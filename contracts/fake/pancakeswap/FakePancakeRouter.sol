@@ -50,5 +50,12 @@ contract FakePancakeRouter {
     a[1] = uint(2);
     return a;
   }
+
+  function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external returns (uint[] memory amounts) {
+    uint[] memory a = new uint[] (2);
+    a[0] = uint(1);
+    a[1] = uint(2);
+    return a;
+  }
   
 }

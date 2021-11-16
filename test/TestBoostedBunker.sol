@@ -116,9 +116,9 @@ contract TestBoostedBunker {
 		_path[0] = FakeIBEP20Address;
 		_path[1] = FakeIBEP20Address;
 		uint256 _amountIn = 10000000000000;
-		bool _wrap = true;
+		uint256 _wrapType = 1;
 		// Testing
-		boostedbunker.autoCompound(_amountIn, _path, _wrap);
+		boostedbunker.autoCompound(_amountIn, _path, _wrapType);
 	}
 
 	function testExit() public {
