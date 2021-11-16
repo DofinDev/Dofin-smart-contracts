@@ -37,7 +37,7 @@ contract TestChargedBunker {
 		uint8 _decimals = 10;
 		chargedbunker.initialize(_uints, _addrs, _name, _symbol, _decimals);
 
-		address[9] memory _config;
+		address[8] memory _config;
 		_config[0] = FakeLinkBSCOracleAddress;
 		_config[1] = FakeLinkBSCOracleAddress;
 		_config[2] = FakeLinkBSCOracleAddress;
@@ -45,8 +45,7 @@ contract TestChargedBunker {
 		_config[4] = FakePancakeRouterAddress;
 		_config[5] = FakePancakeFactoryAddress;
 		_config[6] = FakeMasterChefAddress;
-		_config[7] = FakeIBEP20Address;
-		_config[8] = FakeComptrollerAddress;
+		_config[7] = FakeComptrollerAddress;
 		address dofin = address(0x0000000000000000000000000000000000000000);
 		uint256[2] memory deposit_limit;
 		deposit_limit[0] = 1000;
@@ -128,40 +127,22 @@ contract TestChargedBunker {
 	function testAutoCompound() public {
 		// Params
 		address[] memory _path = new address[] (2);
-		_path[0] = address(0);
-		_path[1] = address(0);
+		_path[0] = FakeIBEP20Address;
+		_path[1] = FakeIBEP20Address;
+		uint256 _amountIn = 10000000000000;
+		bool _wrap = true;
 		// Testing
-		chargedbunker.autoCompound(_path);
+		chargedbunker.autoCompound(_amountIn, _path, _wrap);
 	}
 
-	function testExit1() public {
+	function testExit() public {
 		// Testing
-		chargedbunker.exit(1);
+		chargedbunker.exit();
 	}
 
-	function testExit2() public {
+	function testEnter() public {
 		// Testing
-		chargedbunker.exit(2);
-	}
-
-	function testExit3() public {
-		// Testing
-		chargedbunker.exit(3);
-	}
-
-	function testEnter1() public {
-		// Testing
-		chargedbunker.enter(1);
-	}
-
-	function testEnter2() public {
-		// Testing
-		chargedbunker.enter(2);
-	}
-
-	function testEnter3() public {
-		// Testing
-		chargedbunker.enter(3);
+		chargedbunker.enter();
 	}
 
 	function testTotalSupply() public {

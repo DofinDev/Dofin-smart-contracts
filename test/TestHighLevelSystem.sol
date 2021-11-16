@@ -28,7 +28,6 @@ contract TestHighLevelSystem {
     HLSConfig.router = FakePancakeRouterAddress;
     HLSConfig.factory = FakePancakeFactoryAddress;
     HLSConfig.masterchef = FakeMasterChefAddress;
-    HLSConfig.CAKE = FakeIBEP20Address;
     HLSConfig.comptroller = FakeComptrollerAddress;
 
     Position = HighLevelSystem.Position({

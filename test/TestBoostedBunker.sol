@@ -32,7 +32,7 @@ contract TestBoostedBunker {
 		uint8 _decimals = 10;
 		boostedbunker.initialize(_uints, _addrs, _name, _symbol, _decimals);
 
-		address[8] memory _config;
+		address[7] memory _config;
 		_config[0] = FakeLinkBSCOracleAddress;
 		_config[1] = FakeLinkBSCOracleAddress;
 		_config[2] = FakeLinkBSCOracleAddress;
@@ -40,7 +40,6 @@ contract TestBoostedBunker {
 		_config[4] = FakePancakeRouterAddress;
 		_config[5] = FakePancakeFactoryAddress;
 		_config[6] = FakeMasterChefAddress;
-		_config[7] = FakeIBEP20Address;
 		address dofin = address(0x0000000000000000000000000000000000000000);
 		uint256[4] memory deposit_limit;
 		deposit_limit[0] = 1000;
@@ -113,14 +112,13 @@ contract TestBoostedBunker {
 
 	function testAutoCompound() public {
 		// Params
-		address[] memory _token_a_path = new address[] (2);
-		_token_a_path[0] = address(0);
-		_token_a_path[1] = address(0);
-		address[] memory _token_b_path = new address[] (2);
-		_token_b_path[0] = address(0);
-		_token_b_path[1] = address(0);
+		address[] memory _path = new address[] (2);
+		_path[0] = FakeIBEP20Address;
+		_path[1] = FakeIBEP20Address;
+		uint256 _amountIn = 10000000000000;
+		bool _wrap = true;
 		// Testing
-		boostedbunker.autoCompound(_token_a_path, _token_b_path);
+		boostedbunker.autoCompound(_amountIn, _path, _wrap);
 	}
 
 	function testExit() public {

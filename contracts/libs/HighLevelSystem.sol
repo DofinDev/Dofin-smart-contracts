@@ -617,7 +617,8 @@ library HighLevelSystem {
         uint256 amountOutMin = amountOutMinArray[amountOutMinArray.length - 1];
         if (_wrap == true) {
             // Approve for autocompound
-            IBEP20(_path[0]).approve(self.router, _amountIn);
+            address token = _path[0];
+            IBEP20(token).approve(self.router, _amountIn);
             IPancakeRouter02(self.router).swapExactTokensForTokens(_amountIn, amountOutMin, _path, address(this), block.timestamp);    
         } else if (_wrap == false) {
             IPancakeRouter02(self.router).swapExactETHForTokens{value: _amountIn}(amountOutMin, _path, address(this), block.timestamp);
