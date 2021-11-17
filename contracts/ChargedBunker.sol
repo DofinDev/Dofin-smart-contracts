@@ -250,7 +250,7 @@ contract ChargedBunker is ProofToken {
         require(block.timestamp > user.depositBlockTimestamp, "Deposit and withdraw in same block");
         // If no enough amount of free funds can transfer will trigger exit position
         if (value > IBEP20(position.token).balanceOf(address(this)).add(10**IBEP20(position.token).decimals())) {
-            HighLevelSystem.exitPosition(HLSConfig, position, 1, wrap);
+            position = HighLevelSystem.exitPosition(HLSConfig, position, 1, wrap);
             totalAssets = IBEP20(position.token).balanceOf(address(this));
             value = withdraw_amount.mul(totalAssets).div(totalSupply_);
             need_rebalance = true;
@@ -284,7 +284,7 @@ contract ChargedBunker is ProofToken {
         
         // Enter position again
         if (need_rebalance == true) {
-            HighLevelSystem.enterPosition(HLSConfig, position, 1, wrap);
+            position = HighLevelSystem.enterPosition(HLSConfig, position, 1, wrap);
             temp_free_funds = IBEP20(position.token).balanceOf(address(this));
         }
         

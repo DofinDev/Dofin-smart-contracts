@@ -249,7 +249,7 @@ contract BoostedBunker is ProofToken {
         // If no enough amount of free funds can transfer will trigger exit position
         (uint256 value_a, uint256 value_b) = HighLevelSystem.getValeSplit(HLSConfig, value);
         if (value_a > IBEP20(position.token_a).balanceOf(address(this)).add(10**IBEP20(position.token_a).decimals()) || value_b > IBEP20(position.token_b).balanceOf(address(this)).add(10**IBEP20(position.token_b).decimals())) {
-            HighLevelSystem.exitPositionBoosted(HLSConfig, position, wrap);
+            position = HighLevelSystem.exitPositionBoosted(HLSConfig, position, wrap);
             totalAssets = getTotalAssets();
             value = withdraw_amount.mul(totalAssets).div(totalSupply_);
             need_rebalance = true;
@@ -297,7 +297,7 @@ contract BoostedBunker is ProofToken {
         
         // Enter position again
         if (need_rebalance == true) {
-            HighLevelSystem.enterPositionBoosted(HLSConfig, position, wrap);
+            position = HighLevelSystem.enterPositionBoosted(HLSConfig, position, wrap);
             temp_free_funds_a = IBEP20(position.token_a).balanceOf(address(this));
             temp_free_funds_b = IBEP20(position.token_b).balanceOf(address(this));
         }

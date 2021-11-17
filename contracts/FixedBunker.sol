@@ -212,7 +212,7 @@ contract FixedBunker is ProofToken {
         require(block.timestamp > user.depositBlockTimestamp, "Deposit and withdraw in same block");
         // If no enough amount of free funds can transfer will trigger exit position
         if (value > IBEP20(position.token).balanceOf(address(this)).add(10**IBEP20(position.token).decimals())) {
-            HighLevelSystem.exitPositionFixed(position);
+            position = HighLevelSystem.exitPositionFixed(position);
             totalAssets = IBEP20(position.token).balanceOf(address(this));
             value = withdraw_amount.mul(totalAssets).div(totalSupply_);
             need_rebalance = true;
@@ -246,7 +246,7 @@ contract FixedBunker is ProofToken {
 
         // Enter position again
         if (need_rebalance == true) {
-            HighLevelSystem.enterPositionFixed(position);
+            position = HighLevelSystem.enterPositionFixed(position);
             temp_free_funds = IBEP20(position.token).balanceOf(address(this));
         }
         
