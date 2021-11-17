@@ -86,7 +86,7 @@ contract ChargedBunkersFactory {
         require(msg.sender == _owner, "Only Owner can call this function");
         for (uint i = 0; i < _ids.length; i++) {
             ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
-            bunker.enter();
+            bunker.enter(1);
         }
         return true;
     }
@@ -95,7 +95,7 @@ contract ChargedBunkersFactory {
         require(msg.sender == _owner, "Only Owner can call this function");
         for (uint i = 0; i < _ids.length; i++) {
             ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
-            bunker.exit();
+            bunker.exit(1);
         }
         return true;
     }

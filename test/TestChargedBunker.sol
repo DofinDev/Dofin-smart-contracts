@@ -137,12 +137,12 @@ contract TestChargedBunker {
 
 	function testExit() public {
 		// Testing
-		chargedbunker.exit();
+		chargedbunker.exit(1);
 	}
 
 	function testEnter() public {
 		// Testing
-		chargedbunker.enter();
+		chargedbunker.enter(1);
 	}
 
 	function testTotalSupply() public {
