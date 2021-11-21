@@ -156,7 +156,7 @@ contract FixedBunker is ProofToken {
         require(total_deposit_limit.mul(10**IBEP20(Position.token).decimals()) >= totalAssets.add(_deposit_amount), "Deposit get limited");
         uint256 shares;
         if (totalSupply_ > 0) {
-            shares = _deposit_amount.mul(totalSupply_).div(totalAssets);
+            shares = _deposit_amount.mul(totalSupply_).div(totalAssets, "Bunker Div error checkpoint 1");
         } else {
             shares = _deposit_amount;
         }
@@ -185,7 +185,7 @@ contract FixedBunker is ProofToken {
     function getWithdrawAmount() external view returns (uint256) {
         uint256 totalAssets = getTotalAssets();
         uint256 withdraw_amount = balanceOf(msg.sender);
-        uint256 value = withdraw_amount.mul(totalAssets).div(totalSupply_);
+        uint256 value = withdraw_amount.mul(totalAssets).div(totalSupply_, "Bunker Div error checkpoint 2");
         User memory user = users[msg.sender];
         if (withdraw_amount > user.depositPtokenAmount) {
             return 0;
@@ -193,8 +193,8 @@ contract FixedBunker is ProofToken {
         uint256 dofin_value;
         uint256 user_value;
         if (value > user.depositTokenAmount) {
-            dofin_value = value.sub(user.depositTokenAmount).mul(20).div(100);
-            user_value = value.sub(dofin_value);
+            dofin_value = value.sub(user.depositTokenAmount, "Bunker Sub error checkpoint 1").mul(20).div(100, "Bunker Div error checkpoint 3");
+            user_value = value.sub(dofin_value, "Bunker Sub error checkpoint 2");
         } else {
             user_value = value;
         }
@@ -206,16 +206,16 @@ contract FixedBunker is ProofToken {
         require(TAG == true, 'TAG ERROR.');
         uint256 withdraw_amount = balanceOf(msg.sender);
         uint256 totalAssets = getTotalAssets();
-        uint256 value = withdraw_amount.mul(totalAssets).div(totalSupply_);
+        uint256 value = withdraw_amount.mul(totalAssets).div(totalSupply_, "Bunker Div error checkpoint 4");
         User memory user = users[msg.sender];
         bool need_rebalance = false;
         require(withdraw_amount <= user.depositPtokenAmount, "Proof token amount incorrect");
         require(block.timestamp > user.depositBlockTimestamp, "Deposit and withdraw in same block");
         // If no enough amount of free funds can transfer will trigger exit position
-        if (value > IBEP20(Position.token).balanceOf(address(this)).add(10**IBEP20(Position.token).decimals())) {
+        if (value > IBEP20(Position.token).balanceOf(address(this))) {
             Position = HighLevelSystem.exitPositionFixed(Position);
             totalAssets = IBEP20(Position.token).balanceOf(address(this));
-            value = withdraw_amount.mul(totalAssets).div(totalSupply_);
+            value = withdraw_amount.mul(totalAssets).div(totalSupply_, "Bunker Div error checkpoint 5");
             need_rebalance = true;
         }
         // Will charge 20% fees
@@ -224,8 +224,8 @@ contract FixedBunker is ProofToken {
         uint256 user_value;
         // TODO need double check
         if (value > user.depositTokenAmount.add(10**IBEP20(Position.token).decimals())) {
-            dofin_value = value.sub(user.depositTokenAmount).mul(20).div(100);
-            user_value = value.sub(dofin_value);
+            dofin_value = value.sub(user.depositTokenAmount, "Bunker Sub error checkpoint 3").mul(20).div(100, "Bunker Div error checkpoint 6");
+            user_value = value.sub(dofin_value, "Bunker Sub error checkpoint 4");
         } else {
             user_value = value;
         }

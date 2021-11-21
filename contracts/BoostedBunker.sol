@@ -186,7 +186,7 @@ contract BoostedBunker is ProofToken {
 
         uint256 shares;
         if (totalSupply_ > 0) {
-            shares = token_value.mul(totalSupply_).div(totalAssets);
+            shares = token_value.mul(totalSupply_).div(totalAssets, "Bunker Div error checkpoint 1");
         } else {
             shares = token_value;
         }
@@ -228,8 +228,8 @@ contract BoostedBunker is ProofToken {
         uint256 dofin_value;
         uint256 user_value;
         if (value > user.depositTokenValue) {
-            dofin_value = value.sub(user.depositTokenValue).mul(20).div(100);
-            user_value = value.sub(dofin_value);
+            dofin_value = value.sub(user.depositTokenValue, "Bunker Sub error checkpoint 1").mul(20).div(100, "Bunker Div error checkpoint 2");
+            user_value = value.sub(dofin_value, "Bunker Sub error checkpoint 2");
         } else {
             user_value = value;
         }
@@ -241,7 +241,7 @@ contract BoostedBunker is ProofToken {
         require(TAG == true, 'TAG ERROR.');
         uint256 withdraw_amount = balanceOf(msg.sender);
         uint256 totalAssets = getTotalAssets();
-        uint256 value = withdraw_amount.mul(totalAssets).div(totalSupply_);
+        uint256 value = withdraw_amount.mul(totalAssets).div(totalSupply_, "Bunker Div error checkpoint 3");
         User memory user = users[msg.sender];
         bool need_rebalance = false;
         require(withdraw_amount <= user.depositPtokenAmount, "Proof token amount incorrect");
@@ -249,10 +249,10 @@ contract BoostedBunker is ProofToken {
         
         // If no enough amount of free funds can transfer will trigger exit position
         (uint256 value_a, uint256 value_b) = HighLevelSystem.getValeSplit(HLSConfig, value);
-        if (value_a > IBEP20(Position.token_a).balanceOf(address(this)).add(10**IBEP20(Position.token_a).decimals()) || value_b > IBEP20(Position.token_b).balanceOf(address(this)).add(10**IBEP20(Position.token_b).decimals())) {
+        if (value_a > IBEP20(Position.token_a).balanceOf(address(this)) || value_b > IBEP20(Position.token_b).balanceOf(address(this))) {
             Position = HighLevelSystem.exitPositionBoosted(HLSConfig, Position, wrap);
             totalAssets = getTotalAssets();
-            value = withdraw_amount.mul(totalAssets).div(totalSupply_);
+            value = withdraw_amount.mul(totalAssets).div(totalSupply_, "Bunker Div error checkpoint 4");
             need_rebalance = true;
         }
 
@@ -262,8 +262,8 @@ contract BoostedBunker is ProofToken {
         uint256 user_value;
         // TODO need double check
         if (value > user.depositTokenValue.add(10**IBEP20(Position.token).decimals())) {
-            dofin_value = value.sub(user.depositTokenValue).mul(20).div(100);
-            user_value = value.sub(dofin_value);
+            dofin_value = value.sub(user.depositTokenValue, "Bunker Sub error checkpoint 3").mul(20).div(100, "Bunker Div error checkpoint 5");
+            user_value = value.sub(dofin_value, "Bunker Sub error checkpoint 4");
         } else {
             user_value = value;
         }
