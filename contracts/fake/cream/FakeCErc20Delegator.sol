@@ -84,4 +84,11 @@ contract FakeCErc20Delegator {
     return 0;
   }
 
+  function borrowBalanceCurrent(address account) external returns (uint256) {
+
+    return 0;
+  }
+
+
+
 }
