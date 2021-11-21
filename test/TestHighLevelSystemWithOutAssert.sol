@@ -36,7 +36,7 @@ contract TestHighLevelSystemWithOutAssert {
       token_b_amount: 10,
       lp_token_amount: 10,
       crtoken_amount: 10,
-      supply_amount: 10,
+      supply_amount: 100,
       liquidity_a: 0,
       liquidity_b: 0,
       borrowed_token_a_amount: 0,

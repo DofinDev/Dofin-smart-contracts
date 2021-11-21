@@ -103,6 +103,21 @@ contract TestChargedBunker {
 		Assert.equal(result.total_depts, expected.total_depts, "It should get the position data of total_depts.");
 	}
 
+	function testDeposit() public {
+		// Params
+		uint _deposit_amount = 1000;
+		// Testing
+		bool result = chargedbunker.deposit(_deposit_amount);
+		bool expected = true;
+
+		Assert.equal(result, expected, "It should get the bool of true.");
+	}
+
+	function testEnter() public {
+		// Testing
+		chargedbunker.enter(1);
+	}
+
 	function testRebalanceWithRepay() public {
 		// Testing
 		chargedbunker.rebalanceWithRepay();
@@ -142,17 +157,12 @@ contract TestChargedBunker {
 		chargedbunker.exit(1);
 	}
 
-	function testEnter() public {
-		// Testing
-		chargedbunker.enter(1);
-	}
-
 	function testTotalSupply() public {
 		// Testing
 		uint result = chargedbunker.totalSupply();
-		uint expected = 0;
+		uint expected = 1000;
 
-		Assert.equal(result, expected, "It should get the value 0 of Total Supply.");
+		Assert.equal(result, expected, "It should get the value 1000 of Total Supply.");
 	}
 
 	function testBalanceOf() public {
@@ -160,9 +170,9 @@ contract TestChargedBunker {
 		address account = address(this);
 		// Testing
 		uint result = chargedbunker.balanceOf(account);
-		uint expected = 0;
+		uint expected = 1000;
 
-		Assert.equal(result, expected, "It should get the value 0 of proof token balance.");
+		Assert.equal(result, expected, "It should get the value 1000 of proof token balance.");
 	}
 
 	function testTransfer() public {
@@ -213,9 +223,9 @@ contract TestChargedBunker {
 	function testGetTotalAssets() public {
 		// Testing
 		uint result = chargedbunker.getTotalAssets();
-		uint expected = 110000000000000000010;
+		uint expected = 102500000000000000030;
 
-		Assert.equal(result, expected, "It should get the value 110000000000000000010 of total assets.");
+		Assert.equal(result, expected, "It should get the value 102500000000000000030 of total assets.");
 	}
 
 	function testGetDepositAmountOut() public {
@@ -223,27 +233,17 @@ contract TestChargedBunker {
 		uint _deposit_amount = 10;
 		// Testing
 		uint result = chargedbunker.getDepositAmountOut(_deposit_amount);
-		uint expected = 10;
+		uint expected = 0;
 
-		Assert.equal(result, expected, "It should get the value 10 of Deposit Amount Out.");
-	}
-
-	function testDeposit() public {
-		// Params
-		uint _deposit_amount = 10;
-		// Testing
-		bool result = chargedbunker.deposit(_deposit_amount);
-		bool expected = true;
-
-		Assert.equal(result, expected, "It should get the bool of true.");
+		Assert.equal(result, expected, "It should get the value 0 of Deposit Amount Out.");
 	}
 
 	function testGetWithdrawAmount() public {
 		// Testing
 		uint result = chargedbunker.getWithdrawAmount();
-		uint expected = 88000000000000000010;
+		uint expected = 82000000000000000224;
 
-		Assert.equal(result, expected, "It should get the value 88000000000000000010 of withdraw amount.");
+		Assert.equal(result, expected, "It should get the value 82000000000000000224 of withdraw amount.");
 	}
 
 	function testWithdraw() public {

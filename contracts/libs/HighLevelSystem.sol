@@ -5,6 +5,7 @@ import "./IBEP20.sol";
 import "./SafeMath.sol";
 import "../interfaces/chainlink/AggregatorInterface.sol";
 import "../interfaces/cream/CErc20Delegator.sol";
+import "../interfaces/cream/CEther.sol";
 import "../interfaces/cream/ComptrollerInterface.sol";
 import "../interfaces/pancakeswap/IPancakePair.sol";
 import "../interfaces/pancakeswap/IPancakeFactory.sol";
@@ -244,21 +245,17 @@ library HighLevelSystem {
             // Supply position
             _position = _supplyCream(_position);
         }
-        
         if (_type == 1 || _type == 2) {
             // Borrow
             _position = _borrowCream(self, _position, _wrap);
         }
-        
         if (_type == 1 || _type == 2 || _type == 3) {
+            // Add liquidity
             if (_wrap == true) {
-                // Add liquidity
                 _position = _addLiquidity(self, _position);    
             } else {
                 _position = _addLiquidityETH(self, _position);    
             }
-            
-
             // Stake
             _position = _stake(self, _position);
         }
@@ -272,8 +269,8 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Main entry function to stake and enter a given position.
     function enterPositionBoosted(HLSConfig memory self, Position memory _position, bool _wrap) external returns (Position memory) {
+        // Add liquidity
         if (_wrap == true) {
-            // Add liquidity
             _position = _addLiquidityBoosted(self, _position);    
         } else {
             _position = _addLiquidityBoostedETH(self, _position);    
@@ -298,25 +295,46 @@ library HighLevelSystem {
 
     /// @param _position refer Position struct on the top.
     /// @dev Redeem amount worth of crtokens back.
-    function _redeemCream(Position memory _position) private returns (Position memory) {
+    function _redeemCream(HLSConfig memory self, Position memory _position) private returns (Position memory) {
+        (uint256 borrowed_a, uint256 borrowed_b) = getTotalBorrowAmount(_position.borrowed_crtoken_a, _position.borrowed_crtoken_b);
+        (borrowed_a, borrowed_b) = getChainLinkValues(self, borrowed_a, borrowed_b);
+        uint256 redeem_amount = _position.supply_amount.mul(75).div(100).sub(borrowed_a).sub(borrowed_b);
+
+        // Approve for Cream redeem
+        IBEP20(_position.supply_crtoken).approve(_position.supply_crtoken, redeem_amount);
+        require(CErc20Delegator(_position.supply_crtoken).redeemUnderlying(redeem_amount) == 0, "Redeem not work");
+
+        // Update posititon amount data
+        _position.crtoken_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
+        _position.supply_amount = _position.supply_amount < redeem_amount ? 0 : _position.supply_amount.sub(redeem_amount);
+
+        return _position;
+    }
+
+    /// @param _position refer Position struct on the top.
+    /// @dev Redeem amount worth of crtokens back.
+    function _redeemCreamFixed(Position memory _position) private returns (Position memory) {
         uint256 redeem_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
-        redeem_amount = redeem_amount.mul(9999).div(10000);
+
         // Approve for Cream redeem
         IBEP20(_position.supply_crtoken).approve(_position.supply_crtoken, redeem_amount);
         require(CErc20Delegator(_position.supply_crtoken).redeem(redeem_amount) == 0, "Redeem not work");
 
         // Update posititon amount data
         _position.crtoken_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
-        _position.supply_amount = 0;
+        _position.supply_amount = _position.supply_amount < redeem_amount ? 0 : _position.supply_amount.sub(redeem_amount);
 
         return _position;
     }
 
     /// @param _position refer Position struct on the top.
     /// @dev Repay the tokens borrowed from cream.
-    function _repay(Position memory _position, bool _wrap) private returns (Position memory) {
-        uint256 a_repay_amount = IBEP20(_position.token_a).balanceOf(address(this));
-        uint256 b_repay_amount = IBEP20(_position.token_b).balanceOf(address(this));
+    function _repay(Position memory _position) private returns (Position memory) {
+        uint256 current_a_balance = IBEP20(_position.token_a).balanceOf(address(this));
+        uint256 current_b_balance = IBEP20(_position.token_b).balanceOf(address(this));
+        (uint256 borrowed_a, uint256 borrowed_b) = getTotalBorrowAmount(_position.borrowed_crtoken_a, _position.borrowed_crtoken_b);
+        uint256 a_repay_amount = borrowed_a < current_a_balance ? borrowed_a : current_a_balance;
+        uint256 b_repay_amount = borrowed_b < current_b_balance ? borrowed_b : current_b_balance;
 
         // Approve for Cream repay
         IBEP20(_position.token_a).approve(_position.borrowed_crtoken_a, a_repay_amount);
@@ -325,14 +343,33 @@ library HighLevelSystem {
         require(CErc20Delegator(_position.borrowed_crtoken_b).repayBorrow(b_repay_amount) == 0, "Repay token b not work");
 
         // Update posititon amount data
-        _position.borrowed_token_a_amount = 0;
-        _position.borrowed_token_b_amount = 0;
+        _position.borrowed_token_a_amount = CErc20Delegator(_position.borrowed_crtoken_a).borrowBalanceCurrent(address(this));
+        _position.borrowed_token_b_amount = CErc20Delegator(_position.borrowed_crtoken_b).borrowBalanceCurrent(address(this));
         _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
-        if (_wrap == true) {
-            _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));    
-        } else {
-            _position.token_b_amount = address(this).balance;
-        }
+        _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));  
+
+        return _position;
+    }
+
+    /// @param _position refer Position struct on the top.
+    /// @dev Repay the tokens borrowed from cream.
+    function _repayETH(Position memory _position) private returns (Position memory) {
+        uint256 current_a_balance = IBEP20(_position.token_a).balanceOf(address(this));
+        uint256 current_b_balance = address(this).balance;
+        (uint256 borrowed_a, uint256 borrowed_b) = getTotalBorrowAmount(_position.borrowed_crtoken_a, _position.borrowed_crtoken_b);
+        uint256 a_repay_amount = borrowed_a < current_a_balance ? borrowed_a : current_a_balance;
+        uint256 b_repay_amount = borrowed_b < current_b_balance ? borrowed_b : current_b_balance;
+
+        // Approve for Cream repay
+        IBEP20(_position.token_a).approve(_position.borrowed_crtoken_a, a_repay_amount);
+        require(CErc20Delegator(_position.borrowed_crtoken_a).repayBorrow(a_repay_amount) == 0, "Repay token a not work");
+        CEther(_position.borrowed_crtoken_b).repayBorrow{value: b_repay_amount}();
+
+        // Update posititon amount data
+        _position.borrowed_token_a_amount = CErc20Delegator(_position.borrowed_crtoken_a).borrowBalanceCurrent(address(this));
+        _position.borrowed_token_b_amount = CErc20Delegator(_position.borrowed_crtoken_b).borrowBalanceCurrent(address(this));
+        _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
+        _position.token_b_amount = address(this).balance;
 
         return _position;
     }
@@ -341,10 +378,8 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Removes liquidity from a given pool.
     function _removeLiquidity(HLSConfig memory self, Position memory _position) private returns (Position memory) {
-        (uint256 reserve0, uint256 reserve1, ) = IPancakePair(_position.lp_token).getReserves();
-        uint256 total_supply = IPancakePair(_position.lp_token).totalSupply();
-        uint256 token_a_amnt = reserve0.mul(_position.lp_token_amount).div(total_supply);
-        uint256 token_b_amnt = reserve1.mul(_position.lp_token_amount).div(total_supply);
+        uint256 token_a_amnt = 0;
+        uint256 token_b_amnt = 0;
 
         // Approve for PancakeSwap removeliquidity
         IBEP20(_position.lp_token).approve(self.router, _position.lp_token_amount);
@@ -364,10 +399,8 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Removes liquidity from a given pool.
     function _removeLiquidityETH(HLSConfig memory self, Position memory _position) private returns (Position memory) {
-        (uint256 reserve0, uint256 reserve1, ) = IPancakePair(_position.lp_token).getReserves();
-        uint256 total_supply = IPancakePair(_position.lp_token).totalSupply();
-        uint256 token_a_amnt = reserve0.mul(_position.lp_token_amount).div(total_supply);
-        uint256 token_b_amnt = reserve1.mul(_position.lp_token_amount).div(total_supply);
+        uint256 token_a_amnt = 0;
+        uint256 token_b_amnt = 0;
 
         // Approve for PancakeSwap removeliquidity
         IBEP20(_position.lp_token).approve(self.router, _position.lp_token_amount);
@@ -404,24 +437,24 @@ library HighLevelSystem {
         if (_type == 1 || _type == 2 || _type == 3) {
             // Unstake
             _position = _unstake(self, _position);
-            
             // Remove liquidity
             if (_wrap == true) {
-                // Add liquidity
                 _position = _removeLiquidity(self, _position);    
             } else {
                 _position = _removeLiquidityETH(self, _position);    
             }
         }
-        
         if (_type == 1 || _type == 2) {
             // Repay
-            _position = _repay(_position, _wrap);
+            if (_wrap == true) {
+                _position = _repay(_position);
+            } else {
+                _position = _repayETH(_position);
+            }
         }
-        
         if (_type == 1) {
             // Redeem
-            _position = _redeemCream(_position);
+            _position = _redeemCream(self, _position);
         }
 
         _position.total_depts = getTotalDebts(self, _position);
@@ -450,9 +483,9 @@ library HighLevelSystem {
 
     /// @param _position refer Position struct on the top.
     /// @dev Main exit function to exit and repay a given position.
-    function exitPositionFixed(Position memory _position) external returns (Position memory) {        
+    function exitPositionFixed(Position memory _position) external returns (Position memory) {
         // Redeem
-        _position = _redeemCream(_position);
+        _position = _redeemCreamFixed(_position);
         _position.total_depts = getTotalDebtsFixed(_position);
 
         return _position;
@@ -475,7 +508,7 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param cake_amount amountIn of CAKE.
     /// @dev Get the price for two tokens from LINK.
-    function getCakeChainLinkValue(HLSConfig memory self, uint256 cake_amount) private view returns (uint256) {        
+    function getCakeChainLinkValue(HLSConfig memory self, uint256 cake_amount) private view returns (uint256) {
         uint256 token_price;
         uint256 cake_price;
         uint256 multiplier = 10**18;
@@ -492,7 +525,7 @@ library HighLevelSystem {
     /// @param _crtoken_a Cream token.
     /// @param _crtoken_b Cream token.
     /// @dev Returns total amount that bunker borrowed.
-    function getTotalBorrowAmount(address _crtoken_a, address _crtoken_b) private view returns (uint256, uint256) {    
+    function getTotalBorrowAmount(address _crtoken_a, address _crtoken_b) private view returns (uint256, uint256) {
         uint256 crtoken_a_borrow_amount = CErc20Delegator(_crtoken_a).borrowBalanceStored(address(this));
         uint256 crtoken_b_borrow_amount = CErc20Delegator(_crtoken_b).borrowBalanceStored(address(this));
         return (crtoken_a_borrow_amount, crtoken_b_borrow_amount);
