@@ -83,6 +83,11 @@ contract FakeCErc20Delegator {
 
     return 0;
   }
+  
+  function redeemUnderlying(uint256 redeemAmount) public returns (uint256) {
+
+    return 0;
+  }
 
   function borrowBalanceCurrent(address account) external returns (uint256) {
 
