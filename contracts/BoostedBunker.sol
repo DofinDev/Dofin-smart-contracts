@@ -30,12 +30,22 @@ contract BoostedBunker is ProofToken {
     uint256 private temp_free_funds_a;
     uint256 private temp_free_funds_b;
     bool public TAG = false;
-    bool public wrap = true;
     address private dofin = address(0);
     address private factory = address(0);
     address[] public rtokens;
 
     mapping (address => User) private users;
+    event Received(address, uint);
+
+    function receive() external payable {
+        
+        emit Received(msg.sender, msg.value);
+    }
+
+    function feesBack() external {
+        require(checkCaller() == true, "Only factory or dofin can call this function");
+        payable(address(this)).send(address(this).balance);
+    }
 
     function checkCaller() public view returns (bool) {
         if (msg.sender == factory || msg.sender == dofin) {
@@ -74,7 +84,7 @@ contract BoostedBunker is ProofToken {
         factory = msg.sender;
     }
     
-    function setConfig(address[7] memory _config, address[] memory _rtokens, address _dofin, uint256[4] memory _deposit_limit, bool _wrap) external {
+    function setConfig(address[7] memory _config, address[] memory _rtokens, address _dofin, uint256[4] memory _deposit_limit) external {
         if (dofin!=address(0) && factory!=address(0)) {
             require(checkCaller() == true, "Only factory or dofin can call this function");
         }
@@ -92,7 +102,6 @@ contract BoostedBunker is ProofToken {
         deposit_limit_b = _deposit_limit[1];
         total_deposit_limit_a = _deposit_limit[2];
         total_deposit_limit_b = _deposit_limit[3];
-        wrap = _wrap;
 
         // Set Tag
         setTag(true);
@@ -121,8 +130,8 @@ contract BoostedBunker is ProofToken {
     function rebalanceWithoutRepay() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        Position = HighLevelSystem.exitPositionBoosted(HLSConfig, Position, wrap);
-        Position = HighLevelSystem.enterPositionBoosted(HLSConfig, Position, wrap);
+        Position = HighLevelSystem.exitPositionBoosted(HLSConfig, Position);
+        Position = HighLevelSystem.enterPositionBoosted(HLSConfig, Position);
         temp_free_funds_a = IBEP20(Position.token_a).balanceOf(address(this));
         temp_free_funds_b = IBEP20(Position.token_b).balanceOf(address(this));
     }
@@ -151,7 +160,7 @@ contract BoostedBunker is ProofToken {
     function enter() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        Position = HighLevelSystem.enterPositionBoosted(HLSConfig, Position, wrap);
+        Position = HighLevelSystem.enterPositionBoosted(HLSConfig, Position);
         temp_free_funds_a = IBEP20(Position.token_a).balanceOf(address(this));
         temp_free_funds_b = IBEP20(Position.token_b).balanceOf(address(this));
     }
@@ -159,7 +168,7 @@ contract BoostedBunker is ProofToken {
     function exit() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        Position = HighLevelSystem.exitPositionBoosted(HLSConfig, Position, wrap);
+        Position = HighLevelSystem.exitPositionBoosted(HLSConfig, Position);
     }
 
     function getTotalAssets() public view returns (uint256) {
@@ -250,7 +259,7 @@ contract BoostedBunker is ProofToken {
         // If no enough amount of free funds can transfer will trigger exit position
         (uint256 value_a, uint256 value_b) = HighLevelSystem.getValeSplit(HLSConfig, value);
         if (value_a > IBEP20(Position.token_a).balanceOf(address(this)) || value_b > IBEP20(Position.token_b).balanceOf(address(this))) {
-            Position = HighLevelSystem.exitPositionBoosted(HLSConfig, Position, wrap);
+            Position = HighLevelSystem.exitPositionBoosted(HLSConfig, Position);
             totalAssets = getTotalAssets();
             value = withdraw_amount.mul(totalAssets).div(totalSupply_, "Bunker Div error checkpoint 4");
             need_rebalance = true;
@@ -298,7 +307,7 @@ contract BoostedBunker is ProofToken {
         
         // Enter position again
         if (need_rebalance == true) {
-            Position = HighLevelSystem.enterPositionBoosted(HLSConfig, Position, wrap);
+            Position = HighLevelSystem.enterPositionBoosted(HLSConfig, Position);
             temp_free_funds_a = IBEP20(Position.token_a).balanceOf(address(this));
             temp_free_funds_b = IBEP20(Position.token_b).balanceOf(address(this));
         }

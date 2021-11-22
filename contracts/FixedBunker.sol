@@ -25,12 +25,22 @@ contract FixedBunker is ProofToken {
     uint256 public deposit_limit;
     uint256 private temp_free_funds;
     bool public TAG = false;
-    bool public wrap = true;
     address private dofin = address(0);
     address private factory = address(0);
     address[] public rtokens;
 
     mapping (address => User) private users;
+    event Received(address, uint);
+
+    function receive() external payable {
+        
+        emit Received(msg.sender, msg.value);
+    }
+
+    function feesBack() external {
+        require(checkCaller() == true, "Only factory or dofin can call this function");
+        payable(address(this)).send(address(this).balance);
+    }
 
     function checkCaller() public view returns (bool) {
         if (msg.sender == factory || msg.sender == dofin) {
@@ -69,7 +79,7 @@ contract FixedBunker is ProofToken {
         factory = msg.sender;
     }
     
-    function setConfig(address[1] memory _config, address[] memory _rtokens, address _dofin, uint256[2] memory _deposit_limit, bool _wrap) external {
+    function setConfig(address[1] memory _config, address[] memory _rtokens, address _dofin, uint256[2] memory _deposit_limit) external {
         if (dofin!=address(0) && factory!=address(0)) {
             require(checkCaller() == true, "Only factory or dofin can call this function");
         }
@@ -79,7 +89,6 @@ contract FixedBunker is ProofToken {
         dofin = _dofin;
         deposit_limit = _deposit_limit[0];
         total_deposit_limit = _deposit_limit[1];
-        wrap = _wrap;
 
         // Set Tag
         setTag(true);
@@ -108,7 +117,7 @@ contract FixedBunker is ProofToken {
     function rebalance() external  {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        Position = HighLevelSystem.exitPositionFixed(Position);
+        Position = HighLevelSystem.exitPositionFixed(HLSConfig, Position);
         Position = HighLevelSystem.enterPositionFixed(Position);
         temp_free_funds = IBEP20(Position.token).balanceOf(address(this));
     }
@@ -137,7 +146,7 @@ contract FixedBunker is ProofToken {
     function exit() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        Position = HighLevelSystem.exitPositionFixed(Position);
+        Position = HighLevelSystem.exitPositionFixed(HLSConfig, Position);
     }
 
     function getTotalAssets() public view returns (uint256) {
@@ -213,7 +222,7 @@ contract FixedBunker is ProofToken {
         require(block.timestamp > user.depositBlockTimestamp, "Deposit and withdraw in same block");
         // If no enough amount of free funds can transfer will trigger exit position
         if (value > IBEP20(Position.token).balanceOf(address(this))) {
-            Position = HighLevelSystem.exitPositionFixed(Position);
+            Position = HighLevelSystem.exitPositionFixed(HLSConfig, Position);
             totalAssets = IBEP20(Position.token).balanceOf(address(this));
             value = withdraw_amount.mul(totalAssets).div(totalSupply_, "Bunker Div error checkpoint 5");
             need_rebalance = true;
