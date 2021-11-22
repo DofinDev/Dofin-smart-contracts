@@ -56,9 +56,9 @@ contract TestHighLevelSystem {
 
   function testEnterPosition() public {
     // Testing
-    HighLevelSystem.Position memory result_1 = HighLevelSystem.enterPosition(HLSConfig, Position, 1, true);
-    HighLevelSystem.Position memory result_2 = HighLevelSystem.enterPosition(HLSConfig, Position, 2, true);
-    HighLevelSystem.Position memory result_3 = HighLevelSystem.enterPosition(HLSConfig, Position, 3, true);
+    HighLevelSystem.Position memory result_1 = HighLevelSystem.enterPosition(HLSConfig, Position, 1);
+    HighLevelSystem.Position memory result_2 = HighLevelSystem.enterPosition(HLSConfig, Position, 2);
+    HighLevelSystem.Position memory result_3 = HighLevelSystem.enterPosition(HLSConfig, Position, 3);
     HighLevelSystem.Position memory expected_1 = HighLevelSystem.Position({
       pool_id: 10,
       token_amount: 100000000000000000000,
@@ -192,9 +192,9 @@ contract TestHighLevelSystem {
 
   function testExitPosition() public {
     // Testing
-    HighLevelSystem.Position memory  result_1 = HighLevelSystem.exitPosition(HLSConfig, Position, 1, true);
-    HighLevelSystem.Position memory  result_2 = HighLevelSystem.exitPosition(HLSConfig, Position, 2, true);
-    HighLevelSystem.Position memory  result_3 = HighLevelSystem.exitPosition(HLSConfig, Position, 3, true);
+    HighLevelSystem.Position memory  result_1 = HighLevelSystem.exitPosition(HLSConfig, Position, 1);
+    HighLevelSystem.Position memory  result_2 = HighLevelSystem.exitPosition(HLSConfig, Position, 2);
+    HighLevelSystem.Position memory  result_3 = HighLevelSystem.exitPosition(HLSConfig, Position, 3);
     HighLevelSystem.Position memory expected_1 = HighLevelSystem.Position({
       pool_id: 10,
       token_amount: 10,
@@ -202,7 +202,7 @@ contract TestHighLevelSystem {
       token_b_amount: 100000000000000000000,
       lp_token_amount: 10,
       crtoken_amount: 1000000000000000000000,
-      supply_amount: 45,
+      supply_amount: 0,
       liquidity_a: 0,
       liquidity_b: 0,
       borrowed_token_a_amount: 0,
@@ -215,7 +215,7 @@ contract TestHighLevelSystem {
       borrowed_crtoken_a: FakeCErc20DelegatorAddress,
       borrowed_crtoken_b: FakeCErc20DelegatorAddress,
       funds_percentage: 95,
-      total_depts: 55
+      total_depts: 10
     });
     HighLevelSystem.Position memory expected_2 = HighLevelSystem.Position({
       pool_id: 10,

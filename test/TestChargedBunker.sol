@@ -52,7 +52,7 @@ contract TestChargedBunker {
 		deposit_limit[1] = 100000000000;
 		address[] memory _rtokens = new address[](1);
 		_rtokens[0] = address(0);
-		chargedbunker.setConfig(_config, _rtokens, dofin, deposit_limit, true);
+		chargedbunker.setConfig(_config, _rtokens, dofin, deposit_limit);
 	}
 
 	function testGetPosition() public {
@@ -223,9 +223,9 @@ contract TestChargedBunker {
 	function testGetTotalAssets() public {
 		// Testing
 		uint result = chargedbunker.getTotalAssets();
-		uint expected = 102500000000000000030;
+		uint expected = 100000000000000000010;
 
-		Assert.equal(result, expected, "It should get the value 102500000000000000030 of total assets.");
+		Assert.equal(result, expected, "It should get the value 100000000000000000010 of total assets.");
 	}
 
 	function testGetDepositAmountOut() public {
@@ -241,9 +241,9 @@ contract TestChargedBunker {
 	function testGetWithdrawAmount() public {
 		// Testing
 		uint result = chargedbunker.getWithdrawAmount();
-		uint expected = 82000000000000000224;
+		uint expected = 80000000000000000208;
 
-		Assert.equal(result, expected, "It should get the value 82000000000000000224 of withdraw amount.");
+		Assert.equal(result, expected, "It should get the value 80000000000000000208 of withdraw amount.");
 	}
 
 	function testWithdraw() public {

@@ -35,7 +35,7 @@ contract TestFixedBunker {
 		deposit_limit[1] = 100000000000;
 		address[] memory _rtokens = new address[](1);
 		_rtokens[0] = address(0);
-		fixedbunker.setConfig(_config, _rtokens, dofin, deposit_limit, true);
+		fixedbunker.setConfig(_config, _rtokens, dofin, deposit_limit);
 	}
 
 	function testGetPosition() public {

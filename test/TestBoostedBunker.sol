@@ -48,7 +48,7 @@ contract TestBoostedBunker {
 		deposit_limit[3] = 100000000000;
 		address[] memory _rtokens = new address[](1);
 		_rtokens[0] = address(0);
-		boostedbunker.setConfig(_config, _rtokens, dofin, deposit_limit, true);
+		boostedbunker.setConfig(_config, _rtokens, dofin, deposit_limit);
 	}
 
 	function testGetPosition() public {
