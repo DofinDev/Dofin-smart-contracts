@@ -5,7 +5,6 @@ import "./IBEP20.sol";
 import "./SafeMath.sol";
 import "../interfaces/chainlink/AggregatorInterface.sol";
 import "../interfaces/cream/CErc20Delegator.sol";
-import "../interfaces/cream/CEther.sol";
 import "../interfaces/cream/ComptrollerInterface.sol";
 import "../interfaces/pancakeswap/IPancakePair.sol";
 import "../interfaces/pancakeswap/IPancakeFactory.sol";
