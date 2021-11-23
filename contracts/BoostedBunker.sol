@@ -37,14 +37,14 @@ contract BoostedBunker is ProofToken {
     mapping (address => User) private users;
     event Received(address, uint);
 
-    function receive() external payable {
+    function sendFees() external payable {
         
         emit Received(msg.sender, msg.value);
     }
 
     function feesBack() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
-        payable(address(this)).send(address(this).balance);
+        payable(address(this)).transfer(address(this).balance);
     }
 
     function checkCaller() public view returns (bool) {

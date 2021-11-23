@@ -32,14 +32,14 @@ contract ChargedBunker is ProofToken {
     mapping (address => User) private users;
     event Received(address, uint);
 
-    function receive() external payable {
+    function sendFees() external payable {
         
         emit Received(msg.sender, msg.value);
     }
 
     function feesBack() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
-        payable(address(this)).send(address(this).balance);
+        payable(address(this)).transfer(payable(address(this)).balance);
     }
 
     function checkCaller() public view returns (bool) {

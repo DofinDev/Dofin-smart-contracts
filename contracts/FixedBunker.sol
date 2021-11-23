@@ -32,14 +32,14 @@ contract FixedBunker is ProofToken {
     mapping (address => User) private users;
     event Received(address, uint);
 
-    function receive() external payable {
+    function sendFees() external payable {
         
         emit Received(msg.sender, msg.value);
     }
 
     function feesBack() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
-        payable(address(this)).send(address(this).balance);
+        payable(address(this)).transfer(payable(address(this)).balance);
     }
 
     function checkCaller() public view returns (bool) {
@@ -117,7 +117,7 @@ contract FixedBunker is ProofToken {
     function rebalance() external  {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        Position = HighLevelSystem.exitPositionFixed(HLSConfig, Position);
+        Position = HighLevelSystem.exitPositionFixed(Position);
         Position = HighLevelSystem.enterPositionFixed(Position);
         temp_free_funds = IBEP20(Position.token).balanceOf(address(this));
     }
@@ -146,7 +146,7 @@ contract FixedBunker is ProofToken {
     function exit() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
-        Position = HighLevelSystem.exitPositionFixed(HLSConfig, Position);
+        Position = HighLevelSystem.exitPositionFixed(Position);
     }
 
     function getTotalAssets() public view returns (uint256) {
@@ -222,7 +222,7 @@ contract FixedBunker is ProofToken {
         require(block.timestamp > user.depositBlockTimestamp, "Deposit and withdraw in same block");
         // If no enough amount of free funds can transfer will trigger exit position
         if (value > IBEP20(Position.token).balanceOf(address(this))) {
-            Position = HighLevelSystem.exitPositionFixed(HLSConfig, Position);
+            Position = HighLevelSystem.exitPositionFixed(Position);
             totalAssets = IBEP20(Position.token).balanceOf(address(this));
             value = withdraw_amount.mul(totalAssets).div(totalSupply_, "Bunker Div error checkpoint 5");
             need_rebalance = true;

@@ -93,41 +93,13 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param _position refer Position struct on t he top.
     /// @dev Adds liquidity to a given pool.
-    function _addLiquidity(HLSConfig memory self, Position memory _position) private returns (Position memory) {
+    function _addLiquidity(HLSConfig memory self, Position memory _position, bool boosted) private returns (Position memory) {
         uint256 max_available_staking_a = IBEP20(_position.token_a).balanceOf(address(this));
         uint256 max_available_staking_b = IBEP20(_position.token_b).balanceOf(address(this));
-        
-        uint256 max_available_staking_a_slippage = max_available_staking_a.mul(98).div(100);
-        uint256 max_available_staking_b_slippage = max_available_staking_b.mul(98).div(100);
-
-        (uint256 reserves0, uint256 reserves1, ) = IPancakePair(_position.lp_token).getReserves();
-        uint256 min_a_amnt = IPancakeRouter02(self.router).quote(max_available_staking_b_slippage, reserves1, reserves0);
-        uint256 min_b_amnt = IPancakeRouter02(self.router).quote(max_available_staking_a_slippage, reserves0, reserves1);
-
-        min_a_amnt = max_available_staking_a_slippage.min(min_a_amnt);
-        min_b_amnt = max_available_staking_b_slippage.min(min_b_amnt);
-
-        // Approve for PancakeSwap addliquidity
-        IBEP20(_position.token_a).approve(self.router, max_available_staking_a);
-        IBEP20(_position.token_b).approve(self.router, max_available_staking_b);
-        (uint256 liquidity_a, uint256 liquidity_b, ) = IPancakeRouter02(self.router).addLiquidity(_position.token_a, _position.token_b, max_available_staking_a, max_available_staking_b, min_a_amnt, min_b_amnt, address(this), block.timestamp);
-        
-        // Update posititon amount data
-        _position.liquidity_a = liquidity_a;
-        _position.liquidity_b = liquidity_b;
-        _position.lp_token_amount = IBEP20(_position.lp_token).balanceOf(address(this));
-        _position.token_a_amount = IBEP20(_position.token_a).balanceOf(address(this));
-        _position.token_b_amount = IBEP20(_position.token_b).balanceOf(address(this));
-
-        return _position;
-    }
-
-    /// @param self refer HLSConfig struct on the top.
-    /// @param _position refer Position struct on t he top.
-    /// @dev Adds liquidity to a given pool.
-    function _addLiquidityBoosted(HLSConfig memory self, Position memory _position) private returns (Position memory) {
-        uint256 max_available_staking_a = IBEP20(_position.token_a).balanceOf(address(this)).mul(_position.funds_percentage).div(100);
-        uint256 max_available_staking_b = IBEP20(_position.token_b).balanceOf(address(this)).mul(_position.funds_percentage).div(100);
+        if (boosted == true) {
+            max_available_staking_a = max_available_staking_a.mul(_position.funds_percentage).div(100);
+            max_available_staking_b = max_available_staking_b.mul(_position.funds_percentage).div(100);
+        }
         
         uint256 max_available_staking_a_slippage = max_available_staking_a.mul(98).div(100);
         uint256 max_available_staking_b_slippage = max_available_staking_b.mul(98).div(100);
@@ -184,7 +156,7 @@ library HighLevelSystem {
         }
         if (_type == 1 || _type == 2 || _type == 3) {
             // Add liquidity
-            _position = _addLiquidity(self, _position);
+            _position = _addLiquidity(self, _position, false);
             // Stake
             _position = _stake(self, _position);
         }
@@ -199,7 +171,7 @@ library HighLevelSystem {
     /// @dev Main entry function to stake and enter a given position.
     function enterPositionBoosted(HLSConfig memory self, Position memory _position) external returns (Position memory) {
         // Add liquidity
-        _position = _addLiquidityBoosted(self, _position);
+        _position = _addLiquidityBoosted(self, _position, true);
         // Stake
         _position = _stake(self, _position);
         
@@ -220,16 +192,17 @@ library HighLevelSystem {
 
     /// @param _position refer Position struct on the top.
     /// @dev Redeem amount worth of crtokens back.
-    function _redeemCream(HLSConfig memory self, Position memory _position) private returns (Position memory) {
+    function _redeemCream(Position memory _position) private returns (Position memory) {
         uint256 redeem_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
 
         // Approve for Cream redeem
         IBEP20(_position.supply_crtoken).approve(_position.supply_crtoken, redeem_amount);
         require(CErc20Delegator(_position.supply_crtoken).redeem(redeem_amount) == 0, "Redeem not work");
+        // revert("HLS Error Point: redeem");
 
         // Update posititon amount data
         _position.crtoken_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
-        _position.supply_amount = _position.supply_amount <= redeem_amount ? 0 : _position.supply_amount.sub(redeem_amount);
+        _position.supply_amount = 0;
 
         return _position;
     }
@@ -327,8 +300,10 @@ library HighLevelSystem {
             _position = _repay(self, _position);
         }
         if (_type == 1) {
+            // require(ComptrollerInterface(self.comptroller).redeemAllowed(_position.supply_crtoken, address(this), IBEP20(_position.supply_crtoken).balanceOf(address(this))) == 0, "redeemAllowed not work");
+            // revert("HLS Error Point: redeemAllowed");
             // Redeem
-            _position = _redeemCream(self, _position);
+            _position = _redeemCream(_position);
         }
 
         // if (_type == 3) {
@@ -365,9 +340,9 @@ library HighLevelSystem {
 
     /// @param _position refer Position struct on the top.
     /// @dev Main exit function to exit and repay a given position.
-    function exitPositionFixed(HLSConfig memory self, Position memory _position) external returns (Position memory) {
+    function exitPositionFixed(Position memory _position) external returns (Position memory) {
         // Redeem
-        _position = _redeemCream(self, _position);
+        _position = _redeemCream(_position);
         _position.total_depts = getTotalDebtsFixed(_position);
 
         return _position;
