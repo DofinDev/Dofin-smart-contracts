@@ -129,16 +129,10 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Stakes LP tokens into a farm.
-    function _stake(HLSConfig memory self, Position memory _position) private returns (Position memory) {
+    function _stake(HLSConfig memory self, Position memory _position) private {
         uint256 stake_amount = IBEP20(_position.lp_token).balanceOf(address(this));
         IBEP20(_position.lp_token).approve(self.masterchef, stake_amount);
-
         MasterChef(self.masterchef).deposit(_position.pool_id, stake_amount);
-
-        // Update posititon amount data
-        _position.lp_token_amount = IBEP20(_position.lp_token).balanceOf(address(this));
-
-        return _position;
     }
 
     /// @param self refer HLSConfig struct on the top.
@@ -158,7 +152,7 @@ library HighLevelSystem {
             // Add liquidity
             _position = _addLiquidity(self, _position, false);
             // Stake
-            _position = _stake(self, _position);
+            _stake(self, _position);
         }
         
         _position.total_depts = getTotalDebts(self, _position);
@@ -173,7 +167,7 @@ library HighLevelSystem {
         // Add liquidity
         _position = _addLiquidity(self, _position, true);
         // Stake
-        _position = _stake(self, _position);
+        _stake(self, _position);
         
         _position.total_depts = getTotalDebtsBoosted(self, _position);
 
@@ -354,7 +348,7 @@ library HighLevelSystem {
     /// @dev Get the price for two tokens from LINK.
     function getChainLinkValues(HLSConfig memory self, uint256 token_a_amount, uint256 token_b_amount) public view returns (uint256, uint256) {
         // check if we can get data from chainlink
-        uint256 multiplier = 10**18;
+        uint256 multiplier = 10**10;
         uint256 token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_oracle).decimals());
         uint256 token_a_price = uint256(AggregatorInterface(self.token_a_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_a_oracle).decimals());
         uint256 token_b_price = uint256(AggregatorInterface(self.token_b_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_b_oracle).decimals());
@@ -368,7 +362,7 @@ library HighLevelSystem {
     function getCakeChainLinkValue(HLSConfig memory self, uint256 cake_amount) private view returns (uint256) {
         uint256 token_price;
         uint256 cake_price;
-        uint256 multiplier = 10**18;
+        uint256 multiplier = 10**10;
         if (self.token_oracle != address(0)  && self.cake_oracle != address(0)) {
             token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_oracle).decimals());
             cake_price = uint256(AggregatorInterface(self.cake_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.cake_oracle).decimals());
@@ -454,10 +448,12 @@ library HighLevelSystem {
     /// @dev Return updated token a, token b amount and value.
     function getUpdatedAmount(HLSConfig memory self, Position memory _position, uint256 _token_a_amount, uint256 _token_b_amount) external view returns (uint256, uint256, uint256) {
         (uint256 reserve0, uint256 reserve1, ) = IPancakePair(_position.lp_token).getReserves();
-        if (_token_a_amount == 0) {
+        if (_token_a_amount == 0 && _token_b_amount > 0) {
             _token_a_amount = IPancakeRouter02(self.router).quote(_token_b_amount, reserve1, reserve0);
-        } else if (_token_b_amount == 0) {
+        } else if (_token_a_amount > 0 && _token_b_amount == 0) {
             _token_b_amount = IPancakeRouter02(self.router).quote(_token_a_amount, reserve0, reserve1);            
+        } else {
+            return (0, 0, 0);
         }
 
         (uint256 token_a_value, uint256 token_b_value) = getChainLinkValues(self, _token_a_amount, _token_b_amount);
@@ -470,7 +466,7 @@ library HighLevelSystem {
     /// @dev Return total debts for boosted bunker.
     function getValeSplit(HLSConfig memory self, uint256 _value) public view returns (uint256, uint256) {
         // check if we can get data from chainlink
-        uint256 multiplier = 10**18;
+        uint256 multiplier = 10**10;
         uint256 token_price = uint256(AggregatorInterface(self.token_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_oracle).decimals());
         uint256 token_a_price = uint256(AggregatorInterface(self.token_a_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_a_oracle).decimals());
         uint256 token_b_price = uint256(AggregatorInterface(self.token_b_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_b_oracle).decimals());

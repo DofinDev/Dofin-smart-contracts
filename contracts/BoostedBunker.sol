@@ -44,7 +44,8 @@ contract BoostedBunker is ProofToken {
 
     function feesBack() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
-        payable(address(this)).transfer(address(this).balance);
+        uint256 contract_balance = payable(address(this)).balance;
+        payable(address(msg.sender)).transfer(contract_balance);
     }
 
     function checkCaller() public view returns (bool) {
@@ -139,7 +140,7 @@ contract BoostedBunker is ProofToken {
     function checkAddNewFunds() external view returns (uint256) {
         uint256 free_funds_a = IBEP20(Position.token_a).balanceOf(address(this));
         uint256 free_funds_b = IBEP20(Position.token_b).balanceOf(address(this));
-        if (free_funds_a > temp_free_funds_a || free_funds_b > free_funds_b) {
+        if (free_funds_a > temp_free_funds_a || free_funds_b > temp_free_funds_b) {
             if (Position.token_a_amount == 0 && Position.token_b_amount == 0) {
                 // Need to enter
                 return 1;
@@ -155,6 +156,9 @@ contract BoostedBunker is ProofToken {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
         HighLevelSystem.autoCompound(HLSConfig, _amountIn, _path, _wrapType);
+        Position.token_amount = IBEP20(Position.token).balanceOf(address(this));
+        Position.token_a_amount = IBEP20(Position.token_a).balanceOf(address(this));
+        Position.token_b_amount = IBEP20(Position.token_b).balanceOf(address(this));
     }
     
     function enter() external {
@@ -187,11 +191,11 @@ contract BoostedBunker is ProofToken {
         uint256 token_value;
         (_token_a_amount, _token_b_amount, token_value) = HighLevelSystem.getUpdatedAmount(HLSConfig, Position, _token_a_amount, _token_b_amount);
         require(_token_a_amount <= deposit_limit_a.mul(10**IBEP20(Position.token_a).decimals()), "Deposit too much token a!");
-        require(_token_a_amount <= deposit_limit_b.mul(10**IBEP20(Position.token_b).decimals()), "Deposit too much token b!");
+        require(_token_b_amount <= deposit_limit_b.mul(10**IBEP20(Position.token_b).decimals()), "Deposit too much token b!");
         require(_token_a_amount > 0, "Deposit token a amount must bigger than 0.");
         require(_token_b_amount > 0, "Deposit token b amount must bigger than 0.");
-        uint256 total_deposit_limit = total_deposit_limit_a.mul(10**IBEP20(Position.token_a).decimals()).add(total_deposit_limit_b.mul(10**IBEP20(Position.token_b).decimals()));
-        require(total_deposit_limit >= totalAssets.add(_token_a_amount).add(_token_b_amount), "Deposit get limited");
+        (uint256 total_deposit_limit_a_value, uint256 total_deposit_limit_b_value) = HighLevelSystem.getChainLinkValues(HLSConfig, total_deposit_limit_a.mul(10**IBEP20(Position.token_a).decimals()), total_deposit_limit_b.mul(10**IBEP20(Position.token_b).decimals()));
+        require(total_deposit_limit_a_value.add(total_deposit_limit_b_value) >= totalAssets.add(token_value), "Deposit get limited");
 
         uint256 shares;
         if (totalSupply_ > 0) {
@@ -236,7 +240,7 @@ contract BoostedBunker is ProofToken {
         }
         uint256 dofin_value;
         uint256 user_value;
-        if (value > user.depositTokenValue) {
+        if (value > user.depositTokenValue.add(10**IBEP20(Position.token).decimals())) {
             dofin_value = value.sub(user.depositTokenValue, "Bunker Sub error checkpoint 1").mul(20).div(100, "Bunker Div error checkpoint 2");
             user_value = value.sub(dofin_value, "Bunker Sub error checkpoint 2");
         } else {

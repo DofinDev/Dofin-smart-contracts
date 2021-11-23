@@ -39,7 +39,8 @@ contract FixedBunker is ProofToken {
 
     function feesBack() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
-        payable(address(this)).transfer(payable(address(this)).balance);
+        uint256 contract_balance = payable(address(this)).balance;
+        payable(address(msg.sender)).transfer(contract_balance);
     }
 
     function checkCaller() public view returns (bool) {

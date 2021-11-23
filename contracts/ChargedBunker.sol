@@ -39,7 +39,8 @@ contract ChargedBunker is ProofToken {
 
     function feesBack() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
-        payable(address(this)).transfer(payable(address(this)).balance);
+        uint256 contract_balance = payable(address(this)).balance;
+        payable(address(msg.sender)).transfer(contract_balance);
     }
 
     function checkCaller() public view returns (bool) {
@@ -172,6 +173,9 @@ contract ChargedBunker is ProofToken {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
         HighLevelSystem.autoCompound(HLSConfig, _amountIn, _path, _wrapType);
+        Position.token_amount = IBEP20(Position.token).balanceOf(address(this));
+        Position.token_a_amount = IBEP20(Position.token_a).balanceOf(address(this));
+        Position.token_b_amount = IBEP20(Position.token_b).balanceOf(address(this));
     }
     
     function enter(uint256 _type) external {
