@@ -55,49 +55,4 @@ contract ChargedBunkersFactory {
         return true;
     }
 
-    function rebalanceBunker (uint256[] memory _ids) external returns(bool) {
-        require(msg.sender == _owner, "Only Owner can call this function");
-        for (uint i = 0; i < _ids.length; i++) {
-            ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
-            bunker.rebalance();
-        }
-        return true;
-    }
-
-    function rebalanceWithRepayBunker (uint256[] memory _ids) external returns(bool) {
-        require(msg.sender == _owner, "Only Owner can call this function");
-        for (uint i = 0; i < _ids.length; i++) {
-            ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
-            bunker.rebalanceWithRepay();
-        }
-        return true;
-    }
-
-    function rebalanceWithoutRepayBunker (uint256[] memory _ids) external returns(bool) {
-        require(msg.sender == _owner, "Only Owner can call this function");
-        for (uint i = 0; i < _ids.length; i++) {
-            ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
-            bunker.rebalanceWithoutRepay();
-        }
-        return true;
-    }
-
-    function enterBunker (uint256[] memory _ids) external returns(bool) {
-        require(msg.sender == _owner, "Only Owner can call this function");
-        for (uint i = 0; i < _ids.length; i++) {
-            ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
-            bunker.enter(1);
-        }
-        return true;
-    }
-
-    function exitBunker (uint256[] memory _ids) external returns(bool) {
-        require(msg.sender == _owner, "Only Owner can call this function");
-        for (uint i = 0; i < _ids.length; i++) {
-            ChargedBunker bunker = ChargedBunker(IdToBunker[_ids[i]]);
-            bunker.exit(1);
-        }
-        return true;
-    }
-
 }

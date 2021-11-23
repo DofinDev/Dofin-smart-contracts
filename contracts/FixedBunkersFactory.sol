@@ -55,31 +55,4 @@ contract FixedBunkersFactory {
         return true;
     }
 
-    function rebalanceBunker (uint256[] memory _ids) external returns(bool) {
-        require(msg.sender == _owner, "Only Owner can call this function");
-        for (uint i = 0; i < _ids.length; i++) {
-            FixedBunker bunker = FixedBunker(IdToBunker[_ids[i]]);
-            bunker.rebalance();
-        }
-        return true;
-    }
-
-    function enterBunker (uint256[] memory _ids) external returns(bool) {
-        require(msg.sender == _owner, "Only Owner can call this function");
-        for (uint i = 0; i < _ids.length; i++) {
-            FixedBunker bunker = FixedBunker(IdToBunker[_ids[i]]);
-            bunker.enter();
-        }
-        return true;
-    }
-
-    function exitBunker (uint256[] memory _ids) external returns(bool) {
-        require(msg.sender == _owner, "Only Owner can call this function");
-        for (uint i = 0; i < _ids.length; i++) {
-            FixedBunker bunker = FixedBunker(IdToBunker[_ids[i]]);
-            bunker.exit();
-        }
-        return true;
-    }
-
 }

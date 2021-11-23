@@ -55,31 +55,4 @@ contract BoostedBunkersFactory {
         return true;
     }
 
-    function rebalanceWithoutRepayBunker (uint256[] memory _ids) external returns(bool) {
-        require(msg.sender == _owner, "Only Owner can call this function");
-        for (uint i = 0; i < _ids.length; i++) {
-            BoostedBunker bunker = BoostedBunker(IdToBunker[_ids[i]]);
-            bunker.rebalanceWithoutRepay();
-        }
-        return true;
-    }
-
-    function enterBunker (uint256[] memory _ids) external returns(bool) {
-        require(msg.sender == _owner, "Only Owner can call this function");
-        for (uint i = 0; i < _ids.length; i++) {
-            BoostedBunker bunker = BoostedBunker(IdToBunker[_ids[i]]);
-            bunker.enter();
-        }
-        return true;
-    }
-
-    function exitBunker (uint256[] memory _ids) external returns(bool) {
-        require(msg.sender == _owner, "Only Owner can call this function");
-        for (uint i = 0; i < _ids.length; i++) {
-            BoostedBunker bunker = BoostedBunker(IdToBunker[_ids[i]]);
-            bunker.exit();
-        }
-        return true;
-    }
-
 }
