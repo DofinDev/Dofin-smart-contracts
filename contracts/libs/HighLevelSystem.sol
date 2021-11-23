@@ -171,7 +171,7 @@ library HighLevelSystem {
     /// @dev Main entry function to stake and enter a given position.
     function enterPositionBoosted(HLSConfig memory self, Position memory _position) external returns (Position memory) {
         // Add liquidity
-        _position = _addLiquidityBoosted(self, _position, true);
+        _position = _addLiquidity(self, _position, true);
         // Stake
         _position = _stake(self, _position);
         
