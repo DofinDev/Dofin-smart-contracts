@@ -215,6 +215,7 @@ contract FixedBunker is ProofToken {
     function withdraw() external returns (bool) {
         require(TAG == true, 'TAG ERROR.');
         uint256 withdraw_amount = balanceOf(msg.sender);
+        require(withdraw_amount > 0, "Proof token amount insufficient");
         uint256 totalAssets = getTotalAssets();
         uint256 value = withdraw_amount.mul(totalAssets).div(totalSupply_, "Bunker Div error checkpoint 4");
         User memory user = users[msg.sender];

@@ -206,25 +206,25 @@ contract TestBoostedBunker {
 
 	function testGetDepositAmountOut() public {
 		// Params
-		uint _token_a_amount = 10;
-		uint _token_b_amount = 10;
+		uint _token_a_amount = 100;
+		uint _token_b_amount = 0;
 		// Testing
 		(uint result_1, uint result_2, uint result_3, uint result_4) = boostedbunker.getDepositAmountOut(_token_a_amount, _token_b_amount);
-		uint expected_1 = 10;
+		uint expected_1 = 100;
 		uint expected_2 = 10;
-		uint expected_3 = 20;
-		uint expected_4 = 20;
+		uint expected_3 = 110;
+		uint expected_4 = 110;
 
-		Assert.equal(result_1, expected_1, "It should get the value 20 of Deposit Amount Out 1.");
-		Assert.equal(result_2, expected_2, "It should get the value 20 of Deposit Amount Out 2.");
-		Assert.equal(result_3, expected_3, "It should get the value 20 of Deposit Amount Out 3.");
-		Assert.equal(result_4, expected_4, "It should get the value 20 of Deposit Amount Out 4.");
+		Assert.equal(result_1, expected_1, "It should get the value 100 of Deposit Amount Out 1.");
+		Assert.equal(result_2, expected_2, "It should get the value 10 of Deposit Amount Out 2.");
+		Assert.equal(result_3, expected_3, "It should get the value 200 of Deposit Amount Out 3.");
+		Assert.equal(result_4, expected_4, "It should get the value 200 of Deposit Amount Out 4.");
 	}
 
 	function testDeposit() public {
 		// Params
-		uint _token_a_amount = 10;
-		uint _token_b_amount = 10;
+		uint _token_a_amount = 100;
+		uint _token_b_amount = 0;
 		// Testing
 		bool result = boostedbunker.deposit(_token_a_amount, _token_b_amount);
 		bool expected = true;
@@ -235,11 +235,11 @@ contract TestBoostedBunker {
 	function testGetWithdrawAmount() public {
 		// Testing
 		(uint result_1, uint result_2) = boostedbunker.getWithdrawAmount();
-		uint expected_1 = 80000000000000000014;
-		uint expected_2 = 80000000000000000014;
+		uint expected_1 = 80000000000000000023;
+		uint expected_2 = 80000000000000000023;
 
-		Assert.equal(result_1, expected_1, "It should get the value 80000000000000000014 of withdraw amount 1.");
-		Assert.equal(result_2, expected_2, "It should get the value 80000000000000000014 of withdraw amount 2.");
+		Assert.equal(result_1, expected_1, "It should get the value 80000000000000000023 of withdraw amount 1.");
+		Assert.equal(result_2, expected_2, "It should get the value 80000000000000000023 of withdraw amount 2.");
 	}
 
 	function testWithdraw() public {
