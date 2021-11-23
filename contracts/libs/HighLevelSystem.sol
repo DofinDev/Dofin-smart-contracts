@@ -192,7 +192,6 @@ library HighLevelSystem {
         // Approve for Cream redeem
         IBEP20(_position.supply_crtoken).approve(_position.supply_crtoken, redeem_amount);
         require(CErc20Delegator(_position.supply_crtoken).redeem(redeem_amount) == 0, "Redeem not work");
-        // revert("HLS Error Point: redeem");
 
         // Update posititon amount data
         _position.crtoken_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
@@ -294,24 +293,9 @@ library HighLevelSystem {
             _position = _repay(self, _position);
         }
         if (_type == 1) {
-            // require(ComptrollerInterface(self.comptroller).redeemAllowed(_position.supply_crtoken, address(this), IBEP20(_position.supply_crtoken).balanceOf(address(this))) == 0, "redeemAllowed not work");
-            // revert("HLS Error Point: redeemAllowed");
             // Redeem
             _position = _redeemCream(_position);
         }
-
-        // if (_type == 3) {
-        //     // Unstake
-        //     _position = _unstake(self, _position);
-        //     // Remove liquidity
-        //     _position = _removeLiquidity(self, _position);
-        // } else if (_type == 2) {
-        //     // Repay
-        //     _position = _repay(self, _position);
-        // } else if (_type == 1) {
-        //     // Redeem
-        //     _position = _redeemCream(self, _position);
-        // }
 
         _position.total_depts = getTotalDebts(self, _position);
 
@@ -453,7 +437,7 @@ library HighLevelSystem {
         } else if (_token_a_amount > 0 && _token_b_amount == 0) {
             _token_b_amount = IPancakeRouter02(self.router).quote(_token_a_amount, reserve0, reserve1);            
         } else {
-            return (0, 0, 0);
+            revert("Input amount incorrect");
         }
 
         (uint256 token_a_value, uint256 token_b_value) = getChainLinkValues(self, _token_a_amount, _token_b_amount);

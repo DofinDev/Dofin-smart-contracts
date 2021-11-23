@@ -203,8 +203,8 @@ contract FixedBunker is ProofToken {
         uint256 dofin_value;
         uint256 user_value;
         if (value > user.depositTokenAmount) {
-            dofin_value = value.sub(user.depositTokenAmount, "Bunker Sub error checkpoint 1").mul(20).div(100, "Bunker Div error checkpoint 3");
-            user_value = value.sub(dofin_value, "Bunker Sub error checkpoint 2");
+            dofin_value = value.sub(user.depositTokenAmount).mul(20).div(100, "Bunker Div error checkpoint 3");
+            user_value = value.sub(dofin_value);
         } else {
             user_value = value;
         }
@@ -235,8 +235,8 @@ contract FixedBunker is ProofToken {
         uint256 user_value;
         // TODO need double check
         if (value > user.depositTokenAmount.add(10**IBEP20(Position.token).decimals())) {
-            dofin_value = value.sub(user.depositTokenAmount, "Bunker Sub error checkpoint 3").mul(20).div(100, "Bunker Div error checkpoint 6");
-            user_value = value.sub(dofin_value, "Bunker Sub error checkpoint 4");
+            dofin_value = value.sub(user.depositTokenAmount).mul(20).div(100, "Bunker Div error checkpoint 6");
+            user_value = value.sub(dofin_value);
         } else {
             user_value = value;
         }
