@@ -96,8 +96,8 @@ module.exports = async function(deployer, network, accounts) {
     await deployer.deploy(FixedBunkersFactory);
 
     // ChargedBunkersFactory contract
-    await deployer.link(HighLevelSystem, ChargedBunkersFactory);
-    await deployer.deploy(ChargedBunkersFactory);
+    // await deployer.link(HighLevelSystem, ChargedBunkersFactory);
+    // await deployer.deploy(ChargedBunkersFactory);
 
     // BoostedBunkersFactory contract
     await deployer.link(HighLevelSystem, BoostedBunkersFactory);
@@ -112,8 +112,8 @@ module.exports = async function(deployer, network, accounts) {
     await deployer.deploy(FixedBunkersFactory);
 
     // testing ChargedBunkersFactory contract
-    await deployer.link(HighLevelSystem, ChargedBunkersFactory);
-    await deployer.deploy(ChargedBunkersFactory);
+    // await deployer.link(HighLevelSystem, ChargedBunkersFactory);
+    // await deployer.deploy(ChargedBunkersFactory);
 
     // testing BoostedBunkersFactory contract
     await deployer.link(HighLevelSystem, BoostedBunkersFactory);
