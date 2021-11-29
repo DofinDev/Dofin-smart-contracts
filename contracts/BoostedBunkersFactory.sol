@@ -21,7 +21,7 @@ contract BoostedBunkersFactory {
         _owner = newOwner;
     }
 
-    function createBunker (uint256 _id, uint256[2] memory _uints, address[4] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external returns(address) {
+    function createBunker (uint256 _id, uint256[2] memory _uints, address[3] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external returns(address) {
         require(msg.sender == _owner, "Only Owner can call this function");
         BoostedBunker newBunker = new BoostedBunker();
         newBunker.initialize(_uints, _addrs, _name, _symbol, _decimals);
@@ -48,7 +48,7 @@ contract BoostedBunkersFactory {
         return true;
     }
 
-    function setConfigBunker (uint256 _id, address[7] memory _config, address[] memory _rtokens, address _dofin, uint256[4] memory _deposit_limit) external returns(bool) {
+    function setConfigBunker (uint256 _id, address[6] memory _config, address[] memory _rtokens, address _dofin, uint256[4] memory _deposit_limit) external returns(bool) {
         require(msg.sender == _owner, "Only Owner can call this function");
         BoostedBunker bunker = BoostedBunker(IdToBunker[_id]);
         bunker.setConfig(_config, _rtokens, _dofin, _deposit_limit);

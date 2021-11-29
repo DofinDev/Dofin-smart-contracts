@@ -316,6 +316,11 @@ contract ChargedBunker is ProofToken {
         IBEP20(Position.token).approve(address(this), user.depositTokenAmount);
         IBEP20(Position.token).transferFrom(address(this), msg.sender, user.depositTokenAmount);
         
+        // Modify user state data
+        user.depositPtokenAmount = 0;
+        user.depositTokenAmount = 0;
+        user.depositBlockTimestamp = 0;
+        users[msg.sender] = user;
         return true;
     }
     

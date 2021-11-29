@@ -407,16 +407,25 @@ library HighLevelSystem {
     /// @param self refer HLSConfig struct on the top.
     /// @param _position refer Position struct on the top.
     /// @dev Return total debts for boosted bunker.
-    function getTotalDebtsBoosted(HLSConfig memory self, Position memory _position) private view returns (uint256) {
+    function getTotalDebtsBoosted(HLSConfig memory self, Position memory _position) public view returns (uint256) {
         // PancakeSwap pending cake amount(getTotalCakePendingRewards)
         uint256 pending_cake_amount = MasterChef(self.masterchef).pendingCake(_position.pool_id, address(this));
+        uint256 multiplier = 10**10;
+        uint256 token_a_price = uint256(AggregatorInterface(self.token_a_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_a_oracle).decimals());
+        uint256 token_b_price = uint256(AggregatorInterface(self.token_b_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_b_oracle).decimals());
+        uint256 cake_price = uint256(AggregatorInterface(self.cake_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.cake_oracle).decimals());
+        // Convert cake to tokens
+        uint256 pending_cake_amount_a = pending_cake_amount.div(2);
+        uint256 pending_cake_amount_b = pending_cake_amount.sub(pending_cake_amount_a);
+        pending_cake_amount_a = pending_cake_amount_a.mul(cake_price).div(token_a_price);
+        pending_cake_amount_b = pending_cake_amount_b.mul(cake_price).div(token_b_price);
+        
         // PancakeSwap staked amount
         (uint256 token_a_amount, uint256 token_b_amount) = getStakedTokens(_position);
 
-        (uint256 token_a_value, uint256 token_b_value) = getChainLinkValues(self, token_a_amount, token_b_amount);
-        uint256 pending_cake_value = getCakeChainLinkValue(self, pending_cake_amount);
-        
-        return pending_cake_value.add(token_a_value).add(token_b_value);
+        uint256 lp_token_amount = getLpTokenAmountOut(_position.lp_token, pending_cake_amount_a.add(token_a_amount), pending_cake_amount_b.add(token_b_amount));
+
+        return lp_token_amount;
     }
 
     /// @param _position refer Position struct on the top.
@@ -424,6 +433,33 @@ library HighLevelSystem {
     function getTotalDebtsFixed(Position memory _position) private view returns (uint256) {
         
         return _position.supply_amount;
+    }
+
+    /// @param _lp_token PancakeSwap LP token address.
+    /// @param _token_a_amount PancakeSwap pair token a amount.
+    /// @param _token_b_amount PancakeSwap pair token b amount.
+    /// @dev Return LP token amount.
+    function getLpTokenAmountOut(address _lp_token, uint256 _token_a_amount, uint256 _token_b_amount) public view returns (uint256) {
+        (uint256 reserve0, uint256 reserve1, ) = IPancakePair(_lp_token).getReserves();
+        uint256 totalSupply = IPancakePair(_lp_token).totalSupply();
+        uint256 token_a_lp_amount = _token_a_amount.mul(totalSupply).div(reserve0, "HLS Div error point 1");
+        uint256 token_b_lp_amount = _token_b_amount.mul(totalSupply).div(reserve1, "HLS Div error point 2");
+        uint256 lp_token_amount = token_a_lp_amount.min(token_b_lp_amount);
+        
+        return lp_token_amount;
+    }
+
+    /// @param _lp_token PancakeSwap LP token address.
+    /// @param _lp_token_amount PancakeSwap LP token amount.
+    /// @dev Return Pair tokens amount.
+    function getLpTokenAmountIn(address _lp_token, uint256 _lp_token_amount) public view returns (uint256, uint256) {
+        address token_a = IPancakePair(_lp_token).token0();
+        address token_b = IPancakePair(_lp_token).token1();
+        uint256 balance_a = IBEP20(token_a).balanceOf(_lp_token);
+        uint256 balance_b = IBEP20(token_b).balanceOf(_lp_token);
+        uint256 totalSupply = IPancakePair(_lp_token).totalSupply();
+        
+        return (_lp_token_amount.mul(balance_a).div(totalSupply), _lp_token_amount.mul(balance_b).div(totalSupply));
     }
 
     /// @param _position refer Position struct on the top.
@@ -440,9 +476,9 @@ library HighLevelSystem {
             revert("Input amount incorrect");
         }
 
-        (uint256 token_a_value, uint256 token_b_value) = getChainLinkValues(self, _token_a_amount, _token_b_amount);
+        uint256 lp_token_amount = getLpTokenAmountOut(_position.lp_token, _token_a_amount, _token_b_amount);
         
-        return (_token_a_amount, _token_b_amount, token_a_value.add(token_b_value));
+        return (_token_a_amount, _token_b_amount, lp_token_amount);
     }
 
     /// @param self refer HLSConfig struct on the top.

@@ -14,7 +14,7 @@ contract BoostedBunker is ProofToken {
         uint256 depositPtokenAmount;
         uint256 depositTokenAAmount;
         uint256 depositTokenBAmount;
-        uint256 depositTokenValue;
+        uint256 depositLpTokenAmount;
         uint256 depositBlockTimestamp;
     }
 
@@ -55,7 +55,7 @@ contract BoostedBunker is ProofToken {
         return false;
     }
 
-    function initialize(uint256[2] memory _uints, address[4] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external {
+    function initialize(uint256[2] memory _uints, address[3] memory _addrs, string memory _name, string memory _symbol, uint8 _decimals) external {
         if (dofin!=address(0) && factory!=address(0)) {
             require(checkCaller() == true, "Only factory or dofin can call this function");
         }
@@ -71,13 +71,13 @@ contract BoostedBunker is ProofToken {
             liquidity_b: 0,
             borrowed_token_a_amount: 0,
             borrowed_token_b_amount: 0,
-            token: _addrs[0],
-            token_a: _addrs[1],
-            token_b: _addrs[2],
-            lp_token: _addrs[3],
-            supply_crtoken: address(0x0000000000000000000000000000000000000000),
-            borrowed_crtoken_a: address(0x0000000000000000000000000000000000000000),
-            borrowed_crtoken_b: address(0x0000000000000000000000000000000000000000),
+            token: address(0),
+            token_a: _addrs[0],
+            token_b: _addrs[1],
+            lp_token: _addrs[2],
+            supply_crtoken: address(0),
+            borrowed_crtoken_a: address(0),
+            borrowed_crtoken_b: address(0),
             funds_percentage: _uints[1],
             total_depts: 0
         });
@@ -85,17 +85,17 @@ contract BoostedBunker is ProofToken {
         factory = msg.sender;
     }
     
-    function setConfig(address[7] memory _config, address[] memory _rtokens, address _dofin, uint256[4] memory _deposit_limit) external {
+    function setConfig(address[6] memory _config, address[] memory _rtokens, address _dofin, uint256[4] memory _deposit_limit) external {
         if (dofin!=address(0) && factory!=address(0)) {
             require(checkCaller() == true, "Only factory or dofin can call this function");
         }
-        HLSConfig.token_oracle = _config[0];
-        HLSConfig.token_a_oracle = _config[1];
-        HLSConfig.token_b_oracle = _config[2];
-        HLSConfig.cake_oracle = _config[3];
-        HLSConfig.router = _config[4];
-        HLSConfig.factory = _config[5];
-        HLSConfig.masterchef = _config[6];
+        HLSConfig.token_oracle = address(0);
+        HLSConfig.token_a_oracle = _config[0];
+        HLSConfig.token_b_oracle = _config[1];
+        HLSConfig.cake_oracle = _config[2];
+        HLSConfig.router = _config[3];
+        HLSConfig.factory = _config[4];
+        HLSConfig.masterchef = _config[5];
 
         rtokens = _rtokens;
         dofin = _dofin;
@@ -156,9 +156,9 @@ contract BoostedBunker is ProofToken {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
         HighLevelSystem.autoCompound(HLSConfig, _amountIn, _path, _wrapType);
-        Position.token_amount = IBEP20(Position.token).balanceOf(address(this));
         Position.token_a_amount = IBEP20(Position.token_a).balanceOf(address(this));
         Position.token_b_amount = IBEP20(Position.token_b).balanceOf(address(this));
+        Position.total_depts = HighLevelSystem.getTotalDebtsBoosted(HLSConfig, Position);
     }
     
     function enter() external {
@@ -179,44 +179,44 @@ contract BoostedBunker is ProofToken {
         // Free funds amount
         uint256 tokenAfreeFunds = IBEP20(Position.token_a).balanceOf(address(this));
         uint256 tokenBfreeFunds = IBEP20(Position.token_b).balanceOf(address(this));
-        (uint256 token_a_value, uint256 token_b_value) = HighLevelSystem.getChainLinkValues(HLSConfig, tokenAfreeFunds, tokenBfreeFunds);
+        uint256 lp_token_amount = HighLevelSystem.getLpTokenAmountOut(Position.lp_token, tokenAfreeFunds, tokenBfreeFunds);
         // Total Debts amount from PancakeSwap
         uint256 totalDebts = Position.total_depts;
         
-        return token_a_value.add(token_b_value).add(totalDebts);
+        return lp_token_amount.add(totalDebts);
     }
 
     function getDepositAmountOut(uint256 _token_a_amount, uint256 _token_b_amount) public view returns (uint256, uint256, uint256, uint256) {
         uint256 totalAssets = getTotalAssets();
-        uint256 token_value;
-        (_token_a_amount, _token_b_amount, token_value) = HighLevelSystem.getUpdatedAmount(HLSConfig, Position, _token_a_amount, _token_b_amount);
+        uint256 lp_token_amount;
+        (_token_a_amount, _token_b_amount, lp_token_amount) = HighLevelSystem.getUpdatedAmount(HLSConfig, Position, _token_a_amount, _token_b_amount);
         require(_token_a_amount <= deposit_limit_a.mul(10**IBEP20(Position.token_a).decimals()), "Deposit too much token a!");
         require(_token_b_amount <= deposit_limit_b.mul(10**IBEP20(Position.token_b).decimals()), "Deposit too much token b!");
-        (uint256 total_deposit_limit_a_value, uint256 total_deposit_limit_b_value) = HighLevelSystem.getChainLinkValues(HLSConfig, total_deposit_limit_a.mul(10**IBEP20(Position.token_a).decimals()), total_deposit_limit_b.mul(10**IBEP20(Position.token_b).decimals()));
-        require(total_deposit_limit_a_value.add(total_deposit_limit_b_value) >= totalAssets.add(token_value), "Deposit get limited");
+        uint256 total_deposit_limit_lp = HighLevelSystem.getLpTokenAmountOut(Position.lp_token, total_deposit_limit_a.mul(10**IBEP20(Position.token_a).decimals()), total_deposit_limit_b.mul(10**IBEP20(Position.token_b).decimals()));
+        require(total_deposit_limit_lp >= totalAssets.add(lp_token_amount), "Deposit get limited");
 
         uint256 shares;
         if (totalSupply_ > 0) {
-            shares = token_value.mul(totalSupply_).div(totalAssets, "Bunker Div error checkpoint 1");
+            shares = lp_token_amount.mul(totalSupply_).div(totalAssets, "Bunker Div error checkpoint 1");
         } else {
-            shares = token_value;
+            shares = lp_token_amount;
         }
-        return (_token_a_amount, _token_b_amount, token_value, shares);
+        return (_token_a_amount, _token_b_amount, lp_token_amount, shares);
     }
     
     function deposit(uint256 _token_a_amount, uint256 _token_b_amount) external returns (bool) {
         require(TAG == true, 'TAG ERROR.');
         // Calculation of pToken amount need to mint
-         uint256 token_value;
+         uint256 lp_token_amount;
          uint256 shares;
-        (_token_a_amount, _token_b_amount, token_value, shares) = getDepositAmountOut(_token_a_amount, _token_b_amount);
+        (_token_a_amount, _token_b_amount, lp_token_amount, shares) = getDepositAmountOut(_token_a_amount, _token_b_amount);
 
         // Record user deposit amount
         User memory user = users[msg.sender];
         user.depositPtokenAmount = user.depositPtokenAmount.add(shares);
         user.depositTokenAAmount = user.depositTokenAAmount.add(_token_a_amount);
         user.depositTokenBAmount = user.depositTokenBAmount.add(_token_b_amount);
-        user.depositTokenValue = user.depositTokenValue.add(token_value);
+        user.depositLpTokenAmount = user.depositLpTokenAmount.add(lp_token_amount);
         user.depositBlockTimestamp = block.timestamp;
         users[msg.sender] = user;
 
@@ -238,14 +238,14 @@ contract BoostedBunker is ProofToken {
         }
         uint256 dofin_value;
         uint256 user_value;
-        if (value > user.depositTokenValue.add(10**IBEP20(Position.token).decimals())) {
-            dofin_value = value.sub(user.depositTokenValue).mul(20).div(100, "Bunker Div error checkpoint 2");
+        if (value > user.depositLpTokenAmount.add(10**IBEP20(Position.lp_token).decimals())) {
+            dofin_value = value.sub(user.depositLpTokenAmount).mul(20).div(100, "Bunker Div error checkpoint 2");
             user_value = value.sub(dofin_value);
         } else {
             user_value = value;
         }
         
-        return HighLevelSystem.getValeSplit(HLSConfig, user_value);
+        return HighLevelSystem.getLpTokenAmountIn(Position.lp_token, user_value);
     }
     
     function withdraw() external returns (bool) {
@@ -259,7 +259,7 @@ contract BoostedBunker is ProofToken {
         require(withdraw_amount <= user.depositPtokenAmount, "Proof token amount incorrect");
         require(block.timestamp > user.depositBlockTimestamp, "Deposit and withdraw in same block");
         // If no enough amount of free funds can transfer will trigger exit position
-        (uint256 value_a, uint256 value_b) = HighLevelSystem.getValeSplit(HLSConfig, value);
+        (uint256 value_a, uint256 value_b) = HighLevelSystem.getLpTokenAmountIn(Position.lp_token, value);
         if (value_a > IBEP20(Position.token_a).balanceOf(address(this)) || value_b > IBEP20(Position.token_b).balanceOf(address(this))) {
             Position = HighLevelSystem.exitPositionBoosted(HLSConfig, Position);
             totalAssets = getTotalAssets();
@@ -271,8 +271,8 @@ contract BoostedBunker is ProofToken {
         uint256 dofin_value;
         uint256 user_value;
         // TODO need double check
-        if (value > user.depositTokenValue.add(10**IBEP20(Position.token).decimals())) {
-            dofin_value = value.sub(user.depositTokenValue).mul(20).div(100, "Bunker Div error checkpoint 5");
+        if (value > user.depositLpTokenAmount.add(10**IBEP20(Position.lp_token).decimals())) {
+            dofin_value = value.sub(user.depositLpTokenAmount).mul(20).div(100, "Bunker Div error checkpoint 5");
             user_value = value.sub(dofin_value);
         } else {
             user_value = value;
@@ -281,11 +281,11 @@ contract BoostedBunker is ProofToken {
         user.depositPtokenAmount = 0;
         user.depositTokenAAmount = 0;
         user.depositTokenBAmount = 0;
-        user.depositTokenValue = 0;
+        user.depositLpTokenAmount = 0;
         user.depositBlockTimestamp = 0;
         users[msg.sender] = user;
-        (uint256 user_value_a, uint256 user_value_b) = HighLevelSystem.getValeSplit(HLSConfig, user_value);
-        (uint256 dofin_value_a, uint256 dofin_value_b) = HighLevelSystem.getValeSplit(HLSConfig, dofin_value);
+        (uint256 user_value_a, uint256 user_value_b) = HighLevelSystem.getLpTokenAmountIn(Position.lp_token, user_value);
+        (uint256 dofin_value_a, uint256 dofin_value_b) = HighLevelSystem.getLpTokenAmountIn(Position.lp_token, dofin_value);
         // Approve for withdraw
         IBEP20(Position.token_a).approve(address(this), user_value_a);
         IBEP20(Position.token_b).approve(address(this), user_value_b);
@@ -326,6 +326,14 @@ contract BoostedBunker is ProofToken {
         IBEP20(Position.token_b).approve(address(this), user.depositTokenBAmount);
         IBEP20(Position.token_a).transferFrom(address(this), msg.sender, user.depositTokenAAmount);
         IBEP20(Position.token_b).transferFrom(address(this), msg.sender, user.depositTokenBAmount);
+
+        // Modify user state data
+        user.depositPtokenAmount = 0;
+        user.depositTokenAAmount = 0;
+        user.depositTokenBAmount = 0;
+        user.depositLpTokenAmount = 0;
+        user.depositBlockTimestamp = 0;
+        users[msg.sender] = user;
         
         return true;
     }

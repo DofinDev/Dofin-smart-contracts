@@ -22,24 +22,22 @@ contract TestBoostedBunker {
 		uint256[2] memory _uints;
 		_uints[0] = 10;
 		_uints[1] = 10;
-		address[4] memory _addrs;
+		address[3] memory _addrs;
 		_addrs[0] = FakeIBEP20Address;
 		_addrs[1] = FakeIBEP20Address;
-		_addrs[2] = FakeIBEP20Address;
-		_addrs[3] = FakePancakePairAddress;
+		_addrs[2] = FakePancakePairAddress;
 		string memory _name = 'Proof Token';
 		string memory _symbol = 'pFakeToken';
 		uint8 _decimals = 10;
 		boostedbunker.initialize(_uints, _addrs, _name, _symbol, _decimals);
 
-		address[7] memory _config;
+		address[6] memory _config;
 		_config[0] = FakeLinkBSCOracleAddress;
 		_config[1] = FakeLinkBSCOracleAddress;
 		_config[2] = FakeLinkBSCOracleAddress;
-		_config[3] = FakeLinkBSCOracleAddress;
-		_config[4] = FakePancakeRouterAddress;
-		_config[5] = FakePancakeFactoryAddress;
-		_config[6] = FakeMasterChefAddress;
+		_config[3] = FakePancakeRouterAddress;
+		_config[4] = FakePancakeFactoryAddress;
+		_config[5] = FakeMasterChefAddress;
 		address dofin = address(0x0000000000000000000000000000000000000000);
 		uint256[4] memory deposit_limit;
 		deposit_limit[0] = 1000;
@@ -66,13 +64,13 @@ contract TestBoostedBunker {
     	  liquidity_b: 0,
     	  borrowed_token_a_amount: 0,
     	  borrowed_token_b_amount: 0,
-		  token: FakeIBEP20Address,
+		  token: address(0),
 		  token_a: FakeIBEP20Address,
 		  token_b: FakeIBEP20Address,
 		  lp_token: FakePancakePairAddress,
-		  supply_crtoken: address(0x0000000000000000000000000000000000000000),
-		  borrowed_crtoken_a: address(0x0000000000000000000000000000000000000000),
-		  borrowed_crtoken_b: address(0x0000000000000000000000000000000000000000),
+		  supply_crtoken: address(0),
+		  borrowed_crtoken_a: address(0),
+		  borrowed_crtoken_b: address(0),
 		  funds_percentage: 10,
 		  total_depts: 0
 		});
@@ -199,9 +197,9 @@ contract TestBoostedBunker {
 	function testGetTotalAssets() public {
 		// Testing
 		uint result = boostedbunker.getTotalAssets();
-		uint expected = 200000000000000000030;
+		uint expected = 100000000000000000010;
 
-		Assert.equal(result, expected, "It should get the value 200000000000000000030 of total assets.");
+		Assert.equal(result, expected, "It should get the value 100000000000000000010 of total assets.");
 	}
 
 	function testGetDepositAmountOut() public {
@@ -212,8 +210,8 @@ contract TestBoostedBunker {
 		(uint result_1, uint result_2, uint result_3, uint result_4) = boostedbunker.getDepositAmountOut(_token_a_amount, _token_b_amount);
 		uint expected_1 = 100;
 		uint expected_2 = 10;
-		uint expected_3 = 110;
-		uint expected_4 = 110;
+		uint expected_3 = 10;
+		uint expected_4 = 10;
 
 		Assert.equal(result_1, expected_1, "It should get the value 100 of Deposit Amount Out 1.");
 		Assert.equal(result_2, expected_2, "It should get the value 10 of Deposit Amount Out 2.");
@@ -235,11 +233,11 @@ contract TestBoostedBunker {
 	function testGetWithdrawAmount() public {
 		// Testing
 		(uint result_1, uint result_2) = boostedbunker.getWithdrawAmount();
-		uint expected_1 = 80000000000000000023;
-		uint expected_2 = 80000000000000000023;
+		uint expected_1 = 800000000000000000100000000000000000000;
+		uint expected_2 = 800000000000000000100000000000000000000;
 
-		Assert.equal(result_1, expected_1, "It should get the value 80000000000000000023 of withdraw amount 1.");
-		Assert.equal(result_2, expected_2, "It should get the value 80000000000000000023 of withdraw amount 2.");
+		Assert.equal(result_1, expected_1, "It should get the value 800000000000000000100000000000000000000 of withdraw amount 1.");
+		Assert.equal(result_2, expected_2, "It should get the value 800000000000000000100000000000000000000 of withdraw amount 2.");
 	}
 
 	function testWithdraw() public {
