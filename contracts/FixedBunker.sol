@@ -126,7 +126,7 @@ contract FixedBunker is ProofToken {
     function checkAddNewFunds() external view returns (uint256) {
         uint256 free_funds = IBEP20(Position.token).balanceOf(address(this));
         if (free_funds > temp_free_funds) {
-            if (Position.token_a_amount == 0 && Position.token_b_amount == 0) {
+            if (Position.token_amount == 0) {
                 // Need to enter
                 return 1;
             } else {
