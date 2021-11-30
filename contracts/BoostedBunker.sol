@@ -30,6 +30,7 @@ contract BoostedBunker is ProofToken {
     uint256 private temp_free_funds_a;
     uint256 private temp_free_funds_b;
     bool public TAG = false;
+    bool public PositionStatus = false;
     address private dofin = address(0);
     address private factory = address(0);
     address[] public rtokens;
@@ -131,6 +132,7 @@ contract BoostedBunker is ProofToken {
     function rebalanceWithoutRepay() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
+        require(PositionStatus == true, 'POSITIONSTATUS ERROR');
         Position = HighLevelSystem.exitPositionBoosted(HLSConfig, Position);
         Position = HighLevelSystem.enterPositionBoosted(HLSConfig, Position);
         temp_free_funds_a = IBEP20(Position.token_a).balanceOf(address(this));
@@ -141,7 +143,7 @@ contract BoostedBunker is ProofToken {
         uint256 free_funds_a = IBEP20(Position.token_a).balanceOf(address(this));
         uint256 free_funds_b = IBEP20(Position.token_b).balanceOf(address(this));
         if (free_funds_a > temp_free_funds_a || free_funds_b > temp_free_funds_b) {
-            if (Position.token_a_amount == 0 && Position.token_b_amount == 0) {
+            if (PositionStatus == false) {
                 // Need to enter
                 return 1;
             } else {
@@ -167,12 +169,14 @@ contract BoostedBunker is ProofToken {
         Position = HighLevelSystem.enterPositionBoosted(HLSConfig, Position);
         temp_free_funds_a = IBEP20(Position.token_a).balanceOf(address(this));
         temp_free_funds_b = IBEP20(Position.token_b).balanceOf(address(this));
+        PositionStatus = true;
     }
 
     function exit() external {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
         Position = HighLevelSystem.exitPositionBoosted(HLSConfig, Position);
+        PositionStatus = false;
     }
 
     function getTotalAssets() public view returns (uint256) {

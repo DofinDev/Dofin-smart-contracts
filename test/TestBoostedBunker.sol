@@ -97,15 +97,10 @@ contract TestBoostedBunker {
 		Assert.equal(result.total_depts, expected.total_depts, "It should get the position data of total_depts.");
 	}
 
-	function testRebalanceWithoutRepay() public {
-		// Testing
-		boostedbunker.rebalanceWithoutRepay();
-	}
-
 	function testCheckAddNewFunds() public {
 		// Testing
 		uint result = boostedbunker.checkAddNewFunds();
-		uint expected = 0;
+		uint expected = 1;
 
 		Assert.equal(result, expected, "It should get the value 1 of CheckAddNewFunds signal.");
 	}
@@ -129,6 +124,11 @@ contract TestBoostedBunker {
 	function testEnter() public {
 		// Testing
 		boostedbunker.enter();
+	}
+
+	function testRebalanceWithoutRepay() public {
+		// Testing
+		boostedbunker.rebalanceWithoutRepay();
 	}
 
 	function testTotalSupply() public {
@@ -197,9 +197,9 @@ contract TestBoostedBunker {
 	function testGetTotalAssets() public {
 		// Testing
 		uint result = boostedbunker.getTotalAssets();
-		uint expected = 100000000000000000010;
+		uint expected = 100000000000000000015;
 
-		Assert.equal(result, expected, "It should get the value 100000000000000000010 of total assets.");
+		Assert.equal(result, expected, "It should get the value 100000000000000000015 of total assets.");
 	}
 
 	function testGetDepositAmountOut() public {
@@ -233,11 +233,11 @@ contract TestBoostedBunker {
 	function testGetWithdrawAmount() public {
 		// Testing
 		(uint result_1, uint result_2) = boostedbunker.getWithdrawAmount();
-		uint expected_1 = 800000000000000000100000000000000000000;
-		uint expected_2 = 800000000000000000100000000000000000000;
+		uint expected_1 = 800000000000000000140000000000000000000;
+		uint expected_2 = 800000000000000000140000000000000000000;
 
-		Assert.equal(result_1, expected_1, "It should get the value 800000000000000000100000000000000000000 of withdraw amount 1.");
-		Assert.equal(result_2, expected_2, "It should get the value 800000000000000000100000000000000000000 of withdraw amount 2.");
+		Assert.equal(result_1, expected_1, "It should get the value 800000000000000000140000000000000000000 of withdraw amount 1.");
+		Assert.equal(result_2, expected_2, "It should get the value 800000000000000000140000000000000000000 of withdraw amount 2.");
 	}
 
 	function testWithdraw() public {

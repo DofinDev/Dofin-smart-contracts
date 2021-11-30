@@ -86,17 +86,12 @@ contract TestFixedBunker {
 		Assert.equal(result.total_depts, expected.total_depts, "It should get the position data of total_depts.");
 	}
 
-	function testRebalance() public {
-		// Testing
-		fixedbunker.rebalance();
-	}
-
 	function testCheckAddNewFunds() public {
 		// Testing
 		uint result = fixedbunker.checkAddNewFunds();
-		uint expected = 0;
+		uint expected = 1;
 
-		Assert.equal(result, expected, "It should get the value 0 of CheckAddNewFunds signal.");
+		Assert.equal(result, expected, "It should get the value 1 of CheckAddNewFunds signal.");
 	}
 
 	function testExit() public {
@@ -107,6 +102,11 @@ contract TestFixedBunker {
 	function testEnter() public {
 		// Testing
 		fixedbunker.enter();
+	}
+
+	function testRebalance() public {
+		// Testing
+		fixedbunker.rebalance();
 	}
 
 	function testTotalSupply() public {
