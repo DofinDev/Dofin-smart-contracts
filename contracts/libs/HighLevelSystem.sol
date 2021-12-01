@@ -194,6 +194,7 @@ library HighLevelSystem {
         require(CErc20Delegator(_position.supply_crtoken).redeem(redeem_amount) == 0, "Redeem not work");
 
         // Update posititon amount data
+        _position.token_amount = IBEP20(_position.token).balanceOf(address(this));
         _position.crtoken_amount = IBEP20(_position.supply_crtoken).balanceOf(address(this));
         _position.supply_amount = 0;
 
