@@ -48,7 +48,7 @@ contract BoostedBunkersFactory {
         return true;
     }
 
-    function setConfigBunker (uint256 _id, address[6] memory _config, address[] memory _rtokens, address _dofin, uint256[4] memory _deposit_limit) external returns(bool) {
+    function setConfigBunker (uint256 _id, address[3] memory _config, address[] memory _rtokens, address _dofin, uint256[4] memory _deposit_limit) external returns(bool) {
         require(msg.sender == _owner, "Only Owner can call this function");
         BoostedBunker bunker = BoostedBunker(IdToBunker[_id]);
         bunker.setConfig(_config, _rtokens, _dofin, _deposit_limit);

@@ -86,17 +86,17 @@ contract BoostedBunker is ProofToken {
         factory = msg.sender;
     }
     
-    function setConfig(address[6] memory _config, address[] memory _rtokens, address _dofin, uint256[4] memory _deposit_limit) external {
+    function setConfig(address[3] memory _config, address[] memory _rtokens, address _dofin, uint256[4] memory _deposit_limit) external {
         if (dofin!=address(0) && factory!=address(0)) {
             require(checkCaller() == true, "Only factory or dofin can call this function");
         }
         HLSConfig.token_oracle = address(0);
-        HLSConfig.token_a_oracle = _config[0];
-        HLSConfig.token_b_oracle = _config[1];
-        HLSConfig.cake_oracle = _config[2];
-        HLSConfig.router = _config[3];
-        HLSConfig.factory = _config[4];
-        HLSConfig.masterchef = _config[5];
+        HLSConfig.token_a_oracle = address(0);
+        HLSConfig.token_b_oracle = address(0);
+        HLSConfig.cake_oracle = address(0);
+        HLSConfig.router = _config[0];
+        HLSConfig.factory = _config[1];
+        HLSConfig.masterchef = _config[2];
 
         rtokens = _rtokens;
         dofin = _dofin;

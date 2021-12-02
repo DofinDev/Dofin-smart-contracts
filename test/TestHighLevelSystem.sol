@@ -197,7 +197,7 @@ contract TestHighLevelSystem {
     HighLevelSystem.Position memory  result_3 = HighLevelSystem.exitPosition(HLSConfig, Position, 3);
     HighLevelSystem.Position memory expected_1 = HighLevelSystem.Position({
       pool_id: 10,
-      token_amount: 10,
+      token_amount: 100000000000000000000,
       token_a_amount: 100000000000000000000,
       token_b_amount: 100000000000000000000,
       lp_token_amount: 10,

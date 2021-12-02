@@ -31,13 +31,10 @@ contract TestBoostedBunker {
 		uint8 _decimals = 10;
 		boostedbunker.initialize(_uints, _addrs, _name, _symbol, _decimals);
 
-		address[6] memory _config;
-		_config[0] = FakeLinkBSCOracleAddress;
-		_config[1] = FakeLinkBSCOracleAddress;
-		_config[2] = FakeLinkBSCOracleAddress;
-		_config[3] = FakePancakeRouterAddress;
-		_config[4] = FakePancakeFactoryAddress;
-		_config[5] = FakeMasterChefAddress;
+		address[3] memory _config;
+		_config[0] = FakePancakeRouterAddress;
+		_config[1] = FakePancakeFactoryAddress;
+		_config[2] = FakeMasterChefAddress;
 		address dofin = address(0x0000000000000000000000000000000000000000);
 		uint256[4] memory deposit_limit;
 		deposit_limit[0] = 1000;
@@ -197,9 +194,9 @@ contract TestBoostedBunker {
 	function testGetTotalAssets() public {
 		// Testing
 		uint result = boostedbunker.getTotalAssets();
-		uint expected = 100000000000000000015;
+		uint expected = 100000000000000000010;
 
-		Assert.equal(result, expected, "It should get the value 100000000000000000015 of total assets.");
+		Assert.equal(result, expected, "It should get the value 100000000000000000010 of total assets.");
 	}
 
 	function testGetDepositAmountOut() public {
@@ -233,11 +230,11 @@ contract TestBoostedBunker {
 	function testGetWithdrawAmount() public {
 		// Testing
 		(uint result_1, uint result_2) = boostedbunker.getWithdrawAmount();
-		uint expected_1 = 800000000000000000140000000000000000000;
-		uint expected_2 = 800000000000000000140000000000000000000;
+		uint expected_1 = 800000000000000000100000000000000000000;
+		uint expected_2 = 800000000000000000100000000000000000000;
 
-		Assert.equal(result_1, expected_1, "It should get the value 800000000000000000140000000000000000000 of withdraw amount 1.");
-		Assert.equal(result_2, expected_2, "It should get the value 800000000000000000140000000000000000000 of withdraw amount 2.");
+		Assert.equal(result_1, expected_1, "It should get the value 800000000000000000100000000000000000000 of withdraw amount 1.");
+		Assert.equal(result_2, expected_2, "It should get the value 800000000000000000100000000000000000000 of withdraw amount 2.");
 	}
 
 	function testWithdraw() public {

@@ -409,23 +409,9 @@ library HighLevelSystem {
     /// @param _position refer Position struct on the top.
     /// @dev Return total debts for boosted bunker.
     function getTotalDebtsBoosted(HLSConfig memory self, Position memory _position) public view returns (uint256) {
-        // PancakeSwap pending cake amount(getTotalCakePendingRewards)
-        uint256 pending_cake_amount = MasterChef(self.masterchef).pendingCake(_position.pool_id, address(this));
-        uint256 multiplier = 10**10;
-        uint256 token_a_price = uint256(AggregatorInterface(self.token_a_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_a_oracle).decimals());
-        uint256 token_b_price = uint256(AggregatorInterface(self.token_b_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.token_b_oracle).decimals());
-        uint256 cake_price = uint256(AggregatorInterface(self.cake_oracle).latestAnswer()).mul(multiplier).div(10**AggregatorInterface(self.cake_oracle).decimals());
-        // Convert cake to tokens
-        uint256 pending_cake_amount_a = pending_cake_amount.div(2);
-        uint256 pending_cake_amount_b = pending_cake_amount.sub(pending_cake_amount_a);
-        pending_cake_amount_a = pending_cake_amount_a.mul(cake_price).div(token_a_price);
-        pending_cake_amount_b = pending_cake_amount_b.mul(cake_price).div(token_b_price);
-        
         // PancakeSwap staked amount
         (uint256 token_a_amount, uint256 token_b_amount) = getStakedTokens(_position);
-
-        uint256 lp_token_amount = getLpTokenAmountOut(_position.lp_token, pending_cake_amount_a.add(token_a_amount), pending_cake_amount_b.add(token_b_amount));
-
+        uint256 lp_token_amount = getLpTokenAmountOut(_position.lp_token, token_a_amount, token_b_amount);
         return lp_token_amount;
     }
 
