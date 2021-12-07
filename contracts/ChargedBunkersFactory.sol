@@ -25,7 +25,7 @@ contract ChargedBunkersFactory {
         require(msg.sender == _owner, "Only Owner can call this function");
         ChargedBunker newBunker = new ChargedBunker();
         newBunker.initialize(_uints, _addrs, _name, _symbol, _decimals);
-        if (IdToBunker[_id] != address(0)) {
+        if (IdToBunker[_id] == address(0)) {
             BunkersLength++;
         }
         IdToBunker[_id] = address(newBunker);

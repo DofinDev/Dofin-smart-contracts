@@ -25,7 +25,7 @@ contract BoostedBunkersFactory {
         require(msg.sender == _owner, "Only Owner can call this function");
         BoostedBunker newBunker = new BoostedBunker();
         newBunker.initialize(_uints, _addrs, _name, _symbol, _decimals);
-        if (IdToBunker[_id] != address(0)) {
+        if (IdToBunker[_id] == address(0)) {
             BunkersLength++;
         }
         IdToBunker[_id] = address(newBunker);
