@@ -75,7 +75,6 @@ library HighLevelSystem {
     /// @dev Borrow the required tokens for a given position on CREAM.
     function _borrowCream(HLSConfig memory self, Position memory _position) private returns(Position memory) {
         uint256 token_value = _position.supply_amount.mul(75).div(100);
-        token_value = token_value.mul(375).mul(2).div(1000);
         (uint256 token_a_borrow_amount, uint256 token_b_borrow_amount) = getValeSplit(self, token_value);
         
         require(CErc20Delegator(_position.borrowed_crtoken_a).borrow(token_a_borrow_amount) == 0, "Borrow token a not work");
