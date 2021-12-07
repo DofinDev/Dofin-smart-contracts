@@ -129,7 +129,7 @@ contract BoostedBunker is ProofToken {
         return users[_account];
     }
     
-    function rebalanceWithoutRepay() external {
+    function rebalanceWithoutRepay() public {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
         require(PositionStatus == true, 'POSITIONSTATUS ERROR');
@@ -139,7 +139,7 @@ contract BoostedBunker is ProofToken {
         temp_free_funds_b = IBEP20(Position.token_b).balanceOf(address(this));
     }
     
-    function checkAddNewFunds() external view returns (uint256) {
+    function checkAddNewFunds() public view returns (uint256) {
         uint256 free_funds_a = IBEP20(Position.token_a).balanceOf(address(this));
         uint256 free_funds_b = IBEP20(Position.token_b).balanceOf(address(this));
         if (free_funds_a > temp_free_funds_a || free_funds_b > temp_free_funds_b) {
@@ -163,7 +163,7 @@ contract BoostedBunker is ProofToken {
         Position.total_depts = HighLevelSystem.getTotalDebtsBoosted(HLSConfig, Position);
     }
     
-    function enter() external {
+    function enter() public {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
         Position = HighLevelSystem.enterPositionBoosted(HLSConfig, Position);
@@ -228,6 +228,13 @@ contract BoostedBunker is ProofToken {
         mint(msg.sender, shares);
         IBEP20(Position.token_a).transferFrom(msg.sender, address(this), _token_a_amount);
         IBEP20(Position.token_b).transferFrom(msg.sender, address(this), _token_b_amount);
+
+        uint256 newFunds = checkAddNewFunds();
+        if (newFunds == 1) {
+            enter();
+        } else if (newFunds == 2) {
+            rebalanceWithoutRepay();
+        }
         
         return true;
     }

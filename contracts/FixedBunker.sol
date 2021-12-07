@@ -116,7 +116,7 @@ contract FixedBunker is ProofToken {
         return users[_account];
     }
     
-    function rebalance() external  {
+    function rebalance() public  {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR');
         require(PositionStatus == true, 'POSITIONSTATUS ERROR');
@@ -125,7 +125,7 @@ contract FixedBunker is ProofToken {
         temp_free_funds = IBEP20(Position.token).balanceOf(address(this));
     }
     
-    function checkAddNewFunds() external view returns (uint256) {
+    function checkAddNewFunds() public view returns (uint256) {
         uint256 free_funds = IBEP20(Position.token).balanceOf(address(this));
         if (free_funds > temp_free_funds) {
             if (PositionStatus == false) {
@@ -139,7 +139,7 @@ contract FixedBunker is ProofToken {
         return 0;
     }
     
-    function enter() external {
+    function enter() public {
         require(checkCaller() == true, "Only factory or dofin can call this function");
         require(TAG == true, 'TAG ERROR.');
         Position = HighLevelSystem.enterPositionFixed(Position);
@@ -192,6 +192,13 @@ contract FixedBunker is ProofToken {
         // Mint pToken and transfer Token to cashbox
         mint(msg.sender, shares);
         IBEP20(Position.token).transferFrom(msg.sender, address(this), _deposit_amount);
+
+        uint256 newFunds = checkAddNewFunds();
+        if (newFunds == 1) {
+            enter();
+        } else if (newFunds == 2) {
+            rebalance();
+        }
         
         return true;
     }
