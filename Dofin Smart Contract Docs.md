@@ -66,32 +66,33 @@ This page provides links or locations for Dofin's smart contracts.
 ## Main contracts
 The following links will take you to the BscScan page for Dofin's main smart contracts.
 
-- [FixedBunkersFactory](https://bscscan.com/address/0x0000000000000000000000000000000000000000)
-- [ChargedBunkersFactory](https://bscscan.com/address/0x0000000000000000000000000000000000000000)
-- [BoostedBunkersFactory](https://bscscan.com/address/0x0000000000000000000000000000000000000000)
+- [FixedBunkersFactory](https://bscscan.com/address/0xb1F37Cf4F5393f840f316f9Edc4FD900E5D75379)
+- [BoostedBunkersFactory](https://bscscan.com/address/0xe8B82a0353A1e39e4dEa3e8c8282BAa3073915D3)
 
 ## BunkersFactory contract
 BunkersFactory contracts manage Bunker contract.  
 
 ### Contracts info
 Contract name: FixedBunkersFactory  
-Contract address: 0x0000000000000000000000000000000000000000  
-View the [FixedBunkersFactory contract on BscScan](https://bscscan.com/address/0x0000000000000000000000000000000000000000)  
-
-Contract name: ChargedBunkersFactory  
-Contract address: 0x0000000000000000000000000000000000000000  
-View the [ChargedBunkersFactory contract on BscScan](https://bscscan.com/address/0x0000000000000000000000000000000000000000)  
+Contract address: 0xb1F37Cf4F5393f840f316f9Edc4FD900E5D75379  
+View the [FixedBunkersFactory contract on BscScan](https://bscscan.com/address/0xb1F37Cf4F5393f840f316f9Edc4FD900E5D75379)  
 
 Contract name: BoostedBunkersFactory  
-Contract address: 0x0000000000000000000000000000000000000000  
-View the [BoostedBunkersFactory contract on BscScan](https://bscscan.com/address/0x0000000000000000000000000000000000000000)  
+Contract address: 0xe8B82a0353A1e39e4dEa3e8c8282BAa3073915D3  
+View the [BoostedBunkersFactory contract on BscScan](https://bscscan.com/address/0xe8B82a0353A1e39e4dEa3e8c8282BAa3073915D3)  
 
 ### Read functions
-#### checkCaller
+#### BunkersLength
 ```solidity
-function checkCaller() public view returns (bool);
+function BunkersLength() public view returns (bool);
 ```
-Check transaction caller is owner or not.
+Check Bunkers length in factory.
+
+#### IdToBunker
+```solidity
+function IdToBunker(uint256) public view returns (bool);
+```
+Check Bunker address.
 
 ### Write functions
 #### transferOwnership
@@ -182,58 +183,33 @@ Set Bunker config by bunker id.
  | ------- | ------- |
  | bool | Return true if success. |
 
-#### rebalanceBunker
-```solidity
-function rebalanceBunker (uint256[] memory _ids) external returns(bool);
-```
-Rebalance Bunker by bunker id.
-##### Parameters
-
- | Name | Type |   |
- | -------- | ------- | ------- |
- | ids | uint256[] | Bunker id. |
-
-##### Return
-
- | Type |   |
- | ------- | ------- |
- | bool | Return true if success. |
-
-#### enterBunker
-```solidity
-function enterBunker (uint256[] memory _ids) external returns(bool);
-```
-Enter Bunker position by bunker id.
-##### Parameters
-
- | Name | Type |   |
- | -------- | ------- | ------- |
- | ids | uint256[] | Bunker id. |
-
-##### Return
-
- | Type |   |
- | ------- | ------- |
- | bool | Return true if success. |
-
-#### exitBunker
-```solidity
-function exitBunker (uint256[] memory _ids) external returns(bool);
-```
-Exit Bunker position by bunker id.
-##### Parameters
-
- | Name | Type |   |
- | -------- | ------- | ------- |
- | ids | uint256[] | Bunker id. |
-
-##### Return
-
- | Type |   |
- | ------- | ------- |
- | bool | Return true if success. |
 
 ## Bunker contract
+
+### Contracts info
+Contract name: FixedBunker  
+Contract address: 0xB455A65dd93B7796474F6cc514880cCAf83F0eaA  
+View the [FixedBunker contract on BscScan](https://bscscan.com/address/0xB455A65dd93B7796474F6cc514880cCAf83F0eaA)  
+Contract address: 0xfFDA78C8a19C40770529D0E72aB7A817DAC43209  
+View the [FixedBunker contract on BscScan](https://bscscan.com/address/0xfFDA78C8a19C40770529D0E72aB7A817DAC43209)  
+Contract address: 0xB71d7A0622a838ced41DFEE3eB9ce165614B1A68  
+View the [FixedBunker contract on BscScan](https://bscscan.com/address/0xB71d7A0622a838ced41DFEE3eB9ce165614B1A68)  
+Contract address: 0x9659dC402F22Cc0775902c117c0Fb42eE189798E  
+View the [FixedBunker contract on BscScan](https://bscscan.com/address/0x9659dC402F22Cc0775902c117c0Fb42eE189798E)  
+Contract address: 0x6C53DA95f0FAd6FC208807619A499f2945e94B1B  
+View the [FixedBunker contract on BscScan](https://bscscan.com/address/0x6C53DA95f0FAd6FC208807619A499f2945e94B1B)  
+
+Contract name: BoostedBunker  
+Contract address: 0x04Ebd8b02A122497F762b30efe980Ab246c328c1  
+View the [BoostedBunker contract on BscScan](https://bscscan.com/address/0x04Ebd8b02A122497F762b30efe980Ab246c328c1)  
+Contract address: 0x0Ca9c86D4F6eE8918d0836055172a3fA959dE157  
+View the [BoostedBunker contract on BscScan](https://bscscan.com/address/0x0Ca9c86D4F6eE8918d0836055172a3fA959dE157)  
+Contract address: 0x6ee0AfeCd5bBa4A952feE4cabef61Eb736Fae07c  
+View the [BoostedBunker contract on BscScan](https://bscscan.com/address/0x6ee0AfeCd5bBa4A952feE4cabef61Eb736Fae07c)  
+Contract address: 0x015B21373128086DaE5273E27f4CD2a1b20270B5  
+View the [BoostedBunker contract on BscScan](https://bscscan.com/address/0x015B21373128086DaE5273E27f4CD2a1b20270B5)  
+Contract address: 0x9Fa1e2D3F8209635322a42D03fFf438DeB000ea6  
+View the [BoostedBunker contract on BscScan](https://bscscan.com/address/0x9Fa1e2D3F8209635322a42D03fFf438DeB000ea6)  
 
 ### Read functions
 #### checkCaller  
@@ -448,34 +424,4 @@ Emergency withdraw when Bunker is stop working.
  | Type |   |
  | ------- | ------- |
  | bool | Return true if success. |
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
